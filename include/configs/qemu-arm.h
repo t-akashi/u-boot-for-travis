@@ -20,9 +20,14 @@
 /* For timer, QEMU emulates an ARMv7/ARMv8 architected timer */
 #define CONFIG_SYS_HZ                       1000
 
+#define CONFIG_FLASH_SHOW_PROGRESS	1
+
+#define CONFIG_SYS_FLASH_CFI		1
+#define CONFIG_FLASH_CFI_DRIVER		1
+
 /* Environment options */
-#define CONFIG_ENV_ADDR			0x4000000
-#define CONFIG_ENV_SIZE			SZ_256K
+#define CONFIG_ENV_OFFSET		(SZ_1M * 63)
+#define CONFIG_ENV_SECT_SIZE		SZ_1M
 
 #define BOOT_TARGET_DEVICES(func) \
 	func(USB, usb, 0) \
