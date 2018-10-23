@@ -12,6 +12,7 @@
 #include <cli.h>
 #include <cli_hush.h>
 #include <console.h>
+#include <efi_loader.h>
 #include <fdtdec.h>
 #include <malloc.h>
 
@@ -124,6 +125,15 @@ int do_run(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if (argc < 2)
 		return CMD_RET_USAGE;
+
+#ifdef CONFIG_CMD_BOOTEFI_RUN
+	if (!strcmp(argv[1], "-e")) {
+		argc--;
+		argv++;
+
+		return do_run_efi(cmdtp, flag, argc, argv);
+	}
+#endif
 
 	for (i = 1; i < argc; ++i) {
 		char *arg;

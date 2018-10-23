@@ -1370,7 +1370,14 @@ U_BOOT_CMD_COMPLETE(
 	run,	CONFIG_SYS_MAXARGS,	1,	do_run,
 	"run commands in an environment variable",
 	"var [...]\n"
-	"    - run the commands in the environment variable(s) 'var'",
+	"    - run the commands in the environment variable(s) 'var'"
+#if defined(CONFIG_CMD_BOOTEFI_RUN)
+	"\n"
+	"run -e [BootXXXX]\n"
+	"    - load and run UEFI app based on 'BootXXXX' UEFI variable",
+#else
+	,
+#endif
 	var_complete
 );
 #endif
