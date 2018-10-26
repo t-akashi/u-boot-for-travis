@@ -180,7 +180,8 @@ error:
  * available load-options, finding and returning the first one that can
  * be loaded successfully.
  */
-void *efi_bootmgr_load(struct efi_device_path **device_path,
+void *efi_bootmgr_load(int boot_id,
+		       struct efi_device_path **device_path,
 		       struct efi_device_path **file_path)
 {
 	u16 bootnext, *bootorder;
@@ -193,6 +194,12 @@ void *efi_bootmgr_load(struct efi_device_path **device_path,
 
 	bs = systab.boottime;
 	rs = systab.runtime;
+
+	/* specified boot option */
+	if (boot_id != -1) {
+		image = try_load_entry(boot_id, device_path, file_path);
+		goto error;
+	}
 
 	/* get BootNext */
 	size = sizeof(bootnext);

@@ -368,7 +368,8 @@ static int do_bootefi_bootmgr_exec(void)
 	void *addr;
 	efi_status_t r;
 
-	addr = efi_bootmgr_load(&device_path, &file_path);
+	addr = efi_bootmgr_load(EFI_BOOTMGR_DEFAULT_ORDER,
+				&device_path, &image_path);
 	if (!addr)
 		return 1;
 

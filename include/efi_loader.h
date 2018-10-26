@@ -553,9 +553,12 @@ struct efi_load_option {
 	u8 *optional_data;
 };
 
+#define EFI_BOOTMGR_DEFAULT_ORDER (-1)
+
 void efi_deserialize_load_option(struct efi_load_option *lo, u8 *data);
 unsigned long efi_serialize_load_option(struct efi_load_option *lo, u8 **data);
-void *efi_bootmgr_load(struct efi_device_path **device_path,
+void *efi_bootmgr_load(int boot_id,
+		       struct efi_device_path **device_path,
 		       struct efi_device_path **file_path);
 
 #else /* CONFIG_IS_ENABLED(EFI_LOADER) */
