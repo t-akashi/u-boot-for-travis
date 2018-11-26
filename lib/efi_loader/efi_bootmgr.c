@@ -145,6 +145,7 @@ static void *try_load_entry(uint16_t n, struct efi_device_path **device_path,
 	efi_deserialize_load_option(&lo, load_option);
 
 	if (lo.attributes & LOAD_OPTION_ACTIVE) {
+		u32 attributes;
 		efi_status_t ret;
 
 		debug("%s: trying to load \"%ls\" from %pD\n",
@@ -152,6 +153,15 @@ static void *try_load_entry(uint16_t n, struct efi_device_path **device_path,
 
 		ret = efi_load_image_from_path(lo.file_path, &image, &size);
 
+		if (ret != EFI_SUCCESS)
+			goto error;
+
+		attributes = EFI_VARIABLE_BOOTSERVICE_ACCESS |
+			     EFI_VARIABLE_RUNTIME_ACCESS;
+		size = sizeof(n);
+		ret = rs->set_variable(L"BootCurrent",
+				       (efi_guid_t *)&efi_global_variable_guid,
+				       attributes, size, &n);
 		if (ret != EFI_SUCCESS)
 			goto error;
 
@@ -173,16 +183,38 @@ error:
 void *efi_bootmgr_load(struct efi_device_path **device_path,
 		       struct efi_device_path **file_path)
 {
-	uint16_t *bootorder;
+	u16 bootnext, *bootorder;
 	efi_uintn_t size;
 	void *image = NULL;
 	int i, num;
+	efi_status_t ret;
 
 	__efi_entry_check();
 
 	bs = systab.boottime;
 	rs = systab.runtime;
 
+	/* get BootNext */
+	size = sizeof(bootnext);
+	ret = rs->get_variable(L"BootNext",
+			       (efi_guid_t *)&efi_global_variable_guid,
+			       NULL, &size, &bootnext);
+	if (!bootnext)
+		goto run_list;
+
+	/* delete BootNext */
+	ret = rs->set_variable(L"BootNext",
+			       (efi_guid_t *)&efi_global_variable_guid,
+			       0, 0, &bootnext);
+	if (ret != EFI_SUCCESS)
+		goto error;
+
+	image = try_load_entry(bootnext, device_path, file_path);
+	if (image)
+		goto error;
+
+run_list:
+	/* BootOrder */
 	bootorder = get_var(L"BootOrder", &efi_global_variable_guid, &size);
 	if (!bootorder)
 		goto error;
