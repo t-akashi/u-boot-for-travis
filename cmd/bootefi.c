@@ -555,3 +555,66 @@ void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
 		bootefi_image_path = NULL;
 	}
 }
+
+#ifdef CONFIG_CMD_BOOTEFI_RUN
+/**
+ * do_run_efi() - execute EFI binary via run command
+ *
+ * @cmdtp:      Command table
+ * @flag:       Command flag
+ * @argc:       Number of arguments
+ * @argv:       Argument array
+ * Return:      CMD_RET_SUCCESS on success,
+ *              CMD_RET_USAGE or CMD_RET_RET_FAILURE on failure
+ *
+ * This function is a wrapper to do_bootefi_exec() and allows
+ * run command to execute EFI binary with "-e" option.
+ * Expected to be called with BootXXXX variable.
+ */
+int do_run_efi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	int boot_id = EFI_BOOTMGR_DEFAULT_ORDER;
+	char *endp;
+	struct efi_device_path *device_path, *file_path;
+	void *addr;
+	efi_status_t r;
+
+	if (argc > 2)
+		return CMD_RET_USAGE;
+
+	if (argc == 2) {
+		if (!strcmp(argv[1], "BootOrder") ||
+		    !strcmp(argv[1], "BootNext")) {
+			boot_id = EFI_BOOTMGR_DEFAULT_ORDER;
+		} else if (!strncmp(argv[1], "Boot", 4)) {
+			boot_id = (int)simple_strtoul(&argv[1][4], &endp, 0);
+			if ((argv[1] + strlen(argv[1]) != endp) ||
+			    boot_id > 0xffff)
+				return CMD_RET_USAGE;
+		} else {
+			return CMD_RET_USAGE;
+		}
+	}
+
+	allow_unaligned();
+
+	switch_to_non_secure_mode();
+
+	if (efi_init_obj_list())
+		return CMD_RET_FAILURE;
+
+	if (efi_handle_fdt(NULL))
+		return CMD_RET_FAILURE;
+
+	addr = efi_bootmgr_load(boot_id, &device_path, &file_path);
+	if (!addr)
+		return CMD_RET_FAILURE;
+
+	r = do_bootefi_exec(addr, device_path, file_path);
+
+	if (r != EFI_SUCCESS)
+		return CMD_RET_FAILURE;
+
+	return CMD_RET_SUCCESS;
+}
+#endif

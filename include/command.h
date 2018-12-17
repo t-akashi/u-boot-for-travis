@@ -57,6 +57,10 @@ typedef struct cmd_tbl_s	cmd_tbl_t;
 #if defined(CONFIG_CMD_RUN)
 extern int do_run(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 #endif
+#if defined(CONFIG_CMD_BOOTEFI_RUN)
+extern int do_run_efi(cmd_tbl_t *cmdtp, int flag, int argc,
+		      char * const argv[]);
+#endif
 
 /* common/command.c */
 int _do_help (cmd_tbl_t *cmd_start, int cmd_items, cmd_tbl_t * cmdtp, int
