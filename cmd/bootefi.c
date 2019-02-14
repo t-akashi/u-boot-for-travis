@@ -198,6 +198,40 @@ static efi_status_t efi_install_fdt(ulong fdt_addr)
 	return ret;
 }
 
+/**
+ * efi_handle_fdt() - process fdt passed by a command argument
+ * @fdt_opt:	pointer to argument
+ * Return:	CMD_RET_SUCCESS on success,
+		CMD_RET_USAGE or CMD_RET_FAILURE otherwise
+ *
+ * If specified, fdt will be installed as configuration table,
+ * otherwise no fdt will be passed.
+ */
+static int efi_handle_fdt(const char *fdt_opt)
+{
+	unsigned long fdt_addr;
+	efi_status_t r;
+
+	if (fdt_opt) {
+		fdt_addr = simple_strtoul(fdt_opt, NULL, 16);
+		if (!fdt_addr && *fdt_opt != '0')
+			return CMD_RET_USAGE;
+
+		/* Install device tree */
+		r = efi_install_fdt(fdt_addr);
+		if (r != EFI_SUCCESS) {
+			printf("ERROR: failed to install device tree\n");
+			return CMD_RET_FAILURE;
+		}
+	} else {
+		/* Remove device tree. EFI_NOT_FOUND can be ignored here */
+		efi_install_configuration_table(&efi_guid_fdt, NULL);
+		printf("WARNING: booting without device tree\n");
+	}
+
+	return CMD_RET_SUCCESS;
+}
+
 static efi_status_t bootefi_run_prepare(const char *load_options_path,
 		struct efi_device_path *device_path,
 		struct efi_device_path *image_path,
@@ -361,35 +395,78 @@ err_add_protocol:
 	return ret;
 }
 
-static int do_bootefi_bootmgr_exec(void)
+/**
+ * do_bootefi_load_and_exec() - execute EFI binary
+ *
+ * @arg:	sub-command argument
+ * Return:	status code
+ *
+ * Set up memory image for the binary to be loaded, prepare
+ * device path and then call do_bootefi_exec() to execute it.
+ */
+static int do_bootefi_load_and_exec(const char *arg)
 {
-	struct efi_device_path *device_path, *file_path;
-	void *addr;
+	void *image_buf;
+	struct efi_device_path *device_path, *image_path;
+	const char *saddr;
+	unsigned long addr, size;
 	efi_status_t r;
 
-	addr = efi_bootmgr_load(EFI_BOOTMGR_DEFAULT_ORDER,
-				&device_path, &image_path);
-	if (!addr)
-		return 1;
+	if (!strcmp(arg, "bootmgr")) {
+		image_buf = efi_bootmgr_load(EFI_BOOTMGR_DEFAULT_ORDER,
+					     &device_path, &image_path);
+		if (!image_buf)
+			return CMD_RET_FAILURE;
 
-	printf("## Starting EFI application at %p ...\n", addr);
-	r = do_bootefi_exec(addr, device_path, file_path);
-	printf("## Application terminated, r = %lu\n",
-	       r & ~EFI_ERROR_MASK);
+		addr = map_to_sysmem(image_buf);
+	} else
+#ifdef CONFIG_CMD_BOOTEFI_HELLO
+	if (!strcmp(arg, "hello")) {
+		saddr = env_get("loadaddr");
+		size = __efi_helloworld_end - __efi_helloworld_begin;
+
+		if (saddr)
+			addr = simple_strtoul(saddr, NULL, 16);
+		else
+			addr = CONFIG_SYS_LOAD_ADDR;
+
+		image_buf = map_sysmem(addr, size);
+		memcpy(image_buf, __efi_helloworld_begin, size);
+
+		device_path = NULL;
+		image_path = NULL;
+	} else
+#endif
+	{
+		saddr = arg;
+		size = 0;
+
+		addr = simple_strtoul(saddr, NULL, 16);
+		/* Check that a numeric value was passed */
+		if (!addr && *saddr != '0')
+			return CMD_RET_USAGE;
+
+		image_buf = map_sysmem(addr, size);
+
+		device_path = bootefi_device_path;
+		image_path = bootefi_image_path;
+	}
+
+	printf("## Starting EFI application at %08lx ...\n", addr);
+	r = do_bootefi_exec(image_buf, device_path, image_path);
+	printf("## Application terminated, r = %lu\n", r & ~EFI_ERROR_MASK);
 
 	if (r != EFI_SUCCESS)
-		return 1;
+		return CMD_RET_FAILURE;
 
-	return 0;
+	return CMD_RET_SUCCESS;
 }
 
 /* Interpreter command to boot an arbitrary EFI image from memory */
 static int do_bootefi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	unsigned long addr;
-	char *saddr;
 	efi_status_t r;
-	unsigned long fdt_addr;
+	int ret;
 
 	/* Allow unaligned memory access */
 	allow_unaligned();
@@ -407,33 +484,10 @@ static int do_bootefi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (argc < 2)
 		return CMD_RET_USAGE;
 
-	if (argc > 2) {
-		fdt_addr = simple_strtoul(argv[2], NULL, 16);
-		if (!fdt_addr && *argv[2] != '0')
-			return CMD_RET_USAGE;
-		/* Install device tree */
-		r = efi_install_fdt(fdt_addr);
-		if (r != EFI_SUCCESS) {
-			printf("ERROR: failed to install device tree\n");
-			return CMD_RET_FAILURE;
-		}
-	} else {
-		/* Remove device tree. EFI_NOT_FOUND can be ignored here */
-		efi_install_configuration_table(&efi_guid_fdt, NULL);
-		printf("WARNING: booting without device tree\n");
-	}
-#ifdef CONFIG_CMD_BOOTEFI_HELLO
-	if (!strcmp(argv[1], "hello")) {
-		ulong size = __efi_helloworld_end - __efi_helloworld_begin;
+	ret = efi_handle_fdt(argc > 2 ? argv[2] : NULL);
+	if (ret != CMD_RET_SUCCESS)
+		return ret;
 
-		saddr = env_get("loadaddr");
-		if (saddr)
-			addr = simple_strtoul(saddr, NULL, 16);
-		else
-			addr = CONFIG_SYS_LOAD_ADDR;
-		memcpy(map_sysmem(addr, size), __efi_helloworld_begin, size);
-	} else
-#endif
 #ifdef CONFIG_CMD_BOOTEFI_SELFTEST
 	if (!strcmp(argv[1], "selftest")) {
 		struct efi_loaded_image_obj *image_obj;
@@ -448,30 +502,10 @@ static int do_bootefi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		r = EFI_CALL(efi_selftest(&image_obj->header, &systab));
 		bootefi_run_finish(image_obj, loaded_image_info);
 		return r != EFI_SUCCESS;
-	} else
-#endif
-	if (!strcmp(argv[1], "bootmgr")) {
-		return do_bootefi_bootmgr_exec();
-	} else {
-		saddr = argv[1];
-
-		addr = simple_strtoul(saddr, NULL, 16);
-		/* Check that a numeric value was passed */
-		if (!addr && *saddr != '0')
-			return CMD_RET_USAGE;
-
 	}
+#endif
 
-	printf("## Starting EFI application at %08lx ...\n", addr);
-	r = do_bootefi_exec(map_sysmem(addr, 0), bootefi_device_path,
-			    bootefi_image_path);
-	printf("## Application terminated, r = %lu\n",
-	       r & ~EFI_ERROR_MASK);
-
-	if (r != EFI_SUCCESS)
-		return 1;
-	else
-		return 0;
+	return do_bootefi_load_and_exec(argv[1]);
 }
 
 #ifdef CONFIG_SYS_LONGHELP
@@ -490,7 +524,7 @@ static char bootefi_help_text[] =
 	"    Use environment variable efi_selftest to select a single test.\n"
 	"    Use 'setenv efi_selftest list' to enumerate all tests.\n"
 #endif
-	"bootefi bootmgr [fdt addr]\n"
+	"bootefi bootmgr [fdt address]\n"
 	"  - load and boot EFI payload based on BootOrder/BootXXXX variables.\n"
 	"\n"
 	"    If specified, the device tree located at <fdt address> gets\n"
