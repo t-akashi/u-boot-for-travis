@@ -231,6 +231,53 @@ static void bootefi_run_finish(struct efi_loaded_image_obj *image_obj,
 	efi_delete_handle(&image_obj->header);
 }
 
+#ifdef CONFIG_CMD_BOOTEFI_SELFTEST
+/**
+ * bootefi_test_prepare() - prepare to run an EFI test
+ *
+ * Prepare to run a test as if it were provided by a loaded image.
+ *
+ * @image_objp:		pointer to be set to the loaded image handle
+ * @loaded_image_infop:	pointer to be set to the loaded image protocol
+ * @path:		dummy file path used to construct the device path
+ *			set in the loaded image protocol
+ * @load_options_path:	name of a U-Boot environment variable. Its value is
+ *			set as load options in the loaded image protocol.
+ * Return:		status code
+ */
+static efi_status_t bootefi_test_prepare
+		(struct efi_loaded_image_obj **image_objp,
+		 struct efi_loaded_image **loaded_image_infop, const char *path,
+		 const char *load_options_path)
+{
+	efi_status_t ret;
+
+	/* Construct a dummy device path */
+	bootefi_device_path = efi_dp_from_mem(EFI_RESERVED_MEMORY_TYPE, 0, 0);
+	if (!bootefi_device_path)
+		return EFI_OUT_OF_RESOURCES;
+
+	bootefi_image_path = efi_dp_from_file(NULL, 0, path);
+	if (!bootefi_image_path) {
+		ret = EFI_OUT_OF_RESOURCES;
+		goto failure;
+	}
+
+	ret = bootefi_run_prepare(load_options_path, bootefi_device_path,
+				  bootefi_image_path, image_objp,
+				  loaded_image_infop);
+	if (ret == EFI_SUCCESS)
+		return ret;
+
+	efi_free_pool(bootefi_image_path);
+	bootefi_image_path = NULL;
+failure:
+	efi_free_pool(bootefi_device_path);
+	bootefi_device_path = NULL;
+	return ret;
+}
+#endif /* CONFIG_CMD_BOOTEFI_SELFTEST */
+
 /**
  * do_bootefi_exec() - execute EFI binary
  *
@@ -313,54 +360,6 @@ err_add_protocol:
 
 	return ret;
 }
-
-#ifdef CONFIG_CMD_BOOTEFI_SELFTEST
-/**
- * bootefi_test_prepare() - prepare to run an EFI test
- *
- * Prepare to run a test as if it were provided by a loaded image.
- *
- * @image_objp:		pointer to be set to the loaded image handle
- * @loaded_image_infop:	pointer to be set to the loaded image protocol
- * @path:		dummy file path used to construct the device path
- *			set in the loaded image protocol
- * @load_options_path:	name of a U-Boot environment variable. Its value is
- *			set as load options in the loaded image protocol.
- * Return:		status code
- */
-static efi_status_t bootefi_test_prepare
-		(struct efi_loaded_image_obj **image_objp,
-		 struct efi_loaded_image **loaded_image_infop, const char *path,
-		 const char *load_options_path)
-{
-	efi_status_t ret;
-
-	/* Construct a dummy device path */
-	bootefi_device_path = efi_dp_from_mem(EFI_RESERVED_MEMORY_TYPE, 0, 0);
-	if (!bootefi_device_path)
-		return EFI_OUT_OF_RESOURCES;
-
-	bootefi_image_path = efi_dp_from_file(NULL, 0, path);
-	if (!bootefi_image_path) {
-		ret = EFI_OUT_OF_RESOURCES;
-		goto failure;
-	}
-
-	ret = bootefi_run_prepare(load_options_path, bootefi_device_path,
-				  bootefi_image_path, image_objp,
-				  loaded_image_infop);
-	if (ret == EFI_SUCCESS)
-		return ret;
-
-	efi_free_pool(bootefi_image_path);
-	bootefi_image_path = NULL;
-failure:
-	efi_free_pool(bootefi_device_path);
-	bootefi_device_path = NULL;
-	return ret;
-}
-
-#endif /* CONFIG_CMD_BOOTEFI_SELFTEST */
 
 static int do_bootefi_bootmgr_exec(void)
 {
