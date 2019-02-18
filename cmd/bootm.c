@@ -52,6 +52,9 @@ static cmd_tbl_t cmd_bootm_sub[] = {
 	U_BOOT_CMD_MKENT(prep, 0, 1, (void *)BOOTM_STATE_OS_PREP, "", ""),
 	U_BOOT_CMD_MKENT(fake, 0, 1, (void *)BOOTM_STATE_OS_FAKE_GO, "", ""),
 	U_BOOT_CMD_MKENT(go, 0, 1, (void *)BOOTM_STATE_OS_GO, "", ""),
+#if IS_ENABLED(CONFIG_CMD_BOOTEFI_BOOTM)
+	U_BOOT_CMD_MKENT(efi, 0, 1, (void *)BOOTM_STATE_EFI, "", ""),
+#endif
 };
 
 static int do_bootm_subcommand(cmd_tbl_t *cmdtp, int flag, int argc,
@@ -62,10 +65,16 @@ static int do_bootm_subcommand(cmd_tbl_t *cmdtp, int flag, int argc,
 	cmd_tbl_t *c;
 
 	c = find_cmd_tbl(argv[0], &cmd_bootm_sub[0], ARRAY_SIZE(cmd_bootm_sub));
-	argc--; argv++;
 
 	if (c) {
 		state = (long)c->cmd;
+
+#if IS_ENABLED(CONFIG_CMD_BOOTEFI_BOOTM)
+		if (state == BOOTM_STATE_EFI)
+			/* EFI is currently independent from others. */
+			return do_bootefi(cmdtp, flag, argc, argv);
+#endif
+
 		if (state == BOOTM_STATE_START)
 			state |= BOOTM_STATE_FINDOS | BOOTM_STATE_FINDOTHER;
 	} else {
@@ -79,6 +88,7 @@ static int do_bootm_subcommand(cmd_tbl_t *cmdtp, int flag, int argc,
 		return CMD_RET_USAGE;
 	}
 
+	argc--; argv++;
 	ret = do_bootm_states(cmdtp, flag, argc, argv, state, &images, 0);
 
 	return ret;
@@ -187,7 +197,16 @@ static char bootm_help_text[] =
 #if defined(CONFIG_TRACE)
 	"\tfake    - OS specific fake start without go\n"
 #endif
-	"\tgo      - start OS";
+	"\tgo      - start OS\n"
+#if IS_ENABLED(CONFIG_CMD_BOOTEFI_BOOTM)
+	"\tefi addr [fdt_addr]\n"
+	"\t  - boot EFI payload stored at <addr>\n"
+	"\t    If specified, the device tree located at <fdt_addr> gets\n"
+	"\t    exposed as EFI configuration table\n"
+	"\tefi bootmgr\n"
+	"\t  - invoke UEFI Boot Manager\n"
+#endif
+	;
 #endif
 
 U_BOOT_CMD(

@@ -402,6 +402,7 @@ typedef struct bootm_headers {
 #define	BOOTM_STATE_OS_PREP	(0x00000100)
 #define	BOOTM_STATE_OS_FAKE_GO	(0x00000200)	/* 'Almost' run the OS */
 #define	BOOTM_STATE_OS_GO	(0x00000400)
+#define	BOOTM_STATE_EFI		(0x00010000)	/* EFI on its own */
 	int		state;
 
 #ifdef CONFIG_LMB
