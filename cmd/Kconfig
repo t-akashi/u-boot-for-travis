@@ -232,6 +232,14 @@ config CMD_BOOTEFI_RUN
 	  With this configuration, we can run EFI application
 	  via, for example, "run -e Boot0001."
 
+config CMD_BOOTEFI_BOOTM
+	bool "Enable to run EFI application via bootm command"
+	depends on CMD_BOOTEFI
+	default y
+	help
+	  With this configuration, we can run EFI application
+	  via, for example, "bootm efi 0x50000000"
+
 config CMD_BOOTEFI_HELLO_COMPILE
 	bool "Compile a standard EFI hello world binary for testing"
 	depends on CMD_BOOTEFI && !CPU_V7M && !SANDBOX

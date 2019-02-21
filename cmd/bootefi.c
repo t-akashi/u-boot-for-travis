@@ -463,7 +463,10 @@ static int do_bootefi_load_and_exec(const char *arg)
 }
 
 /* Interpreter command to boot an arbitrary EFI image from memory */
-static int do_bootefi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+#ifndef CONFIG_CMD_BOOTEFI_BOOTM
+static
+#endif
+int do_bootefi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	efi_status_t r;
 	int ret;
