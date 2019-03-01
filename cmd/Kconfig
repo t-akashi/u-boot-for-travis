@@ -224,6 +224,14 @@ config CMD_BOOTEFI
 	help
 	  Boot an EFI image from memory.
 
+config CMD_STANDALONE_EFIBOOTMGR
+	bool "Enable EFI Boot Manager as a standalone command"
+	depends on CMD_BOOTEFI
+	default n
+	help
+          With this option enabled, EFI Boot Manager can be invoked
+	  as a standalone command.
+
 config CMD_BOOTEFI_HELLO_COMPILE
 	bool "Compile a standard EFI hello world binary for testing"
 	depends on CMD_BOOTEFI && !CPU_V7M && !SANDBOX

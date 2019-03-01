@@ -644,3 +644,38 @@ void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
 		bootefi_image_path = NULL;
 	}
 }
+
+#ifdef CONFIG_CMD_STANDALONE_EFIBOOTMGR
+static int do_efibootmgr_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
+			     char * const argv[])
+{
+	char *fdt_opt;
+	int ret;
+
+	if (argc != 1)
+		return CMD_RET_USAGE;
+
+	fdt_opt = env_get("fdtaddr");
+	if (!fdt_opt)
+		fdt_opt = env_get("fdtcontroladdr");
+
+	ret = do_efibootmgr(fdt_opt);
+
+	free(fdt_opt);
+
+	return ret;
+}
+
+#ifdef CONFIG_SYS_LONGHELP
+static char efibootmgr_help_text[] =
+	"(no arguments)\n"
+	" - Launch EFI boot manager and execute EFI application\n"
+	"   based on BootNext and BootOrder variables\n";
+#endif
+
+U_BOOT_CMD(
+	efibootmgr, 1, 0, do_efibootmgr_cmd,
+	"Launch EFI boot manager",
+	efibootmgr_help_text
+);
+#endif /* CONFIG_CMD_STANDALONE_EFIBOOTMGR */
