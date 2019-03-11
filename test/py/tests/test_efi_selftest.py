@@ -20,7 +20,7 @@ def test_efi_selftest(u_boot_console):
 	if m != 0:
 		raise Exception('Failures occurred during the EFI selftest')
 	u_boot_console.run_command(cmd='', wait_for_echo=False, wait_for_prompt=False);
-	m = u_boot_console.p.expect(['resetting', 'U-Boot'])
+	m = u_boot_console.p.expect(['U-Boot'])
 	if m != 0:
 		raise Exception('Reset failed during the EFI selftest')
 	u_boot_console.restart_uboot();
@@ -47,7 +47,7 @@ def test_efi_selftest_watchdog_reboot(u_boot_console):
 	assert '\'watchdog reboot\'' in output
 	u_boot_console.run_command(cmd='setenv efi_selftest watchdog reboot')
 	u_boot_console.run_command(cmd='bootefi selftest', wait_for_prompt=False)
-	m = u_boot_console.p.expect(['resetting', 'U-Boot'])
+	m = u_boot_console.p.expect(['U-Boot'])
 	if m != 0:
 		raise Exception('Reset failed in \'watchdog reboot\' test')
 	u_boot_console.restart_uboot();
