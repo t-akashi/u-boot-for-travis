@@ -24,6 +24,12 @@ void env_fix_drivers(void)
 			entry->load += gd->reloc_off;
 		if (entry->save)
 			entry->save += gd->reloc_off;
+#ifdef CONFIG_ENV_EFI
+		if (entry->efi_load)
+			entry->efi_load += gd->reloc_off;
+		if (entry->efi_save)
+			entry->efi_save += gd->reloc_off;
+#endif
 		if (entry->init)
 			entry->init += gd->reloc_off;
 	}
@@ -125,7 +131,8 @@ __weak enum env_location env_get_location(enum env_operation op, int prio)
 	if (prio >= ARRAY_SIZE(env_locations))
 		return ENVL_UNKNOWN;
 
-	gd->env_load_prio = prio;
+	if (op != ENVOP_EFI)
+		gd->env_load_prio = prio;
 
 	return env_locations[prio];
 }
@@ -280,3 +287,149 @@ int env_init(void)
 
 	return ret;
 }
+
+#ifdef CONFIG_ENV_EFI
+struct hsearch_data efi_var_htab;
+struct hsearch_data efi_nv_var_htab;
+
+int env_efi_import(const char *buf, int check)
+{
+	env_t *ep = (env_t *)buf;
+
+	if (check) {
+		u32 crc;
+
+		memcpy(&crc, &ep->crc, sizeof(crc));
+
+		if (crc32(0, ep->data, CONFIG_ENV_EFI_SIZE - ENV_HEADER_SIZE)
+				!= crc) {
+			pr_err("bad CRC of UEFI variables\n");
+			return -ENOMSG; /* needed for env_load() */
+		}
+	}
+
+	if (himport_r(&efi_nv_var_htab, (char *)ep->data,
+		      CONFIG_ENV_EFI_SIZE - ENV_HEADER_SIZE,
+		      '\0', 0, 0, 0, NULL))
+		return 0;
+
+	pr_err("Cannot import environment: errno = %d\n", errno);
+
+	/* set_default_env("import failed", 0); */
+
+	return -EIO;
+}
+
+int env_efi_export(env_t *env_out)
+{
+	char *res;
+	ssize_t	len;
+
+	res = (char *)env_out->data;
+	len = hexport_r(&efi_nv_var_htab, '\0', 0, &res,
+			CONFIG_ENV_EFI_SIZE - ENV_HEADER_SIZE,
+			0, NULL);
+	if (len < 0) {
+		pr_err("Cannot export environment: errno = %d\n", errno);
+		return 1;
+	}
+
+	env_out->crc = crc32(0, env_out->data,
+			     CONFIG_ENV_EFI_SIZE - ENV_HEADER_SIZE);
+
+	return 0;
+}
+
+int env_efi_save(void)
+{
+#ifdef CONFIG_ENV_IS_NOWHERE
+	return 0;
+#else
+	struct env_driver *drv = NULL;
+	int ret;
+
+	if (!efi_nv_var_htab.table)
+		return 0;
+
+	if (gd->env_efi_prio == -1) {
+		pr_warn("No UEFI non-volatile variable storage\n");
+		return -1;
+	}
+
+	drv = _env_driver_lookup(env_get_location(ENVOP_EFI, gd->env_efi_prio));
+	if (!drv) {
+		pr_warn("No UEFI non-volatile variable storage\n");
+		return -1;
+	}
+
+	ret = drv->efi_save();
+	if (ret)
+		pr_err("Saving UEFI non-volatile variable failed\n");
+
+	return ret;
+#endif
+}
+
+/* This function should be called only once at init */
+int env_efi_load(void)
+{
+#ifndef CONFIG_ENV_IS_NOWHERE
+	struct env_driver *drv;
+	int prio;
+	enum env_location loc;
+#endif
+	int ret;
+
+	/* volatile variables */
+	if (!efi_var_htab.table) {
+		ret = himport_r(&efi_var_htab, NULL, 0, '\0', 0, 0, 0, NULL);
+		if (!ret) {
+			pr_err("Creating UEFI volatile variables failed\n");
+			return -1;
+		}
+	}
+
+#ifndef CONFIG_ENV_IS_NOWHERE
+	gd->env_efi_prio = -1;
+
+	/* non-volatile variables */
+	if (efi_nv_var_htab.table)
+		return 0;
+
+	for (drv = NULL, prio = 0; prio < ARRAY_SIZE(env_locations); prio++) {
+		loc = env_get_location(ENVOP_EFI, prio);
+		drv = _env_driver_lookup(loc);
+		if (!drv)
+			continue;
+
+		if (drv->efi_load && drv->efi_save)
+			break;
+	}
+	if (!drv || prio == ARRAY_SIZE(env_locations)) {
+		pr_warn("No UEFI non-volatile variable storage\n");
+		goto skip_load;
+	}
+
+	gd->env_efi_prio = prio;
+
+	ret = drv->efi_load();
+	if (ret) {
+		pr_err("Loading UEFI non-volatile variables failed\n");
+		return -1;
+	}
+skip_load:
+#endif /* CONFIG_ENV_IS_NOWHERE */
+
+	if (!efi_nv_var_htab.table) {
+		ret = himport_r(&efi_nv_var_htab, NULL, 0, '\0', 0, 0, 0, NULL);
+		if (!ret) {
+			pr_err("Creating UEFI non-volatile variables failed\n");
+			return -1;
+		}
+
+		return 0;
+	}
+
+	return 0;
+}
+#endif /* CONFIG_ENV_EFI */

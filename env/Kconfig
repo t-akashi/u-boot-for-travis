@@ -399,6 +399,10 @@ config ENV_IS_IN_UBI
 	  the environment in.  This will enable redundant environments in UBI.
 	  It is assumed that both volumes are in the same MTD partition.
 
+config ENV_EFI
+	bool
+	default n
+
 config ENV_FAT_INTERFACE
 	string "Name of the block device for the environment"
 	depends on ENV_IS_IN_FAT
@@ -438,6 +442,34 @@ config ENV_FAT_FILE
 	  It's a string of the FAT file name. This file use to store the
 	  environment.
 
+config ENV_EFI_FAT_DEVICE_AND_PART
+	string "Device and partition for where to store the UEFI non-volatile variables in FAT"
+	depends on ENV_IS_IN_FAT
+	depends on ENV_EFI
+	help
+	  Define this to a string to specify the partition of the device. It can
+	  be as following:
+
+	    "D:P", "D:0", "D", "D:" or "D:auto" (D, P are integers. And P >= 1)
+	       - "D:P": device D partition P. Error occurs if device D has no
+	                partition table.
+	       - "D:0": device D.
+	       - "D" or "D:": device D partition 1 if device D has partition
+	                      table, or the whole device D if has no partition
+	                      table.
+	       - "D:auto": first partition in device D with bootable flag set.
+	                   If none, first valid partition in device D. If no
+	                   partition table then means device D.
+
+config ENV_EFI_FAT_FILE
+	string "Name of the FAT file to use for the UEFI non-volatile variables"
+	depends on ENV_IS_IN_FAT
+	depends on ENV_EFI
+	default "uboot_efi.env"
+	help
+	  It's a string of the FAT file name. This file use to store the
+	  UEFI non-volatile variables.
+
 config ENV_EXT4_INTERFACE
 	string "Name of the block device for the environment"
 	depends on ENV_IS_IN_EXT4
@@ -469,6 +501,13 @@ config ENV_EXT4_FILE
 	help
 	  It's a string of the EXT4 file name. This file use to store the
 	  environment (explicit path to the file)
+
+config ENV_EFI_SIZE
+	hex "UEFI Variables Environment Size"
+	depends on ENV_EFI
+	default 0x20000
+	help
+	  Size of the UEFI variables storage area
 
 if ARCH_ROCKCHIP || ARCH_SUNXI || ARCH_ZYNQ || ARCH_ZYNQMP || ARCH_VERSAL || ARC || ARCH_STM32MP
 

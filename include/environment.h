@@ -200,6 +200,7 @@ enum env_operation {
 	ENVOP_INIT,	/* we want to call the init function */
 	ENVOP_LOAD,	/* we want to call the load function */
 	ENVOP_SAVE,	/* we want to call the save function */
+	ENVOP_EFI,	/* we want to call the efi_load/save function */
 };
 
 struct env_driver {
@@ -224,6 +225,26 @@ struct env_driver {
 	 * @return 0 if OK, -ve on error
 	 */
 	int (*save)(void);
+
+#ifdef CONFIG_ENV_EFI
+	/**
+	 * efi_load() - Load UEFI non-volatile variables from storage
+	 *
+	 * This method is required for UEFI non-volatile variables
+	 *
+	 * @return 0 if OK, -ve on error
+	 */
+	int (*efi_load)(void);
+
+	/**
+	 * efi_save() - Save UEFI non-volatile variables to storage
+	 *
+	 * This method is required for UEFI non-volatile variables
+	 *
+	 * @return 0 if OK, -ve on error
+	 */
+	int (*efi_save)(void);
+#endif
 
 	/**
 	 * init() - Set up the initial pre-relocation environment
@@ -311,6 +332,16 @@ void env_fix_drivers(void);
 void eth_parse_enetaddr(const char *addr, uint8_t *enetaddr);
 int eth_env_get_enetaddr(const char *name, uint8_t *enetaddr);
 int eth_env_set_enetaddr(const char *name, const uint8_t *enetaddr);
+
+#ifdef CONFIG_ENV_EFI
+extern struct hsearch_data efi_var_htab;
+extern struct hsearch_data efi_nv_var_htab;
+
+int env_efi_import(const char *buf, int check);
+int env_efi_export(env_t *env_out);
+int env_efi_load(void);
+int env_efi_save(void);
+#endif
 
 #endif /* DO_DEPS_ONLY */
 

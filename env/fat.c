@@ -14,6 +14,7 @@
 #include <malloc.h>
 #include <memalign.h>
 #include <search.h>
+#include <efi_loader.h>
 #include <errno.h>
 #include <fat.h>
 #include <mmc.h>
@@ -128,6 +129,106 @@ err_env_relocate:
 }
 #endif /* LOADENV */
 
+#ifdef CONFIG_ENV_EFI
+static int env_fat_efi_save(void)
+{
+	env_t __aligned(ARCH_DMA_MINALIGN) env_new;
+	struct blk_desc *dev_desc = NULL;
+	disk_partition_t info;
+	int dev, part;
+	int err;
+	loff_t size;
+
+	err = env_efi_export(&env_new);
+	if (err)
+		return err;
+
+	part = blk_get_device_part_str(CONFIG_ENV_FAT_INTERFACE,
+				       CONFIG_ENV_EFI_FAT_DEVICE_AND_PART,
+				       &dev_desc, &info, 1);
+	if (part < 0)
+		return 1;
+
+	dev = dev_desc->devnum;
+	if (fat_set_blk_dev(dev_desc, &info) != 0) {
+		/*
+		 * This printf is embedded in the messages from env_save that
+		 * will calling it. The missing \n is intentional.
+		 */
+		printf("Unable to use %s %d:%d... ",
+		       CONFIG_ENV_FAT_INTERFACE, dev, part);
+		return 1;
+	}
+
+	err = file_fat_write(CONFIG_ENV_EFI_FAT_FILE,
+			     (void *)&env_new, 0, sizeof(env_t), &size);
+	if (err < 0) {
+		/*
+		 * This printf is embedded in the messages from env_save that
+		 * will calling it. The missing \n is intentional.
+		 */
+		printf("Unable to write \"%s\" from %s%d:%d... ",
+		       CONFIG_ENV_EFI_FAT_FILE, CONFIG_ENV_FAT_INTERFACE,
+		       dev, part);
+		return 1;
+	}
+
+	return 0;
+}
+
+static int env_fat_efi_load(void)
+{
+	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_EFI_SIZE);
+	struct blk_desc *dev_desc = NULL;
+	disk_partition_t info;
+	int dev, part;
+	int err;
+
+#ifdef CONFIG_MMC
+	if (!strcmp(CONFIG_ENV_FAT_INTERFACE, "mmc"))
+		mmc_initialize(NULL);
+#endif
+
+	part = blk_get_device_part_str(CONFIG_ENV_FAT_INTERFACE,
+				       CONFIG_ENV_EFI_FAT_DEVICE_AND_PART,
+				       &dev_desc, &info, 1);
+	if (part < 0)
+		goto err_env_relocate;
+
+	dev = dev_desc->devnum;
+	if (fat_set_blk_dev(dev_desc, &info) != 0) {
+		/*
+		 * This printf is embedded in the messages from env_save that
+		 * will calling it. The missing \n is intentional.
+		 */
+		printf("Unable to use %s %d:%d...\n",
+		       CONFIG_ENV_FAT_INTERFACE, dev, part);
+		goto err_env_relocate;
+	}
+
+	err = file_fat_read(CONFIG_ENV_EFI_FAT_FILE, buf, CONFIG_ENV_EFI_SIZE);
+	if (err <= 0 && (err != -ENOENT)) {
+		/*
+		 * This printf is embedded in the messages from env_save that
+		 * will calling it. The missing \n is intentional.
+		 */
+		printf("Unable to read \"%s\" from %s %d:%d...\n",
+		       CONFIG_ENV_EFI_FAT_FILE, CONFIG_ENV_FAT_INTERFACE,
+		       dev, part);
+		goto err_env_relocate;
+	}
+
+	if (err > 0)
+		return env_efi_import(buf, 1);
+	else
+		return 0;
+
+err_env_relocate:
+
+	return -EIO;
+}
+#endif /* CONFIG_ENV_EFI */
+
 U_BOOT_ENV_LOCATION(fat) = {
 	.location	= ENVL_FAT,
 	ENV_NAME("FAT")
@@ -136,5 +237,9 @@ U_BOOT_ENV_LOCATION(fat) = {
 #endif
 #ifdef CMD_SAVEENV
 	.save		= env_save_ptr(env_fat_save),
+#endif
+#ifdef CONFIG_ENV_EFI
+	.efi_load	= env_fat_efi_load,
+	.efi_save	= env_fat_efi_save,
 #endif
 };
