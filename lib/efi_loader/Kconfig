@@ -18,6 +18,16 @@ config EFI_LOADER
 
 if EFI_LOADER
 
+choice
+	prompt "Select variables storage"
+	default EFI_VARIABLE_USE_ENV
+
+config EFI_VARIABLE_USE_ENV
+	bool "Same device as U-Boot environment"
+	select ENV_EFI
+
+endchoice
+
 config EFI_GET_TIME
 	bool "GetTime() runtime service"
 	depends on DM_RTC
