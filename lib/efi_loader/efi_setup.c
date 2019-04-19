@@ -8,6 +8,7 @@
 #include <common.h>
 #include <bootm.h>
 #include <efi_loader.h>
+#include <environment.h>
 
 #define OBJ_LIST_NOT_INITIALIZED 1
 
@@ -101,6 +102,11 @@ efi_status_t efi_init_obj_list(void)
 
 	/* On ARM switch from EL3 or secure mode to EL2 or non-secure mode */
 	switch_to_non_secure_mode();
+
+#ifdef CONFIG_EFI_VARIABLE_USE_ENV
+	/* Load non-volatile variables */
+	env_efi_load();
+#endif
 
 	/* Define supported languages */
 	ret = efi_init_platform_lang();
