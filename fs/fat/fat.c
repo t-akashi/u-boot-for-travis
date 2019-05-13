@@ -619,13 +619,14 @@ static int get_fs_info(fsdata *mydata)
 		return -1;
 	}
 
-	debug("FAT%d, fat_sect: %d, fatlength: %d\n",
-	       mydata->fatsize, mydata->fat_sect, mydata->fatlength);
-	debug("Rootdir begins at cluster: %d, sector: %d, offset: %x\n"
-	       "Data begins at: %d\n",
-	       mydata->root_cluster,
-	       mydata->rootdir_sect,
-	       mydata->rootdir_sect * mydata->sect_size, mydata->data_begin);
+	debug("FAT%d, fat_sect: %d, fatlength: %d, num: %d\n",
+	      mydata->fatsize, mydata->fat_sect, mydata->fatlength,
+	      mydata->fats);
+	debug("Rootdir begins at cluster: %d, sector: %d, size: %x\n"
+	      "Data begins at: %d\n",
+	      mydata->root_cluster,
+	      mydata->rootdir_sect,
+	      mydata->rootdir_size * mydata->sect_size, mydata->data_begin);
 	debug("Sector size: %d, cluster size: %d\n", mydata->sect_size,
 	      mydata->clust_size);
 
