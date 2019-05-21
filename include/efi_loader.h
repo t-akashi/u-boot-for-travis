@@ -620,6 +620,23 @@ efi_status_t EFIAPI efi_set_variable(u16 *variable_name,
 				     const efi_guid_t *vendor, u32 attributes,
 				     efi_uintn_t data_size, const void *data);
 
+#ifdef CONFIG_EFI_RUNTIME_GET_VARIABLE_CACHING
+efi_status_t efi_freeze_variable_table(void);
+
+/* runtime version of APIs */
+efi_status_t
+__efi_runtime EFIAPI efi_get_variable_runtime(u16 *variable_name,
+					      const efi_guid_t *vendor,
+					      u32 *attributes,
+					      efi_uintn_t *data_size,
+					      void *data);
+efi_status_t
+__efi_runtime EFIAPI efi_get_next_variable_name_runtime(
+						efi_uintn_t *variable_name_size,
+						u16 *variable_name,
+						const efi_guid_t *vendor);
+#endif /* CONFIG_EFI_RUNTIME_GET_VARIABLE_CACHING */
+
 /*
  * See section 3.1.3 in the v2.7 UEFI spec for more details on
  * the layout of EFI_LOAD_OPTION.  In short it is:

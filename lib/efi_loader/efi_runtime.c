@@ -111,6 +111,11 @@ efi_status_t efi_init_runtime_supported(void)
 	efi_runtime_services_supported |=
 				EFI_RT_SUPPORTED_CONVERT_POINTER;
 #endif
+#ifdef CONFIG_EFI_RUNTIME_GET_VARIABLE_CACHING
+	efi_runtime_services_supported |=
+				(EFI_RT_SUPPORTED_GET_VARIABLE |
+				 EFI_RT_SUPPORTED_GET_NEXT_VARIABLE_NAME);
+#endif
 
 	return EFI_CALL(efi_set_variable(L"RuntimeServicesSupported",
 					 &efi_global_variable_guid,
@@ -469,10 +474,18 @@ static struct efi_runtime_detach_list_struct efi_runtime_detach_list[] = {
 		.patchto = NULL,
 	}, {
 		.ptr = &efi_runtime_services.get_variable,
+#ifdef CONFIG_EFI_RUNTIME_GET_VARIABLE_CACHING
+		.patchto = &efi_get_variable_runtime,
+#else
 		.patchto = &efi_device_error,
+#endif
 	}, {
 		.ptr = &efi_runtime_services.get_next_variable_name,
+#ifdef CONFIG_EFI_RUNTIME_GET_VARIABLE_CACHING
+		.patchto = &efi_get_next_variable_name,
+#else
 		.patchto = &efi_device_error,
+#endif
 	}, {
 		.ptr = &efi_runtime_services.set_variable,
 		.patchto = &efi_device_error,

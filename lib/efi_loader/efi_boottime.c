@@ -1892,6 +1892,9 @@ static efi_status_t EFIAPI efi_exit_boot_services(efi_handle_t image_handle,
 						  efi_uintn_t map_key)
 {
 	struct efi_event *evt;
+#ifdef CONFIG_EFI_RUNTIME_GET_VARIABLE_CACHING
+	efi_status_t ret;
+#endif
 
 	EFI_ENTRY("%p, %zx", image_handle, map_key);
 
@@ -1921,7 +1924,12 @@ static efi_status_t EFIAPI efi_exit_boot_services(efi_handle_t image_handle,
 		}
 	}
 
-	/* TODO: Should persist EFI variables here */
+#ifdef CONFIG_EFI_RUNTIME_GET_VARIABLE_CACHING
+	/* No more variable update */
+	ret = efi_freeze_variable_table();
+	if (ret != EFI_SUCCESS)
+		return EFI_EXIT(ret);
+#endif
 
 	board_quiesce_devices();
 

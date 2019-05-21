@@ -59,6 +59,15 @@ config EFI_RUNTIME_CONVERT_POINTER
 	  to be called by UEFI drivers in relocating themselves to virtual
 	  address space.
 
+config EFI_RUNTIME_GET_VARIABLE_CACHING
+	bool "runtime_service: GetVariable: Enable runtime access via cache (read-only)"
+	default y
+	help
+	  Select this option if you want to access UEFI variables at
+	  runtime even though you cannot update values on the fly.
+	  With or without this option, you can access UEFI variables
+	  at boottime.
+
 config EFI_DEVICE_PATH_TO_TEXT
 	bool "Device path to text protocol"
 	default y
