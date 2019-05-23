@@ -51,6 +51,14 @@ config EFI_RUNTIME_SET_VIRTUAL_ADDRESS_MAP
 	  Enable SetVirtualAddressMap runtime service. This API will be
 	  called by OS just before it enters into virtual address mode.
 
+config EFI_RUNTIME_CONVERT_POINTER
+	bool "runtime service: ConvertPointer"
+	default n
+	help
+	  Enable ConvertPointer runtime service. This API will be expected
+	  to be called by UEFI drivers in relocating themselves to virtual
+	  address space.
+
 config EFI_DEVICE_PATH_TO_TEXT
 	bool "Device path to text protocol"
 	default y

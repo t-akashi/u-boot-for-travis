@@ -27,7 +27,6 @@ LIST_HEAD(efi_runtime_mmio);
 
 static efi_status_t __efi_runtime EFIAPI efi_unimplemented(void);
 static efi_status_t __efi_runtime EFIAPI efi_device_error(void);
-static efi_status_t __efi_runtime EFIAPI efi_invalid_parameter(void);
 
 /*
  * TODO(sjg@chromium.org): These defines and structures should come from the ELF
@@ -107,6 +106,10 @@ efi_status_t efi_init_runtime_supported(void)
 #ifdef CONFIG_EFI_RUNTIME_SET_VIRTUAL_ADDRESS_MAP
 	efi_runtime_services_supported |=
 				EFI_RT_SUPPORTED_SET_VIRTUAL_ADDRESS_MAP;
+#endif
+#ifdef CONFIG_EFI_RUNTIME_CONVERT_POINTER
+	efi_runtime_services_supported |=
+				EFI_RT_SUPPORTED_CONVERT_POINTER;
 #endif
 
 	return EFI_CALL(efi_set_variable(L"RuntimeServicesSupported",
@@ -392,6 +395,39 @@ efi_status_t __weak __efi_runtime EFIAPI efi_set_time(struct efi_time *time)
 	return EFI_UNSUPPORTED;
 }
 
+#ifdef CONFIG_EFI_RUNTIME_CONVERT_POINTER
+static struct efi_mem_desc *efi_virtmap __efi_runtime_data;
+static int efi_virtmap_num __efi_runtime_data;
+
+static efi_status_t __efi_runtime EFIAPI efi_convert_pointer(unsigned long dbg,
+							     void **address)
+{
+	struct efi_mem_desc *map;
+	efi_physical_addr_t addr;
+	int i;
+
+	if (!efi_virtmap)
+		return EFI_UNSUPPORTED;
+
+	if (!address)
+		return EFI_INVALID_PARAMETER;
+
+	for (i = 0, map = efi_virtmap; i < efi_virtmap_num; i++, map++) {
+		addr = (efi_physical_addr_t)*address;
+		if (addr >= map->physical_start &&
+		    (addr < (map->physical_start
+			     + (map->num_pages << EFI_PAGE_SHIFT)))) {
+			*address = (void *)map->virtual_start;
+			*address += addr - map->physical_start;
+
+			return EFI_SUCCESS;
+		}
+	}
+
+	return EFI_NOT_FOUND;
+}
+#endif
+
 struct efi_runtime_detach_list_struct {
 	void *ptr;
 	void *patchto;
@@ -599,6 +635,10 @@ static efi_status_t EFIAPI efi_set_virtual_address_map(
 		return EFI_EXIT(EFI_INVALID_PARAMETER);
 	}
 
+	efi_virtmap = virtmap;
+	efi_virtmap_num = n;
+
+#if 0 /* FIXME: This code is fragile as calloc is used in add_runtime_mmio */
 	/* Rebind mmio pointers */
 	for (i = 0; i < n; i++) {
 		struct efi_mem_desc *map = (void*)virtmap +
@@ -622,14 +662,14 @@ static efi_status_t EFIAPI efi_set_virtual_address_map(
 				*lmmio->ptr = (void *)new_addr;
 			}
 		}
-		if ((map_start <= (uintptr_t)systab.tables) &&
-		    (map_end >= (uintptr_t)systab.tables)) {
-			char *ptr = (char *)systab.tables;
-
-			ptr += off;
-			systab.tables = (struct efi_configuration_table *)ptr;
-		}
 	}
+#endif
+
+	/* FIXME */
+	efi_convert_pointer(0, (void **)&systab.tables);
+
+	/* All fixes must be done before this line */
+	efi_virtmap = NULL;
 
 	/* Move the actual runtime code over */
 	for (i = 0; i < n; i++) {
@@ -644,6 +684,11 @@ static efi_status_t EFIAPI efi_set_virtual_address_map(
 			/* Once we're virtual, we can no longer handle
 			   complex callbacks */
 			efi_runtime_detach(new_offset);
+
+			/*
+			 * FIXME:
+			 * We can no longer update RuntimeServicesSupported.
+			 */
 			return EFI_EXIT(EFI_SUCCESS);
 		}
 	}
@@ -734,20 +779,6 @@ static efi_status_t __efi_runtime EFIAPI efi_device_error(void)
 }
 
 /**
- * efi_invalid_parameter() - replacement function, returns EFI_INVALID_PARAMETER
- *
- * This function is used after SetVirtualAddressMap() is called as replacement
- * for services that are not available anymore due to constraints of the U-Boot
- * implementation.
- *
- * Return:	EFI_INVALID_PARAMETER
- */
-static efi_status_t __efi_runtime EFIAPI efi_invalid_parameter(void)
-{
-	return EFI_INVALID_PARAMETER;
-}
-
-/**
  * efi_update_capsule() - process information from operating system
  *
  * This function implements the UpdateCapsule() runtime service.
@@ -833,7 +864,11 @@ struct efi_runtime_services __efi_runtime_data efi_runtime_services = {
 #else
 	.set_virtual_address_map = (void *)&efi_unimplemented,
 #endif
-	.convert_pointer = (void *)&efi_invalid_parameter,
+#ifdef CONFIG_EFI_RUNTIME_CONVERT_POINTER
+	.convert_pointer = &efi_convert_pointer,
+#else
+	.convert_pointer = (void *)&efi_unimplemented,
+#endif
 	.get_variable = efi_get_variable,
 	.get_next_variable_name = efi_get_next_variable_name,
 	.set_variable = efi_set_variable,
