@@ -25,15 +25,16 @@ On Debian or Debian-like distributions, the following packages are required.
 Some packages are required to execute any test, and others only for specific
 tests. Similar package names should exist in other distributions.
 
-| Package        | Version tested (Ubuntu 14.04) |
-| -------------- | ----------------------------- |
-| python         | 2.7.5-5ubuntu3                |
-| python-pytest  | 2.5.1-1                       |
-| python-subunit | -                             |
-| gdisk          | 0.8.8-1ubuntu0.1              |
-| dfu-util       | 0.5-1                         |
-| dtc            | 1.4.0+dfsg-1                  |
-| openssl        | 1.0.1f-1ubuntu2.22            |
+| Package         | Version tested (Ubuntu 14.04) |
+| --------------- | ----------------------------- |
+| python          | 2.7.5-5ubuntu3                |
+| python-pytest   | 2.5.1-1                       |
+| python-subunit  | -                             |
+| gdisk           | 0.8.8-1ubuntu0.1              |
+| dfu-util        | 0.5-1                         |
+| dtc             | 1.4.0+dfsg-1                  |
+| openssl         | 1.0.1f-1ubuntu2.22            |
+| libguestfs-tools| 1:1.32.2-4ubuntu2.2           |
 
 The test script supports either:
 
