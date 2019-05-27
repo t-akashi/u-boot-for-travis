@@ -977,6 +977,66 @@ out:
 	return ret;
 }
 
+/**
+ * do_efi_boot_exit() - exit boottime services
+ *
+ * @cmdtp:	Command table
+ * @flag:	Command flag
+ * @argc:	Number of arguments
+ * @argv:	Argument array
+ * Return:	CMD_RET_SUCCESS on success,
+ *		CMD_RET_USAGE or CMD_RET_RET_FAILURE on failure
+ *
+ * Implement efidebug "boot exit" sub-command.
+ *   - boot exit
+ */
+static int do_efi_boot_exit(cmd_tbl_t *cmdtp, int flag,
+			    int argc, char * const argv[])
+{
+	struct efi_mem_desc *memmap;
+	efi_uintn_t map_size, map_key, desc_size;
+	u32 desc_version;
+	efi_status_t ret;
+
+	if (argc != 1)
+		return CMD_RET_USAGE;
+
+	memmap = NULL;
+	map_size = 0;
+	ret = EFI_CALL(BS->get_memory_map(&map_size, memmap, &map_key,
+					  &desc_size, &desc_version));
+	if (ret == EFI_BUFFER_TOO_SMALL) {
+		map_size += sizeof(struct efi_mem_desc); /* for my own */
+		ret = EFI_CALL(BS->allocate_pool(EFI_LOADER_DATA,
+						 map_size, (void *)&memmap));
+		if (ret != EFI_SUCCESS) {
+			printf("Out of memory\n");
+			return CMD_RET_FAILURE;
+		}
+		ret = EFI_CALL(BS->get_memory_map(&map_size, memmap,
+						  &map_key,
+						  &desc_size, &desc_version));
+	}
+	if (ret != EFI_SUCCESS) {
+		printf("Getting UEFI memory map failed (%zu)\n",
+		       ret & ~EFI_ERROR_MASK);
+		goto err;
+	}
+
+	ret = EFI_CALL(BS->exit_boot_services(efi_root, map_key));
+	if (ret == EFI_SUCCESS)
+		return CMD_RET_SUCCESS;
+
+	printf("exiting Boottime Services failed (%zu)\n",
+	       ret & ~EFI_ERROR_MASK);
+
+err:
+	if (memmap)
+		EFI_CALL(BS->free_pool(memmap));
+
+	return CMD_RET_FAILURE;
+}
+
 static cmd_tbl_t cmd_efidebug_boot_sub[] = {
 	U_BOOT_CMD_MKENT(add, CONFIG_SYS_MAXARGS, 1, do_efi_boot_add, "", ""),
 	U_BOOT_CMD_MKENT(rm, CONFIG_SYS_MAXARGS, 1, do_efi_boot_rm, "", ""),
@@ -984,6 +1044,7 @@ static cmd_tbl_t cmd_efidebug_boot_sub[] = {
 	U_BOOT_CMD_MKENT(next, CONFIG_SYS_MAXARGS, 1, do_efi_boot_next, "", ""),
 	U_BOOT_CMD_MKENT(order, CONFIG_SYS_MAXARGS, 1, do_efi_boot_order,
 			 "", ""),
+	U_BOOT_CMD_MKENT(exit, CONFIG_SYS_MAXARGS, 1, do_efi_boot_exit, "", ""),
 };
 
 /**
@@ -1087,6 +1148,8 @@ static char efidebug_help_text[] =
 	"  - set UEFI BootNext variable\n"
 	"efidebug boot order [<bootid#1> [<bootid#2> [<bootid#3> [...]]]]\n"
 	"  - set/show UEFI boot order\n"
+	"efidebug boot exit\n"
+	"  - exit UEFI Boottime Services\n"
 	"\n"
 	"efidebug devices\n"
 	"  - show uefi devices\n"
