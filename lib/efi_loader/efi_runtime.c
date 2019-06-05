@@ -374,10 +374,12 @@ static const struct efi_runtime_detach_list_struct efi_runtime_detach_list[] = {
 		/* do_reset is gone */
 		.ptr = &efi_runtime_services.reset_system,
 		.patchto = efi_reset_system,
+#ifdef CONFIG_RUNTIME_SET_VIRTUAL_ADDRESS_MAP
 	}, {
 		/* invalidate_*cache_all are gone */
 		.ptr = &efi_runtime_services.set_virtual_address_map,
 		.patchto = &efi_unimplemented,
+#endif
 	}, {
 		/* RTC accessors are gone */
 		.ptr = &efi_runtime_services.get_time,
@@ -512,6 +514,7 @@ void efi_runtime_relocate(ulong offset, struct efi_mem_desc *map)
         invalidate_icache_all();
 }
 
+#ifdef CONFIG_RUNTIME_SET_VIRTUAL_ADDRESS_MAP
 /**
  * efi_set_virtual_address_map() - change from physical to virtual mapping
  *
@@ -619,6 +622,7 @@ static efi_status_t EFIAPI efi_set_virtual_address_map(
 
 	return EFI_EXIT(EFI_INVALID_PARAMETER);
 }
+#endif /* CONFIG_RUNTIME_SET_VIRTUAL_ADDRESS_MAP */
 
 /**
  * efi_add_runtime_mmio() - add memory-mapped IO region
@@ -796,7 +800,11 @@ struct efi_runtime_services __efi_runtime_data efi_runtime_services = {
 	.set_time = &efi_set_time_boottime,
 	.get_wakeup_time = (void *)&efi_unimplemented,
 	.set_wakeup_time = (void *)&efi_unimplemented,
+#ifdef CONFIG_RUNTIME_SET_VIRTUAL_ADDRESS_MAP
 	.set_virtual_address_map = &efi_set_virtual_address_map,
+#else
+	.set_virtual_address_map = (void *)&efi_unimplemented,
+#endif
 	.convert_pointer = (void *)&efi_invalid_parameter,
 	.get_variable = efi_get_variable,
 	.get_next_variable_name = efi_get_next_variable_name,

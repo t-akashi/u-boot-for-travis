@@ -44,6 +44,13 @@ config EFI_SET_TIME
 	  Provide the SetTime() runtime service at boottime. This service
 	  can be used by an EFI application to adjust the real time clock.
 
+config EFI_RUNTIME_SET_VIRTUAL_ADDRESS_MAP
+	bool "runtime service: SetVirtualAddressMap"
+	default n
+	help
+	  Enable SetVirtualAddressMap runtime service. This API will be
+	  called by OS just before it enters into virtual address mode.
+
 config EFI_DEVICE_PATH_TO_TEXT
 	bool "Device path to text protocol"
 	default y
