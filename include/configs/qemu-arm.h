@@ -20,9 +20,11 @@
 /* For timer, QEMU emulates an ARMv7/ARMv8 architected timer */
 #define CONFIG_SYS_HZ                       1000
 
+#if 0 /* not for me */
 /* Environment options */
 #define CONFIG_ENV_ADDR			0x4000000
 #define CONFIG_ENV_SIZE			SZ_256K
+#endif
 
 #define BOOT_TARGET_DEVICES(func) \
 	func(USB, usb, 0) \
@@ -53,5 +55,13 @@
 #define CONFIG_SYS_MAX_FLASH_BANKS	2
 #endif
 #define CONFIG_SYS_MAX_FLASH_SECT	256 /* Sector: 256K, Bank: 64M */
+
+ /* Environment options */
+#define CONFIG_FLASH_SHOW_PROGRESS	1
+#define CONFIG_ENV_OFFSET		(SZ_1M * 63)
+#define CONFIG_ENV_SECT_SIZE		SZ_1M
+#ifndef CONFIG_ENV_SIZE
+#define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE
+#endif
 
 #endif /* __CONFIG_H */
