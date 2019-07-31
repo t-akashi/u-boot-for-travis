@@ -231,6 +231,7 @@ static inline int _compare_and_overwrite_entry(struct env_entry item,
 		unsigned int idx)
 {
 	if (htab->table[idx].used == hval
+	    && (item.ctx && (item.ctx == htab->table[idx].entry.ctx))
 	    && strcmp(item.key, htab->table[idx].entry.key) == 0) {
 		/* Overwrite existing value? */
 		if (action == ENV_ENTER && item.data) {
@@ -247,8 +248,9 @@ static inline int _compare_and_overwrite_entry(struct env_entry item,
 
 			/* If there is a callback, call it */
 			if (htab->table[idx].entry.callback &&
-			    htab->table[idx].entry.callback(item.key,
-			    item.data, env_op_overwrite, flag)) {
+			    htab->table[idx].entry.callback(item.key, item.data,
+							    env_op_overwrite,
+							    flag)) {
 				debug("callback() rejected setting variable "
 					"%s, skipping it!\n", item.key);
 				__set_errno(EINVAL);
@@ -340,6 +342,9 @@ int hsearch_r(struct env_entry item, enum env_action action,
 			if (idx == hval)
 				break;
 
+			if (htab->table[idx].used == USED_FREE)
+				break;
+
 			if (htab->table[idx].used == USED_DELETED
 			    && !first_deleted)
 				first_deleted = idx;
@@ -381,6 +386,7 @@ int hsearch_r(struct env_entry item, enum env_action action,
 			*retval = NULL;
 			return 0;
 		}
+		htab->table[idx].entry.ctx = item.ctx;
 
 		++htab->filled;
 
@@ -403,7 +409,7 @@ int hsearch_r(struct env_entry item, enum env_action action,
 		/* If there is a callback, call it */
 		if (htab->table[idx].entry.callback &&
 		    htab->table[idx].entry.callback(item.key, item.data,
-		    env_op_create, flag)) {
+						    env_op_create, flag)) {
 			debug("callback() rejected setting variable "
 				"%s, skipping it!\n", item.key);
 			_hdelete(item.key, htab, &htab->table[idx].entry, idx);
@@ -454,6 +460,7 @@ int hdelete_r(const char *key, struct hsearch_data *htab, int flag)
 
 	debug("hdelete: DELETE key \"%s\"\n", key);
 
+	e.ctx = htab->ctx;
 	e.key = (char *)key;
 
 	idx = hsearch_r(e, ENV_FIND, &ep, htab, 0);
@@ -928,6 +935,7 @@ int himport_r(struct hsearch_data *htab,
 			continue;
 
 		/* enter into hash table */
+		e.ctx = htab->ctx;
 		e.key = name;
 		e.data = value;
 

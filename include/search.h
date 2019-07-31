@@ -25,13 +25,16 @@ enum env_action {
 	ENV_ENTER,
 };
 
+struct env_context;
+
 /** struct env_entry - An entry in the environment hashtable */
 struct env_entry {
 	const char *key;
 	char *data;
 	int (*callback)(const char *name, const char *value, enum env_op op,
-		int flags);
+			int flags);
 	int flags;
+	struct env_context *ctx;
 };
 
 /*
@@ -45,6 +48,7 @@ struct hsearch_data {
 	struct env_entry_node *table;
 	unsigned int size;
 	unsigned int filled;
+	struct env_context *ctx;
 /*
  * Callback function which will check whether the given change for variable
  * "item" to "newval" may be applied or not, and possibly apply such change.
