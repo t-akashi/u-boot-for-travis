@@ -308,7 +308,7 @@ static inline int env_flags_lookup(const char *flags_list, const char *name,
  */
 enum env_flags_vartype env_flags_get_type(const char *name)
 {
-	const char *flags_list = env_get(ENV_FLAGS_VAR);
+	const char *flags_list = env_get(ctx_uboot, ENV_FLAGS_VAR);
 	char flags[ENV_FLAGS_ATTR_MAX_LEN + 1];
 
 	if (env_flags_lookup(flags_list, name, flags))
@@ -325,7 +325,7 @@ enum env_flags_vartype env_flags_get_type(const char *name)
  */
 enum env_flags_varaccess env_flags_get_varaccess(const char *name)
 {
-	const char *flags_list = env_get(ENV_FLAGS_VAR);
+	const char *flags_list = env_get(ctx_uboot, ENV_FLAGS_VAR);
 	char flags[ENV_FLAGS_ATTR_MAX_LEN + 1];
 
 	if (env_flags_lookup(flags_list, name, flags))
@@ -411,6 +411,11 @@ static int env_parse_flags_to_bin(const char *flags)
 	return binflags;
 }
 
+/*
+ * TODO
+ * Should we provide per-context flags list,
+ * either for ".flags"(default) or "flags"(user defined)?
+ */
 static int first_call = 1;
 static const char *flags_list;
 
@@ -426,7 +431,7 @@ void env_flags_init(struct env_entry *var_entry)
 	int ret = 1;
 
 	if (first_call) {
-		flags_list = env_get(ENV_FLAGS_VAR);
+		flags_list = env_get(ctx_uboot, ENV_FLAGS_VAR);
 		first_call = 0;
 	}
 	/* look in the ".flags" and static for a reference to this variable */
@@ -453,12 +458,14 @@ static int clear_flags(struct env_entry *entry)
  */
 static int set_flags(const char *name, const char *value, void *priv)
 {
+	struct env_context *ctx = priv;
 	struct env_entry e, *ep;
 
 	e.key	= name;
+	e.ctx	= ctx;
 	e.data	= NULL;
 	e.callback = NULL;
-	hsearch_r(e, ENV_FIND, &ep, &env_htab, 0);
+	hsearch_r(e, ENV_FIND, &ep, ctx->htab, 0);
 
 	/* does the env variable actually exist? */
 	if (ep != NULL) {
@@ -476,13 +483,19 @@ static int set_flags(const char *name, const char *value, void *priv)
 static int on_flags(const char *name, const char *value, enum env_op op,
 	int flags)
 {
-	/* remove all flags */
-	hwalk_r(&env_htab, clear_flags);
+	struct env_context *ctx;
+	int i;
 
-	/* configure any static flags */
-	env_attr_walk(ENV_FLAGS_LIST_STATIC, set_flags, NULL);
-	/* configure any dynamic flags */
-	env_attr_walk(value, set_flags, NULL);
+	for (i = 0, ctx = U_BOOT_ENV_CTX_START; i < U_BOOT_ENV_CTX_COUNT;
+	     i++, ctx++) {
+		/* remove all flags */
+		hwalk_r(ctx->htab, clear_flags);
+
+		/* configure any static flags */
+		env_attr_walk(ENV_FLAGS_LIST_STATIC, set_flags, ctx);
+		/* configure any dynamic flags */
+		env_attr_walk(value, set_flags, ctx);
+	}
 
 	return 0;
 }
@@ -541,7 +554,7 @@ int env_flags_validate(const struct env_entry *item, const char *newval,
 			return 1;
 		} else if (item->flags &
 		    ENV_FLAGS_VARACCESS_PREVENT_NONDEF_OVERWR) {
-			const char *defval = env_get_default(name);
+			const char *defval = env_get_default(item->ctx, name);
 
 			if (defval == NULL)
 				defval = "";

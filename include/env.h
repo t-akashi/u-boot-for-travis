@@ -12,7 +12,9 @@
 #include <stdbool.h>
 #include <linux/types.h>
 
+struct env_context;
 struct environment_s;
+enum env_operation; /* TODO: move it from env_internal.h? */
 
 /* Value for environment validity */
 enum env_valid {
@@ -61,15 +63,24 @@ enum env_redund_flags {
 	ENV_REDUND_ACTIVE = 1,
 };
 
+/* Accessor functions */
+void env_set_ready(struct env_context *ctx);
+bool env_is_ready(struct env_context *ctx);
+void env_set_valid(struct env_context *ctx, enum env_valid valid);
+enum env_valid env_get_valid(struct env_context *ctx);
+void env_set_env_addr(struct env_context *ctx, ulong env_addr);
+ulong env_get_env_addr(struct env_context *ctx);
+
 /**
  * env_get_id() - Gets a sequence number for the environment
  *
  * This value increments every time the environment changes, so can be used an
  * an indication of this
  *
+ * @ctx: Context
  * @return environment ID
  */
-int env_get_id(void);
+int env_get_id(struct env_context *ctx);
 
 /**
  * env_init() - Set up the pre-relocation environment
@@ -98,7 +109,7 @@ void env_relocate(void);
  * @index: The environment index for a 'name2=value2' pair.
  * @return index for the value if the names match, else -1.
  */
-int env_match(unsigned char *name, int index);
+int env_match(struct env_context *ctx, unsigned char *name, int index);
 
 /**
  * env_get() - Look up the value of an environment variable
@@ -107,10 +118,11 @@ int env_match(unsigned char *name, int index);
  * environment is loaded from storage, i.e. GD_FLG_ENV_READY is 0). In that
  * case this function calls env_get_f().
  *
+ * @ctx:	Context
  * @varname:	Variable to look up
  * @return value of variable, or NULL if not found
  */
-char *env_get(const char *varname);
+char *env_get(struct env_context *ctx, const char *varname);
 
 /**
  * env_get_f() - Look up the value of an environment variable (early)
@@ -119,10 +131,12 @@ char *env_get(const char *varname);
  * loaded yet (GD_FLG_ENV_READY flag is 0). Some environment locations will
  * support reading the value (slowly) and some will not.
  *
+ * @ctx:	Context
  * @varname:	Variable to look up
  * @return value of variable, or NULL if not found
  */
-int env_get_f(const char *name, char *buf, unsigned int len);
+int env_get_f(struct env_context *ctx, const char *name, char *buf,
+	      unsigned int len);
 
 /**
  * env_get_yesno() - Read an environment variable as a boolean
@@ -138,11 +152,12 @@ int env_get_yesno(const char *var);
  * This sets or deletes the value of an environment variable. For setting the
  * value the variable is created if it does not already exist.
  *
+ * @ctx: Context
  * @varname: Variable to adjust
  * @value: Value to set for the variable, or NULL or "" to delete the variable
  * @return 0 if OK, 1 on error
  */
-int env_set(const char *varname, const char *value);
+int env_set(struct env_context *ctx, const char *varname, const char *value);
 
 /**
  * env_get_ulong() - Return an environment variable as an integer value
@@ -150,21 +165,24 @@ int env_set(const char *varname, const char *value);
  * Most U-Boot environment variables store hex values. For those which store
  * (e.g.) base-10 integers, this function can be used to read the value.
  *
+ * @ctx:	Context
  * @name:	Variable to look up
  * @base:	Base to use (e.g. 10 for base 10, 2 for binary)
  * @default_val: Default value to return if no value is found
  * @return the value found, or @default_val if none
  */
-ulong env_get_ulong(const char *name, int base, ulong default_val);
+ulong env_get_ulong(struct env_context *ctx, const char *name, int base,
+		    ulong default_val);
 
 /**
  * env_set_ulong() - set an environment variable to an integer
  *
+ * @ctx: Context
  * @varname: Variable to adjust
  * @value: Value to set for the variable (will be converted to a string)
  * @return 0 if OK, 1 on error
  */
-int env_set_ulong(const char *varname, ulong value);
+int env_set_ulong(struct env_context *ctx, const char *varname, ulong value);
 
 /**
  * env_get_hex() - Return an environment variable as a hex value
@@ -173,30 +191,35 @@ int env_set_ulong(const char *varname, ulong value);
  * prefix). If the environment variable cannot be found, or does not start
  * with hex digits, the default value is returned.
  *
+ * @ctx:		Context
  * @varname:		Variable to decode
  * @default_val:	Value to return on error
  */
-ulong env_get_hex(const char *varname, ulong default_val);
+ulong env_get_hex(struct env_context *ctx, const char *varname,
+		  ulong default_val);
 
 /**
  * env_set_hex() - set an environment variable to a hex value
  *
+ * @ctx: Context
  * @varname: Variable to adjust
  * @value: Value to set for the variable (will be converted to a hex string)
  * @return 0 if OK, 1 on error
  */
-int env_set_hex(const char *varname, ulong value);
+int env_set_hex(struct env_context *ctx, const char *varname, ulong value);
 
 /**
  * env_set_addr - Set an environment variable to an address in hex
  *
+ * @ctx:	Context
  * @varname:	Environment variable to set
  * @addr:	Value to set it to
  * @return 0 if ok, 1 on error
  */
-static inline int env_set_addr(const char *varname, const void *addr)
+static inline int env_set_addr(struct env_context *ctx, const char *varname,
+			       const void *addr)
 {
-	return env_set_hex(varname, (ulong)addr);
+	return env_set_hex(ctx, varname, (ulong)addr);
 }
 
 /**
@@ -241,32 +264,56 @@ void env_fix_drivers(void);
  *
  * This resets individual variables to their value in the default environment
  *
+ * @ctx: Context
  * @nvars: Number of variables to set/reset
  * @vars: List of variables to set/reset
  * @flags: Flags controlling matching (H_... - see search.h)
  */
-int env_set_default_vars(int nvars, char *const vars[], int flags);
+int env_set_default_vars(struct env_context *ctx,
+			 int nvars, char *const vars[], int flags);
+
+/**
+ * env_driver_looup()
+ *
+ * @ctx: Context
+ * @op: Operation
+ * @prio: Priority
+ * @return pointer to env_driver if found, otherwise NULL
+ */
+struct env_driver *env_driver_lookup(struct env_context *ctx,
+				     enum env_operation op, int prio);
 
 /**
  * env_load() - Load the environment from storage
  *
+ * @ctx: Context
  * @return 0 if OK, -ve on error
  */
-int env_load(void);
+int env_load(struct env_context *ctx);
 
 /**
  * env_save() - Save the environment to storage
  *
+ * @ctx: Context
  * @return 0 if OK, -ve on error
  */
-int env_save(void);
+int env_save(struct env_context *ctx);
+
+/**
+ * env_ctx_init() - initialize the context environment
+ *
+ * @ctx: Context
+ * @return 0 if OK, -ve on error
+ */
+int env_ctx_init(struct env_context *ctx);
 
 /**
  * env_erase() - Erase the environment on storage
  *
+ * @ctx: Context
  * @return 0 if OK, -ve on error
  */
-int env_erase(void);
+int env_erase(struct env_context *ctx);
 
 /**
  * env_import() - Import from a binary representation into hash table
@@ -274,56 +321,62 @@ int env_erase(void);
  * This imports the environment from a buffer. The format for each variable is
  * var=value\0 with a double \0 at the end of the buffer.
  *
+ * @ctx: Context
  * @buf: Buffer containing the environment (struct environemnt_s *)
  * @check: non-zero to check the CRC at the start of the environment, 0 to
  *	ignore it
  * @return 0 if imported successfully, -ENOMSG if the CRC was bad, -EIO if
  *	something else went wrong
  */
-int env_import(const char *buf, int check);
+int env_import(struct env_context *ctx, const char *buf, int check);
 
 /**
  * env_export() - Export the environment to a buffer
  *
  * Export from hash table into binary representation
  *
+ * @ctx: Context
  * @env_out: Buffer to contain the environment (must be large enough!)
  * @return 0 if OK, 1 on error
  */
-int env_export(struct environment_s *env_out);
+int env_export(struct env_context *ctx, struct environment_hdr *env_out);
 
 /**
  * env_import_redund() - Select and import one of two redundant environments
  *
+ * @ctx: Context
  * @buf1: First environment (struct environemnt_s *)
  * @buf1_read_fail: 0 if buf1 is valid, non-zero if invalid
  * @buf2: Second environment (struct environemnt_s *)
  * @buf2_read_fail: 0 if buf2 is valid, non-zero if invalid
  * @return 0 if OK, -EIO if no environment is valid, -ENOMSG if the CRC was bad
  */
-int env_import_redund(const char *buf1, int buf1_read_fail,
+int env_import_redund(struct env_context *ctx,
+		      const char *buf1, int buf1_read_fail,
 		      const char *buf2, int buf2_read_fail);
 
 /**
  * env_get_default() - Look up a variable from the default environment
  *
+ * @ctx: Context
  * @name: Variable to look up
  * @return value if found, NULL if not found in default environment
  */
-char *env_get_default(const char *name);
+char *env_get_default(struct env_context *ctx, const char *name);
 
 /* [re]set to the default environment */
-void env_set_default(const char *s, int flags);
+void env_set_default(struct env_context *ctx, const char *s, int flags);
 
 /**
  * env_get_char() - Get a character from the early environment
  *
  * This reads from the pre-relocation environment
  *
+ * @ctx: Context
  * @index: Index of character to read (0 = first)
  * @return character read, or -ve on error
  */
-int env_get_char(int index);
+int env_get_char(struct env_context *ctx, int index);
 
 /**
  * env_reloc() - Relocate the 'env' sub-commands

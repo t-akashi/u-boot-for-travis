@@ -15,7 +15,8 @@ DECLARE_GLOBAL_DATA_PTR;
 /*
  * Look up a callback function pointer by name
  */
-static struct env_clbk_tbl *find_env_callback(const char *name)
+static struct env_clbk_tbl *find_env_callback(struct env_context *ctx,
+					      const char *name)
 {
 	struct env_clbk_tbl *clbkp;
 	int i;
@@ -28,13 +29,18 @@ static struct env_clbk_tbl *find_env_callback(const char *name)
 	for (i = 0, clbkp = ll_entry_start(struct env_clbk_tbl, env_clbk);
 	     i < num_callbacks;
 	     i++, clbkp++) {
-		if (strcmp(name, clbkp->name) == 0)
+		if (!strcmp(name, clbkp->name))
 			return clbkp;
 	}
 
 	return NULL;
 }
 
+/*
+ * TODO
+ * Should we provide per-context callback list,
+ * either for ".callbacks"(default) or "callbacks"(user defined)?
+ */
 static int first_call = 1;
 static const char *callback_list;
 
@@ -51,7 +57,7 @@ void env_callback_init(struct env_entry *var_entry)
 	int ret = 1;
 
 	if (first_call) {
-		callback_list = env_get(ENV_CALLBACK_VAR);
+		callback_list = env_get(ctx_uboot, ENV_CALLBACK_VAR);
 		first_call = 0;
 	}
 
@@ -66,7 +72,7 @@ void env_callback_init(struct env_entry *var_entry)
 
 	/* if an association was found, set the callback pointer */
 	if (!ret && strlen(callback_name)) {
-		clbkp = find_env_callback(callback_name);
+		clbkp = find_env_callback(var_entry->ctx, callback_name);
 		if (clbkp != NULL)
 #if defined(CONFIG_NEEDS_MANUAL_RELOC)
 			var_entry->callback = clbkp->callback + gd->reloc_off;
@@ -92,13 +98,15 @@ static int clear_callback(struct env_entry *entry)
  */
 static int set_callback(const char *name, const char *value, void *priv)
 {
+	struct env_context *ctx = priv;
 	struct env_entry e, *ep;
 	struct env_clbk_tbl *clbkp;
 
 	e.key	= name;
+	e.ctx	= ctx;
 	e.data	= NULL;
 	e.callback = NULL;
-	hsearch_r(e, ENV_FIND, &ep, &env_htab, 0);
+	hsearch_r(e, ENV_FIND, &ep, ctx->htab, 0);
 
 	/* does the env variable actually exist? */
 	if (ep != NULL) {
@@ -107,7 +115,7 @@ static int set_callback(const char *name, const char *value, void *priv)
 			ep->callback = NULL;
 		else {
 			/* assign the requested callback */
-			clbkp = find_env_callback(value);
+			clbkp = find_env_callback(ctx, value);
 			if (clbkp != NULL)
 #if defined(CONFIG_NEEDS_MANUAL_RELOC)
 				ep->callback = clbkp->callback + gd->reloc_off;
@@ -121,15 +129,21 @@ static int set_callback(const char *name, const char *value, void *priv)
 }
 
 static int on_callbacks(const char *name, const char *value, enum env_op op,
-	int flags)
+			int flags)
 {
-	/* remove all callbacks */
-	hwalk_r(&env_htab, clear_callback);
+	struct env_context *ctx;
+	int i;
 
-	/* configure any static callback bindings */
-	env_attr_walk(ENV_CALLBACK_LIST_STATIC, set_callback, NULL);
-	/* configure any dynamic callback bindings */
-	env_attr_walk(value, set_callback, NULL);
+	for (i = 0, ctx = U_BOOT_ENV_CTX_START; i < U_BOOT_ENV_CTX_COUNT;
+	     i++, ctx++) {
+		/* remove all callbacks */
+		hwalk_r(ctx->htab, clear_callback);
+
+		/* configure any static callback bindings */
+		env_attr_walk(ENV_CALLBACK_LIST_STATIC, set_callback, ctx);
+		/* configure any dynamic callback bindings */
+		env_attr_walk(value, set_callback, ctx);
+	}
 
 	return 0;
 }

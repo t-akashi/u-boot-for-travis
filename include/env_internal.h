@@ -15,6 +15,7 @@
 #ifndef _ENV_INTERNAL_H_
 #define _ENV_INTERNAL_H_
 
+#include <stdbool.h>
 #include <linux/kconfig.h>
 
 /**************************************************************************
@@ -163,6 +164,14 @@ extern unsigned long nand_env_oob_offset;
 #define	TOTAL_MALLOC_LEN	CONFIG_SYS_MALLOC_LEN
 #endif
 
+typedef struct environment_hdr {
+	uint32_t	crc;		/* CRC32 over data bytes	*/
+#ifdef CONFIG_SYS_REDUNDAND_ENVIRONMENT
+	unsigned char	flags;		/* active/obsolete flags	*/
+#endif
+	unsigned char	data[];		/* Environment data		*/
+} env_hdr_t;
+
 typedef struct environment_s {
 	uint32_t	crc;		/* CRC32 over data bytes	*/
 #ifdef CONFIG_SYS_REDUNDAND_ENVIRONMENT
@@ -182,6 +191,7 @@ extern const unsigned char default_environment[];
 #include <env_attr.h>
 #include <env_callback.h>
 #include <env_flags.h>
+#include <linker_lists.h>
 #include <search.h>
 
 enum env_location {
@@ -211,6 +221,67 @@ enum env_operation {
 	ENVOP_ERASE,	/* we want to call the erase function */
 };
 
+#if	defined(CONFIG_ENV_DRV_EEPROM)		|| \
+	defined(CONFIG_ENV_DRV_FLASH)		|| \
+	defined(CONFIG_ENV_DRV_MMC)		|| \
+	defined(CONFIG_ENV_DRV_FAT)		|| \
+	defined(CONFIG_ENV_DRV_EXT4)		|| \
+	defined(CONFIG_ENV_DRV_NAND)		|| \
+	defined(CONFIG_ENV_DRV_NVRAM)		|| \
+	defined(CONFIG_ENV_DRV_ONENAND)		|| \
+	defined(CONFIG_ENV_DRV_SATA)		|| \
+	defined(CONFIG_ENV_DRV_SPI_FLASH)	|| \
+	defined(CONFIG_ENV_DRV_REMOTE)		|| \
+	defined(CONFIG_ENV_DRV_UBI)
+
+#define ENV_IS_IN_DEVICE
+
+#endif
+
+/* defined in search.h */
+struct hsearch_data;
+
+struct env_context {
+	const char *name;
+	int env_id;
+	/* TODO: Some flag bits can be assembled into single flag */
+	unsigned long valid;
+	unsigned long flags;
+#ifdef CONFIG_SYS_REDUNDAND_ENVIRONMENT
+	unsigned char env_flags;
+#endif
+	int has_init;
+	int load_prio;
+	void *drv_params[ENVL_COUNT];
+	struct hsearch_data *htab;	/* hash table on memory */
+	uint32_t env_size;		/* data bytes in env */
+
+	/* driver-related functions in env/env.c */
+	bool (*has_inited)(struct env_context *ctx, enum env_location location);
+	void (*set_inited)(struct env_context *ctx, enum env_location location);
+	int (*get_load_prio)(struct env_context *ctx);
+	enum env_location (*get_location)(struct env_context *ctx,
+					  enum env_operation op, int prio);
+	int (*get_char)(struct env_context *ctx, int index);
+	int (*get_char_default)(struct env_context *ctx, int index);
+	int (*get_char_spec)(struct env_context *ctx, int index);
+	int (*init)(struct env_context *ctx);
+	int (*drv_init)(struct env_context *ctx, enum env_location loc);
+
+	/* save/load-related functions in env/common.c */
+	char *(*get_default)(struct env_context *ctx, const char *name);
+	void (*set_default)(struct env_context *ctx, const char *s, int flags);
+	int (*set_default_vars)(struct env_context *ctx,
+				int nvars, char * const vars[], int flags);
+	void (*set_ready)(struct env_context *ctx);
+	bool (*is_ready)(struct env_context *ctx);
+	void (*set_valid)(struct env_context *ctx, enum env_valid valid);
+	enum env_valid (*get_valid)(struct env_context *ctx);
+	void (*set_addr)(struct env_context *ctx, ulong env_addr);
+	ulong (*get_addr)(struct env_context *ctx);
+	void (*post_relocate)(struct env_context *ctx);
+};
+
 struct env_driver {
 	const char *name;
 	enum env_location location;
@@ -221,18 +292,20 @@ struct env_driver {
 	 * This method is optional. If not provided, no environment will be
 	 * loaded.
 	 *
+	 * @ctx:   pointer to environment context
 	 * @return 0 if OK, -ve on error
 	 */
-	int (*load)(void);
+	int (*load)(struct env_context *ctx);
 
 	/**
 	 * save() - Save the environment to storage
 	 *
 	 * This method is required for 'saveenv' to work.
 	 *
+	 * @ctx:   pointer to environment context
 	 * @return 0 if OK, -ve on error
 	 */
-	int (*save)(void);
+	int (*save)(struct env_context *ctx);
 
 	/**
 	 * erase() - Erase the environment on storage
@@ -241,22 +314,29 @@ struct env_driver {
 	 *
 	 * @return 0 if OK, -ve on error
 	 */
-	int (*erase)(void);
+	int (*erase)(struct env_context *ctx);
 
 	/**
 	 * init() - Set up the initial pre-relocation environment
 	 *
 	 * This method is optional.
 	 *
+	 * @ctx:   pointer to environment context
 	 * @return 0 if OK, -ENOENT if no initial environment could be found,
 	 * other -ve on error
 	 */
-	int (*init)(void);
+	int (*init)(struct env_context *ctx);
 };
 
 /* Declare a new environment location driver */
 #define U_BOOT_ENV_LOCATION(__name)					\
 	ll_entry_declare(struct env_driver, __name, env_driver)
+
+/* Declare a new environment context */
+#define U_BOOT_ENV_CONTEXT(__name) \
+	ll_entry_declare(struct env_context, __name, env_contexts)
+#define U_BOOT_ENV_CTX_START ll_entry_start(struct env_context, env_contexts)
+#define U_BOOT_ENV_CTX_COUNT ll_entry_count(struct env_context, env_contexts)
 
 /* Declare the name of a location */
 #ifdef CONFIG_CMD_SAVEENV
@@ -271,6 +351,7 @@ struct env_driver {
 #define env_save_ptr(x) NULL
 #endif
 
+extern enum env_location env_locations[];
 extern struct hsearch_data env_htab;
 
 #endif /* DO_DEPS_ONLY */

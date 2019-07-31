@@ -46,6 +46,8 @@ typedef volatile unsigned char	vu_char;
 
 #include <log.h>
 
+struct env_context;
+
 typedef void (interrupt_handler_t)(void *);
 
 #include <asm/u-boot.h> /* boot information for Linux kernel */
@@ -340,9 +342,9 @@ int	serial_printf (const char *fmt, ...)
 
 /* lib/net_utils.c */
 #include <net.h>
-static inline struct in_addr env_get_ip(char *var)
+static inline struct in_addr env_get_ip(struct env_context *ctx, char *var)
 {
-	return string_to_ip(env_get(var));
+	return string_to_ip(env_get(ctx, var));
 }
 
 #ifdef CONFIG_LED_STATUS
