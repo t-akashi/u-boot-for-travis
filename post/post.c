@@ -176,7 +176,7 @@ static void post_get_env_flags(int *test_flags)
 	int i, j;
 
 	for (i = 0; i < varnum; i++) {
-		if (env_get_f(var[i], list, sizeof(list)) <= 0)
+		if (env_get_f(ctx_uboot, var[i], list, sizeof(list)) <= 0)
 			continue;
 
 		for (j = 0; j < post_list_size; j++)
