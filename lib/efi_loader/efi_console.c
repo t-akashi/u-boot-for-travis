@@ -260,7 +260,7 @@ out:
  */
 static void query_console_size(void)
 {
-	const char *stdout_name = env_get("stdout");
+	const char *stdout_name = env_get(ctx_uboot, "stdout");
 	int rows = 25, cols = 80;
 
 	if (stdout_name && !strcmp(stdout_name, "vidconsole") &&

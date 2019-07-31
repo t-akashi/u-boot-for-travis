@@ -113,7 +113,7 @@ static int smbios_write_type1(ulong *current, int handle)
 {
 	struct smbios_type1 *t;
 	int len = sizeof(struct smbios_type1);
-	char *serial_str = env_get("serial#");
+	char *serial_str = env_get(ctx_uboot, "serial#");
 
 	t = map_sysmem(*current, len);
 	memset(t, 0, sizeof(struct smbios_type1));
