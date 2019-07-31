@@ -75,7 +75,7 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 		len += strlen(hdr->cmdline);
 	}
 
-	char *bootargs = env_get("bootargs");
+	char *bootargs = env_get(ctx_uboot, "bootargs");
 	if (bootargs)
 		len += strlen(bootargs);
 
@@ -93,7 +93,7 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 	if (*hdr->cmdline)
 		strcat(newbootargs, hdr->cmdline);
 
-	env_set("bootargs", newbootargs);
+	env_set(ctx_uboot, "bootargs", newbootargs);
 
 	if (os_data) {
 		if (image_get_magic(ihdr) == IH_MAGIC) {

@@ -123,7 +123,7 @@ int spl_load_image_fat_os(struct spl_image_info *spl_image,
 		return err;
 
 #if defined(CONFIG_SPL_ENV_SUPPORT) && defined(CONFIG_SPL_OS_BOOT)
-	file = env_get("falcon_args_file");
+	file = env_get(ctx_uboot, "falcon_args_file");
 	if (file) {
 		err = file_fat_read(file, (void *)CONFIG_SYS_SPL_ARGS_ADDR, 0);
 		if (err <= 0) {
@@ -131,7 +131,7 @@ int spl_load_image_fat_os(struct spl_image_info *spl_image,
 			       file, err);
 			goto defaults;
 		}
-		file = env_get("falcon_image_file");
+		file = env_get(ctx_uboot, "falcon_image_file");
 		if (file) {
 			err = spl_load_image_fat(spl_image, block_dev,
 						 partition, file);

@@ -22,7 +22,7 @@ static void run_preboot_environment_command(void)
 {
 	char *p;
 
-	p = env_get("preboot");
+	p = env_get(ctx_uboot, "preboot");
 	if (p != NULL) {
 		int prev = 0;
 
@@ -44,7 +44,8 @@ void main_loop(void)
 	bootstage_mark_name(BOOTSTAGE_ID_MAIN_LOOP, "main_loop");
 
 	if (IS_ENABLED(CONFIG_VERSION_VARIABLE))
-		env_set("ver", version_string);  /* set version variable */
+		/* set version variable */
+		env_set(ctx_uboot, "ver", version_string);
 
 	cli_init();
 

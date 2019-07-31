@@ -61,7 +61,7 @@ __weak int splash_screen_prepare(void)
 #ifdef CONFIG_SPLASH_SCREEN_ALIGN
 void splash_get_pos(int *x, int *y)
 {
-	char *s = env_get("splashpos");
+	char *s = env_get(ctx_uboot, "splashpos");
 
 	if (!s)
 		return;
@@ -93,7 +93,7 @@ int splash_display(void)
 	char *s;
 	int x = 0, y = 0, ret;
 
-	s = env_get("splashimage");
+	s = env_get(ctx_uboot, "splashimage");
 	if (!s)
 		return -EINVAL;
 

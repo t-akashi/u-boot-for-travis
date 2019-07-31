@@ -22,9 +22,9 @@ static int do_bootm_standalone(int flag, int argc, char * const argv[],
 	int (*appl)(int, char *const[]);
 
 	/* Don't start if "autostart" is set to "no" */
-	s = env_get("autostart");
+	s = env_get(ctx_uboot, "autostart");
 	if ((s != NULL) && !strcmp(s, "no")) {
-		env_set_hex("filesize", images->os.image_len);
+		env_set_hex(ctx_uboot, "filesize", images->os.image_len);
 		return 0;
 	}
 	appl = (int (*)(int, char * const []))images->ep;
@@ -97,7 +97,7 @@ static int do_bootm_netbsd(int flag, int argc, char * const argv[],
 		cmdline = malloc(len);
 		copy_args(cmdline, argc, argv, ' ');
 	} else {
-		cmdline = env_get("bootargs");
+		cmdline = env_get(ctx_uboot, "bootargs");
 		if (cmdline == NULL)
 			cmdline = "";
 	}
@@ -228,14 +228,14 @@ static int do_bootm_plan9(int flag, int argc, char * const argv[],
 #endif
 
 	/* See README.plan9 */
-	s = env_get("confaddr");
+	s = env_get(ctx_uboot, "confaddr");
 	if (s != NULL) {
 		char *confaddr = (char *)simple_strtoul(s, NULL, 16);
 
 		if (argc > 0) {
 			copy_args(confaddr, argc, argv, '\n');
 		} else {
-			s = env_get("bootargs");
+			s = env_get(ctx_uboot, "bootargs");
 			if (s != NULL)
 				strcpy(confaddr, s);
 		}
@@ -282,7 +282,7 @@ static void do_bootvx_fdt(bootm_headers_t *images)
 
 		ret = fdt_add_subnode(*of_flat_tree, 0, "chosen");
 		if ((ret >= 0 || ret == -FDT_ERR_EXISTS)) {
-			bootline = env_get("bootargs");
+			bootline = env_get(ctx_uboot, "bootargs");
 			if (bootline) {
 				ret = fdt_find_and_setprop(*of_flat_tree,
 						"/chosen", "bootargs",

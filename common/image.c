@@ -573,7 +573,7 @@ U_BOOT_ENV_CALLBACK(loadaddr, on_loadaddr);
 
 ulong env_get_bootm_low(void)
 {
-	char *s = env_get("bootm_low");
+	char *s = env_get(ctx_uboot, "bootm_low");
 	if (s) {
 		ulong tmp = simple_strtoul(s, NULL, 16);
 		return tmp;
@@ -592,7 +592,7 @@ phys_size_t env_get_bootm_size(void)
 {
 	phys_size_t tmp, size;
 	phys_addr_t start;
-	char *s = env_get("bootm_size");
+	char *s = env_get(ctx_uboot, "bootm_size");
 	if (s) {
 		tmp = (phys_size_t)simple_strtoull(s, NULL, 16);
 		return tmp;
@@ -606,7 +606,7 @@ phys_size_t env_get_bootm_size(void)
 	size = gd->bd->bi_memsize;
 #endif
 
-	s = env_get("bootm_low");
+	s = env_get(ctx_uboot, "bootm_low");
 	if (s)
 		tmp = (phys_size_t)simple_strtoull(s, NULL, 16);
 	else
@@ -618,7 +618,7 @@ phys_size_t env_get_bootm_size(void)
 phys_size_t env_get_bootm_mapsize(void)
 {
 	phys_size_t tmp;
-	char *s = env_get("bootm_mapsize");
+	char *s = env_get(ctx_uboot, "bootm_mapsize");
 	if (s) {
 		tmp = (phys_size_t)simple_strtoull(s, NULL, 16);
 		return tmp;
@@ -1070,7 +1070,8 @@ int boot_get_ramdisk(int argc, char * const argv[], bootm_headers_t *images,
 	 */
 	buf = map_sysmem(images->os.start, 0);
 	if (buf && genimg_get_format(buf) == IMAGE_FORMAT_ANDROID)
-		select = (argc == 0) ? env_get("loadaddr") : argv[0];
+		select = (argc == 0) ? env_get(ctx_uboot, "loadaddr")
+					: argv[0];
 #endif
 
 	if (argc >= 2)
@@ -1257,7 +1258,7 @@ int boot_ramdisk_high(struct lmb *lmb, ulong rd_data, ulong rd_len,
 	ulong	initrd_high;
 	int	initrd_copy_to_ram = 1;
 
-	s = env_get("initrd_high");
+	s = env_get(ctx_uboot, "initrd_high");
 	if (s) {
 		/* a value of "no" or a similar string will act like 0,
 		 * turning the "load high" feature off. This is intentional.
@@ -1548,7 +1549,7 @@ int boot_get_cmdline(struct lmb *lmb, ulong *cmd_start, ulong *cmd_end)
 	if (cmdline == NULL)
 		return -1;
 
-	s = env_get("bootargs");
+	s = env_get(ctx_uboot, "bootargs");
 	if (!s)
 		s = "";
 

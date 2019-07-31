@@ -220,7 +220,7 @@ static int splash_load_fs(struct splash_location *location, u32 bmp_load_addr)
 	loff_t actread;
 	char *splash_file;
 
-	splash_file = env_get("splashfile");
+	splash_file = env_get(ctx_uboot, "splashfile");
 	if (!splash_file)
 		splash_file = SPLASH_SOURCE_DEFAULT_FILE_NAME;
 
@@ -286,7 +286,7 @@ static struct splash_location *select_splash_location(
 	if (!locations || size == 0)
 		return NULL;
 
-	env_splashsource = env_get("splashsource");
+	env_splashsource = env_get(ctx_uboot, "splashsource");
 	if (env_splashsource == NULL)
 		return &locations[0];
 
@@ -341,7 +341,7 @@ static int splash_load_fit(struct splash_location *location, u32 bmp_load_addr)
 	}
 
 	/* Get the splash image node */
-	splash_file = env_get("splashfile");
+	splash_file = env_get(ctx_uboot, "splashfile");
 	if (!splash_file)
 		splash_file = SPLASH_SOURCE_DEFAULT_FILE_NAME;
 
@@ -407,7 +407,7 @@ int splash_source_load(struct splash_location *locations, uint size)
 	char *env_splashimage_value;
 	u32 bmp_load_addr;
 
-	env_splashimage_value = env_get("splashimage");
+	env_splashimage_value = env_get(ctx_uboot, "splashimage");
 	if (env_splashimage_value == NULL)
 		return -ENOENT;
 

@@ -448,14 +448,14 @@ static int initr_env(void)
 	if (should_load_env())
 		env_relocate();
 	else
-		env_set_default(NULL, 0);
+		env_set_default(ctx_uboot, NULL, 0);
 #ifdef CONFIG_OF_CONTROL
-	env_set_hex("fdtcontroladdr",
+	env_set_hex(ctx_uboot, "fdtcontroladdr",
 		    (unsigned long)map_to_sysmem(gd->fdt_blob));
 #endif
 
 	/* Initialize from environment */
-	load_addr = env_get_ulong("loadaddr", 16, load_addr);
+	load_addr = env_get_ulong(ctx_uboot, "loadaddr", 16, load_addr);
 
 	return 0;
 }
@@ -607,9 +607,9 @@ int initr_mem(void)
 	ulong pram = 0;
 	char memsz[32];
 
-	pram = env_get_ulong("pram", 10, CONFIG_PRAM);
+	pram = env_get_ulong(ctx_uboot, "pram", 10, CONFIG_PRAM);
 	sprintf(memsz, "%ldk", (long int)((gd->ram_size / 1024) - pram));
-	env_set("mem", memsz);
+	env_set(ctx_uboot, "mem", memsz);
 
 	return 0;
 }

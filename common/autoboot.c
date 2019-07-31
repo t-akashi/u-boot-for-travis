@@ -71,7 +71,7 @@ static int slow_equals(u8 *a, u8 *b, int len)
  */
 static int passwd_abort_sha256(uint64_t etime)
 {
-	const char *sha_env_str = env_get("bootstopkeysha256");
+	const char *sha_env_str = env_get(ctx_uboot, "bootstopkeysha256");
 	u8 sha_env[SHA256_SUM_LEN];
 	u8 *sha;
 	char *presskey;
@@ -146,8 +146,8 @@ static int passwd_abort_key(uint64_t etime)
 		int retry;
 	}
 	delaykey[] = {
-		{ .str = env_get("bootdelaykey"),  .retry = 1 },
-		{ .str = env_get("bootstopkey"),   .retry = 0 },
+		{ .str = env_get(ctx_uboot, "bootdelaykey"),  .retry = 1 },
+		{ .str = env_get(ctx_uboot, "bootstopkey"),   .retry = 0 },
 	};
 
 	char presskey[MAX_DELAY_STOP_STR];
@@ -308,12 +308,14 @@ static void process_fdt_options(const void *blob)
 	/* Add an env variable to point to a kernel payload, if available */
 	addr = fdtdec_get_config_int(gd->fdt_blob, "kernel-offset", 0);
 	if (addr)
-		env_set_addr("kernaddr", (void *)(CONFIG_SYS_TEXT_BASE + addr));
+		env_set_addr(ctx_uboot, "kernaddr",
+			     (void *)(CONFIG_SYS_TEXT_BASE + addr));
 
 	/* Add an env variable to point to a root disk, if available */
 	addr = fdtdec_get_config_int(gd->fdt_blob, "rootdisk-offset", 0);
 	if (addr)
-		env_set_addr("rootaddr", (void *)(CONFIG_SYS_TEXT_BASE + addr));
+		env_set_addr(ctx_uboot, "rootaddr",
+			     (void *)(CONFIG_SYS_TEXT_BASE + addr));
 #endif /* CONFIG_SYS_TEXT_BASE */
 }
 
@@ -324,7 +326,7 @@ const char *bootdelay_process(void)
 
 	bootcount_inc();
 
-	s = env_get("bootdelay");
+	s = env_get(ctx_uboot, "bootdelay");
 	bootdelay = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
 
 	if (IS_ENABLED(CONFIG_OF_CONTROL))
@@ -339,13 +341,13 @@ const char *bootdelay_process(void)
 
 #ifdef CONFIG_POST
 	if (gd->flags & GD_FLG_POSTFAIL) {
-		s = env_get("failbootcmd");
+		s = env_get(ctx_uboot, "failbootcmd");
 	} else
 #endif /* CONFIG_POST */
 	if (bootcount_error())
-		s = env_get("altbootcmd");
+		s = env_get(ctx_uboot, "altbootcmd");
 	else
-		s = env_get("bootcmd");
+		s = env_get(ctx_uboot, "bootcmd");
 
 	if (IS_ENABLED(CONFIG_OF_CONTROL))
 		process_fdt_options(gd->fdt_blob);
@@ -375,7 +377,7 @@ void autoboot_command(const char *s)
 
 	if (IS_ENABLED(CONFIG_USE_AUTOBOOT_MENUKEY) &&
 	    menukey == AUTOBOOT_MENUKEY) {
-		s = env_get("menucmd");
+		s = env_get(ctx_uboot, "menucmd");
 		if (s)
 			run_command_list(s, -1, 0);
 	}

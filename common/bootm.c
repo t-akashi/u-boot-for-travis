@@ -440,7 +440,7 @@ static void fixup_silent_linux(void)
 {
 	char *buf;
 	const char *env_val;
-	char *cmdline = env_get("bootargs");
+	char *cmdline = env_get(ctx_uboot, "bootargs");
 	int want_silent;
 
 	/*
@@ -485,7 +485,7 @@ static void fixup_silent_linux(void)
 		env_val = CONSOLE_ARG;
 	}
 
-	env_set("bootargs", env_val);
+	env_set(ctx_uboot, "bootargs", env_val);
 	debug("after silent fix-up: %s\n", env_val);
 	free(buf);
 }
@@ -556,8 +556,10 @@ int do_bootm_states(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 		ret = boot_ramdisk_high(&images->lmb, images->rd_start,
 			rd_len, &images->initrd_start, &images->initrd_end);
 		if (!ret) {
-			env_set_hex("initrd_start", images->initrd_start);
-			env_set_hex("initrd_end", images->initrd_end);
+			env_set_hex(ctx_uboot, "initrd_start",
+				    images->initrd_start);
+			env_set_hex(ctx_uboot, "initrd_end",
+				    images->initrd_end);
 		}
 	}
 #endif
@@ -602,7 +604,7 @@ int do_bootm_states(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 #ifdef CONFIG_TRACE
 	/* Pretend to run the OS, then run a user command */
 	if (!ret && (states & BOOTM_STATE_OS_FAKE_GO)) {
-		char *cmd_list = env_get("fakegocmd");
+		char *cmd_list = env_get(ctx_uboot, "fakegocmd");
 
 		ret = boot_selected_os(argc, argv, BOOTM_STATE_OS_FAKE_GO,
 				images, boot_fn);

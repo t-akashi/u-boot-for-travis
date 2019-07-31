@@ -122,7 +122,8 @@ __weak void board_add_ram_info(int use_default)
 
 static int init_baud_rate(void)
 {
-	gd->baudrate = env_get_ulong("baudrate", 10, CONFIG_BAUDRATE);
+	gd->baudrate = env_get_ulong(ctx_uboot, "baudrate", 10,
+				     CONFIG_BAUDRATE);
 	return 0;
 }
 

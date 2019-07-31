@@ -172,7 +172,7 @@ int boot_relocate_fdt(struct lmb *lmb, char **of_flat_tree, ulong *of_size)
 	of_len = *of_size + CONFIG_SYS_FDT_PAD;
 
 	/* If fdt_high is set use it to select the relocation address */
-	fdt_high = env_get("fdt_high");
+	fdt_high = env_get(ctx_uboot, "fdt_high");
 	if (fdt_high) {
 		void *desired_addr = (void *)simple_strtoul(fdt_high, NULL, 16);
 
@@ -470,7 +470,7 @@ int boot_get_fdt(int flag, int argc, char * const argv[], uint8_t arch,
 
 			debug("## Using FDT in Android image second area\n");
 		} else {
-			fdt_addr = env_get_hex("fdtaddr", 0);
+			fdt_addr = env_get_hex(ctx_uboot, "fdtaddr", 0);
 			if (!fdt_addr)
 				goto no_fdt;
 

@@ -38,14 +38,14 @@ int spl_dfu_cmd(int usbctrl, char *dfu_alt_info, char *interface, char *devstr)
 	int ret;
 
 	/* set default environment */
-	env_set_default(NULL, 0);
-	str_env = env_get(dfu_alt_info);
+	env_set_default(ctx_uboot, NULL, 0);
+	str_env = env_get(ctx_uboot, dfu_alt_info);
 	if (!str_env) {
 		pr_err("\"%s\" env variable not defined!\n", dfu_alt_info);
 		return -EINVAL;
 	}
 
-	ret = env_set("dfu_alt_info", str_env);
+	ret = env_set(ctx_uboot, "dfu_alt_info", str_env);
 	if (ret) {
 		pr_err("unable to set env variable \"dfu_alt_info\"!\n");
 		return -EINVAL;

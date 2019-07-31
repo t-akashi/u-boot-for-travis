@@ -31,14 +31,14 @@ static int spl_net_load_image(struct spl_image_info *spl_image,
 
 	env_init();
 	env_relocate();
-	env_set("autoload", "yes");
+	env_set(ctx_uboot, "autoload", "yes");
 	rv = eth_initialize();
 	if (rv == 0) {
 		printf("No Ethernet devices found\n");
 		return -ENODEV;
 	}
 	if (bootdev->boot_device_name)
-		env_set("ethact", bootdev->boot_device_name);
+		env_set(ctx_uboot, "ethact", bootdev->boot_device_name);
 	rv = net_loop(BOOTP);
 	if (rv < 0) {
 		printf("Problem booting with BOOTP\n");

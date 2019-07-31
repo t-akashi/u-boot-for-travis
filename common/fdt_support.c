@@ -197,7 +197,7 @@ int fdt_root(void *fdt)
 		return err;
 	}
 
-	serial = env_get("serial#");
+	serial = env_get(ctx_uboot, "serial#");
 	if (serial) {
 		err = fdt_setprop(fdt, 0, "serial-number", serial,
 				  strlen(serial) + 1);
@@ -289,7 +289,7 @@ int fdt_chosen(void *fdt)
 	if (nodeoffset < 0)
 		return nodeoffset;
 
-	str = env_get("bootargs");
+	str = env_get(ctx_uboot, "bootargs");
 	if (str) {
 		err = fdt_setprop(fdt, nodeoffset, "bootargs", str,
 				  strlen(str) + 1);
@@ -533,7 +533,7 @@ void fdt_fixup_ethernet(void *fdt)
 				continue;
 			i++;
 #endif
-			tmp = env_get(mac);
+			tmp = env_get(ctx_uboot, mac);
 			if (!tmp)
 				continue;
 

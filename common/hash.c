@@ -331,7 +331,7 @@ static void store_result(struct hash_algo *algo, const uint8_t *sum,
 			str_ptr += 2;
 		}
 		*str_ptr = '\0';
-		env_set(dest, str_output);
+		env_set(ctx_uboot, dest, str_output);
 	} else {
 		ulong addr;
 		void *buf;
@@ -391,7 +391,7 @@ static int parse_verify_sum(struct hash_algo *algo, char *verify_str,
 		if (strlen(verify_str) == digits)
 			vsum_str = verify_str;
 		else {
-			vsum_str = env_get(verify_str);
+			vsum_str = env_get(ctx_uboot, verify_str);
 			if (vsum_str == NULL || strlen(vsum_str) != digits) {
 				printf("Expected %d hex digits in env var\n",
 				       digits);

@@ -131,7 +131,7 @@ void cli_simple_process_macros(const char *input, char *output)
 				envname[i] = 0;
 
 				/* Get its value */
-				envval = env_get(envname);
+				envval = env_get(ctx_uboot, envname);
 
 				/* Copy into the line if it exists */
 				if (envval != NULL)

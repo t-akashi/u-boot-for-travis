@@ -23,7 +23,7 @@ static int      retry_time = -1; /* -1 so can call readline before main_loop */
  */
 void bootretry_init_cmd_timeout(void)
 {
-	char *s = env_get("bootretry");
+	char *s = env_get(ctx_uboot, "bootretry");
 
 	if (s != NULL)
 		retry_time = (int)simple_strtol(s, NULL, 10);
