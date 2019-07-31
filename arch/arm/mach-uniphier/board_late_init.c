@@ -40,7 +40,7 @@ static void uniphier_set_env_fdt_file(void)
 	int buf_len = sizeof(dtb_name);
 	int ret;
 
-	if (env_get("fdtfile"))
+	if (env_get(ctx_uboot, "fdtfile"))
 		return;		/* do nothing if it is already set */
 
 	compat = fdt_stringlist_get(gd->fdt_blob, 0, "compatible", 0, NULL);
@@ -58,7 +58,7 @@ static void uniphier_set_env_fdt_file(void)
 
 	strncat(dtb_name, ".dtb", buf_len);
 
-	ret = env_set("fdtfile", dtb_name);
+	ret = env_set(ctx_uboot, "fdtfile", dtb_name);
 	if (ret)
 		goto fail;
 
@@ -74,11 +74,11 @@ static void uniphier_set_env_addr(const char *env, const char *offset_env)
 	char *end;
 	int ret;
 
-	if (env_get(env))
+	if (env_get(ctx_uboot, env))
 		return;		/* do nothing if it is already set */
 
 	if (offset_env) {
-		str = env_get(offset_env);
+		str = env_get(ctx_uboot, offset_env);
 		if (!str)
 			goto fail;
 
@@ -87,7 +87,7 @@ static void uniphier_set_env_addr(const char *env, const char *offset_env)
 			goto fail;
 	}
 
-	ret = env_set_hex(env, gd->ram_base + offset);
+	ret = env_set_hex(ctx_uboot, env, gd->ram_base + offset);
 	if (ret)
 		goto fail;
 
@@ -95,6 +95,7 @@ static void uniphier_set_env_addr(const char *env, const char *offset_env)
 
 fail:
 	pr_warn("\"%s\" environment variable was not set correctly\n", env);
+	return env_set(ctx_uboot, "fdtfile", dtb_name);
 }
 
 int board_late_init(void)
@@ -104,7 +105,7 @@ int board_late_init(void)
 	switch (uniphier_boot_device_raw()) {
 	case BOOT_DEVICE_MMC1:
 		printf("eMMC Boot");
-		env_set("bootdev", "emmc");
+		env_set(ctx_uboot, "bootdev", "emmc");
 		break;
 	case BOOT_DEVICE_MMC2:
 		printf("SD Boot");
@@ -112,16 +113,16 @@ int board_late_init(void)
 		break;
 	case BOOT_DEVICE_NAND:
 		printf("NAND Boot");
-		env_set("bootdev", "nand");
+		env_set(ctx_uboot, "bootdev", "nand");
 		nand_denali_wp_disable();
 		break;
 	case BOOT_DEVICE_NOR:
 		printf("NOR Boot");
-		env_set("bootdev", "nor");
+		env_set(ctx_uboot, "bootdev", "nor");
 		break;
 	case BOOT_DEVICE_USB:
 		printf("USB Boot");
-		env_set("bootdev", "usb");
+		env_set(ctx_uboot, "bootdev", "usb");
 		break;
 	default:
 		printf("Unknown");

@@ -41,7 +41,7 @@ int do_sh_zimageboot (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	/* Linux kernel command line */
 	cmdline = (char *)param + COMMAND_LINE;
-	bootargs = env_get("bootargs");
+	bootargs = env_get(ctx_uboot, "bootargs");
 
 	/* Clear zero page */
 	/* cppcheck-suppress nullPointer */

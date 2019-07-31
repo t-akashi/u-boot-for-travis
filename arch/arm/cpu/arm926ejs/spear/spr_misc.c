@@ -56,12 +56,12 @@ int misc_init_r(void)
 	if (!eth_env_get_enetaddr("ethaddr", mac_id) && !i2c_read_mac(mac_id))
 		eth_env_set_enetaddr("ethaddr", mac_id);
 #endif
-	env_set("verify", "n");
+	env_set(ctx_uboot, "verify", "n");
 
 #if defined(CONFIG_SPEAR_USBTTY)
-	env_set("stdin", "usbtty");
-	env_set("stdout", "usbtty");
-	env_set("stderr", "usbtty");
+	env_set(ctx_uboot, "stdin", "usbtty");
+	env_set(ctx_uboot, "stdout", "usbtty");
+	env_set(ctx_uboot, "stderr", "usbtty");
 
 #ifndef CONFIG_SYS_NO_DCACHE
 	dcache_enable();

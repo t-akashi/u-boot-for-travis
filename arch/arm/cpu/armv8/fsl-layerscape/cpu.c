@@ -801,7 +801,8 @@ int mmc_get_env_dev(void)
 }
 #endif
 
-enum env_location env_get_location(enum env_operation op, int prio)
+enum env_location env_get_location(struct env_context *ctx,
+				   enum env_operation op, int prio)
 {
 	enum boot_src src = get_boot_src();
 	enum env_location env_loc = ENVL_NOWHERE;
@@ -1067,7 +1068,7 @@ static void config_core_prefetch(void)
 	unsigned int mask;
 	struct pt_regs regs;
 
-	if (env_get_f("hwconfig", buffer, sizeof(buffer)) > 0)
+	if (env_get_f(ctx_uboot, "hwconfig", buffer, sizeof(buffer)) > 0)
 		buf = buffer;
 
 	prefetch_arg = hwconfig_subarg_f("core_prefetch", "disable",

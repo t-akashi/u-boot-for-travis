@@ -761,7 +761,7 @@ int fsl_setenv_bootcmd(void)
 		break;
 	}
 
-	ret = env_set("bootcmd", bootcmd_str);
+	ret = env_set(ctx_uboot, "bootcmd", bootcmd_str);
 	if (ret) {
 		printf("Failed to set bootcmd: ret = %d\n", ret);
 		return ret;
@@ -778,34 +778,34 @@ int fsl_setenv_mcinitcmd(void)
 #ifdef IFC_MC_INIT_CMD
 	case BOOT_SOURCE_IFC_NAND:
 	case BOOT_SOURCE_IFC_NOR:
-	ret = env_set("mcinitcmd", IFC_MC_INIT_CMD);
+	ret = env_set(ctx_uboot, "mcinitcmd", IFC_MC_INIT_CMD);
 		break;
 #endif
 #ifdef QSPI_MC_INIT_CMD
 	case BOOT_SOURCE_QSPI_NAND:
 	case BOOT_SOURCE_QSPI_NOR:
-	ret = env_set("mcinitcmd", QSPI_MC_INIT_CMD);
+	ret = env_set(ctx_uboot, "mcinitcmd", QSPI_MC_INIT_CMD);
 		break;
 #endif
 #ifdef XSPI_MC_INIT_CMD
 	case BOOT_SOURCE_XSPI_NAND:
 	case BOOT_SOURCE_XSPI_NOR:
-	ret = env_set("mcinitcmd", XSPI_MC_INIT_CMD);
+	ret = env_set(ctx_uboot, "mcinitcmd", XSPI_MC_INIT_CMD);
 		break;
 #endif
 #ifdef SD_MC_INIT_CMD
 	case BOOT_SOURCE_SD_MMC:
-	ret = env_set("mcinitcmd", SD_MC_INIT_CMD);
+	ret = env_set(ctx_uboot, "mcinitcmd", SD_MC_INIT_CMD);
 		break;
 #endif
 #ifdef SD2_MC_INIT_CMD
 	case BOOT_SOURCE_SD_MMC2:
-	ret = env_set("mcinitcmd", SD2_MC_INIT_CMD);
+	ret = env_set(ctx_uboot, "mcinitcmd", SD2_MC_INIT_CMD);
 		break;
 #endif
 	default:
 #ifdef QSPI_MC_INIT_CMD
-	ret = env_set("mcinitcmd", QSPI_MC_INIT_CMD);
+	ret = env_set(ctx_uboot, "mcinitcmd", QSPI_MC_INIT_CMD);
 #endif
 		break;
 	}

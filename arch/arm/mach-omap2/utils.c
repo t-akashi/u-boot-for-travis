@@ -48,7 +48,7 @@ static void omap_set_fastboot_cpu(void)
 		printf("Warning: fastboot.cpu: unknown CPU rev: %u\n", cpu_rev);
 	}
 
-	env_set("fastboot.cpu", cpu);
+	env_set(ctx_uboot, "fastboot.cpu", cpu);
 }
 
 static void omap_set_fastboot_secure(void)
@@ -71,18 +71,18 @@ static void omap_set_fastboot_secure(void)
 		printf("Warning: fastboot.secure: unknown CPU sec: %u\n", dev);
 	}
 
-	env_set("fastboot.secure", secure);
+	env_set(ctx_uboot, "fastboot.secure", secure);
 }
 
 static void omap_set_fastboot_board_rev(void)
 {
 	const char *board_rev;
 
-	board_rev = env_get("board_rev");
+	board_rev = env_get(ctx_uboot, "board_rev");
 	if (board_rev == NULL)
 		printf("Warning: fastboot.board_rev: unknown board revision\n");
 
-	env_set("fastboot.board_rev", board_rev);
+	env_set(ctx_uboot, "fastboot.board_rev", board_rev);
 }
 
 #ifdef CONFIG_FASTBOOT_FLASH_MMC
@@ -122,7 +122,7 @@ static void omap_set_fastboot_userdata_size(void)
 		return; /* probably it's not Android partition table */
 
 	sprintf(buf, "%u", sz_kb);
-	env_set("fastboot.userdata_size", buf);
+	env_set(ctx_uboot, "fastboot.userdata_size", buf);
 }
 #else
 static inline void omap_set_fastboot_userdata_size(void)
@@ -186,11 +186,11 @@ void omap_die_id_serial(void)
 
 	omap_die_id((unsigned int *)&die_id);
 
-	if (!env_get("serial#")) {
+	if (!env_get(ctx_uboot, "serial#")) {
 		snprintf(serial_string, sizeof(serial_string),
 			"%08x%08x", die_id[0], die_id[3]);
 
-		env_set("serial#", serial_string);
+		env_set(ctx_uboot, "serial#", serial_string);
 	}
 }
 
@@ -199,7 +199,7 @@ void omap_die_id_get_board_serial(struct tag_serialnr *serialnr)
 	char *serial_string;
 	unsigned long long serial;
 
-	serial_string = env_get("serial#");
+	serial_string = env_get(ctx_uboot, "serial#");
 
 	if (serial_string) {
 		serial = simple_strtoull(serial_string, NULL, 16);
@@ -219,7 +219,7 @@ void omap_die_id_usbethaddr(void)
 
 	omap_die_id((unsigned int *)&die_id);
 
-	if (!env_get("usbethaddr")) {
+	if (!env_get(ctx_uboot, "usbethaddr")) {
 		/*
 		 * Create a fake MAC address from the processor ID code.
 		 * First byte is 0x02 to signify locally administered.
@@ -233,7 +233,7 @@ void omap_die_id_usbethaddr(void)
 
 		eth_env_set_enetaddr("usbethaddr", mac);
 
-		if (!env_get("ethaddr"))
+		if (!env_get(ctx_uboot, "ethaddr"))
 			eth_env_set_enetaddr("ethaddr", mac);
 	}
 }

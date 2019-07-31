@@ -20,7 +20,7 @@ int board_video_skip(void)
 {
 	int i;
 	int ret = 0;
-	char const *panel = env_get("panel");
+	char const *panel = env_get(ctx_uboot, "panel");
 
 	if (!panel) {
 		for (i = 0; i < display_count; i++) {

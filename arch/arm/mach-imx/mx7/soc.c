@@ -307,9 +307,9 @@ int arch_misc_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (is_mx7d())
-		env_set("soc", "imx7d");
+		env_set(ctx_uboot, "soc", "imx7d");
 	else
-		env_set("soc", "imx7s");
+		env_set(ctx_uboot, "soc", "imx7s");
 #endif
 
 #ifdef CONFIG_FSL_CAAM

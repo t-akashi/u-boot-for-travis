@@ -132,7 +132,7 @@ static void meson_set_boot_source(void)
 		source = "unknown";
 	}
 
-	env_set("boot_source", source);
+	env_set(ctx_uboot, "boot_source", source);
 }
 
 __weak int meson_board_late_init(void)

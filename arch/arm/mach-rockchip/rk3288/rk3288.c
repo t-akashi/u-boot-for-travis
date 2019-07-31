@@ -129,7 +129,7 @@ static void rk3288_detect_reset_reason(void)
 		reason = "unknown reset";
 	}
 
-	env_set("reset_reason", reason);
+	env_set(ctx_uboot, "reset_reason", reason);
 
 	/*
 	 * Clear cru_glb_rst_st, so we can determine the last reset cause

@@ -60,7 +60,7 @@ int do_bootm_linux(int flag, int argc, char * const argv[], bootm_headers_t *ima
 	char *cmdline = (char *)param + COMMAND_LINE;
 	/* PAGE_SIZE */
 	unsigned long size = images->ep - (unsigned long)param;
-	char *bootargs = env_get("bootargs");
+	char *bootargs = env_get(ctx_uboot, "bootargs");
 
 	/*
 	 * allow the PREP bootm subcommand, it is required for bootm to work

@@ -92,7 +92,7 @@ int arch_misc_init(void)
 	for (i = 0; i < sizeof(cpu); i++)
 		cpu[i] = tolower(rmobile_cpuinfo[idx].cpu_name[i]);
 
-	env_set("platform", cpu);
+	env_set(ctx_uboot, "platform", cpu);
 
 	return 0;
 }

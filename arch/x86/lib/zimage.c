@@ -49,15 +49,15 @@ static void build_command_line(char *command_line, int auto_boot)
 
 	command_line[0] = '\0';
 
-	env_command_line =  env_get("bootargs");
+	env_command_line =  env_get(ctx_uboot, "bootargs");
 
 	/* set console= argument if we use a serial console */
 	if (!strstr(env_command_line, "console=")) {
-		if (!strcmp(env_get("stdout"), "serial")) {
+		if (!strcmp(env_get(ctx_uboot, "stdout"), "serial")) {
 
 			/* We seem to use serial console */
 			sprintf(command_line, "console=ttyS0,%s ",
-				env_get("baudrate"));
+				env_get(ctx_uboot, "baudrate"));
 		}
 	}
 
@@ -288,7 +288,8 @@ int setup_zimage(struct boot_params *setup_base, char *cmd_line, int auto_boot,
 		hdr->hardware_subarch = X86_SUBARCH_INTEL_MID;
 #endif
 
-	setup_device_tree(hdr, (const void *)env_get_hex("fdtaddr", 0));
+	setup_device_tree(hdr, (const void *)env_get_hex(ctx_uboot, "fdtaddr",
+							 0));
 	setup_video(&setup_base->screen_info);
 
 #ifdef CONFIG_EFI_STUB
@@ -324,7 +325,7 @@ int do_zboot(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 		/* argv[1] holds the address of the bzImage */
 		s = argv[1];
 	} else {
-		s = env_get("fileaddr");
+		s = env_get(ctx_uboot, "fileaddr");
 	}
 
 	if (s)

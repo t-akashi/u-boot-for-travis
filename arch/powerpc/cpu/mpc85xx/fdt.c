@@ -93,7 +93,7 @@ void ft_fixup_cpu(void *blob, u64 memory_limit)
 	 * Extract hwconfig from environment.
 	 * Search for tdm entry in hwconfig.
 	 */
-	ret = env_get_f("hwconfig", buffer, sizeof(buffer));
+	ret = env_get_f(ctx_uboot, "hwconfig", buffer, sizeof(buffer));
 	if (ret > 0)
 		tdm_hwconfig_enabled = hwconfig_f("tdm", buffer);
 

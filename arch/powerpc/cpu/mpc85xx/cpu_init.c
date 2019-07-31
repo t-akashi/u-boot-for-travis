@@ -255,7 +255,7 @@ static void enable_tdm_law(void)
 	 * is not setup properly yet. Search for tdm entry in
 	 * hwconfig.
 	 */
-	ret = env_get_f("hwconfig", buffer, sizeof(buffer));
+	ret = env_get_f(ctx_uboot, "hwconfig", buffer, sizeof(buffer));
 	if (ret > 0) {
 		tdm_hwconfig_enabled = hwconfig_f("tdm", buffer);
 		/* If tdm is defined in hwconfig, set law for tdm workaround */
@@ -279,7 +279,7 @@ void enable_cpc(void)
 	cpc_corenet_t *cpc = (cpc_corenet_t *)CONFIG_SYS_FSL_CPC_ADDR;
 
 	/* Extract hwconfig from environment */
-	ret = env_get_f("hwconfig", buffer, sizeof(buffer));
+	ret = env_get_f(ctx_uboot, "hwconfig", buffer, sizeof(buffer));
 	if (ret > 0) {
 		/*
 		 * If "en_cpc" is not defined in hwconfig then by default all
@@ -753,7 +753,7 @@ int cpu_init_r(void)
 	char *buf = NULL;
 	int n, res;
 
-	n = env_get_f("hwconfig", buffer, sizeof(buffer));
+	n = env_get_f(ctx_uboot, "hwconfig", buffer, sizeof(buffer));
 	if (n > 0)
 		buf = buffer;
 
@@ -793,7 +793,7 @@ int cpu_init_r(void)
 #endif
 
 #if defined(CONFIG_PPC_SPINTABLE_COMPATIBLE) && defined(CONFIG_MP)
-	spin = env_get("spin_table_compat");
+	spin = env_get(ctx_uboot, "spin_table_compat");
 	if (spin && (*spin == 'n'))
 		spin_table_compat = 0;
 	else
@@ -844,7 +844,7 @@ int cpu_init_r(void)
 #ifdef CONFIG_SYS_SRIO
 	srio_init();
 #ifdef CONFIG_SRIO_PCIE_BOOT_MASTER
-	char *s = env_get("bootmaster");
+	char *s = env_get(ctx_uboot, "bootmaster");
 	if (s) {
 		if (!strcmp(s, "SRIO1")) {
 			srio_boot_master(1);

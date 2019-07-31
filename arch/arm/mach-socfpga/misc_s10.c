@@ -138,7 +138,7 @@ int arch_misc_init(void)
 	char qspi_string[13];
 
 	sprintf(qspi_string, "<0x%08x>", cm_get_qspi_controller_clk_hz());
-	env_set("qspi_clock", qspi_string);
+	env_set(ctx_uboot, "qspi_clock", qspi_string);
 
 	socfpga_set_phymode();
 	return 0;

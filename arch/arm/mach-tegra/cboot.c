@@ -315,7 +315,7 @@ static void set_calculated_aliases(char *aliases, u64 address)
 		if (!alias)
 			break;
 		debug("%s: alias: %s\n", __func__, alias);
-		err = env_set_hex(alias, address);
+		err = env_set_hex(ctx_uboot, alias, address);
 		if (err)
 			pr_err("Could not set %s\n", alias);
 	}
@@ -349,17 +349,17 @@ static void set_calculated_env_var(const char *var)
 	if (!var_aliases)
 		goto out_free_var_offset;
 
-	size = env_get_hex(var_size, 0);
+	size = env_get_hex(ctx_uboot, var_size, 0);
 	if (!size) {
 		pr_err("%s not set or zero\n", var_size);
 		goto out_free_var_aliases;
 	}
-	align = env_get_hex(var_align, 1);
+	align = env_get_hex(ctx_uboot, var_align, 1);
 	/* Handle extant variables, but with a value of 0 */
 	if (!align)
 		align = 1;
-	offset = env_get_hex(var_offset, 0);
-	aliases = env_get(var_aliases);
+	offset = env_get_hex(ctx_uboot, var_offset, 0);
+	aliases = env_get(ctx_uboot, var_aliases);
 
 	debug("%s: Calc var %s; size=%llx, align=%llx, offset=%llx\n",
 	      __func__, var, size, align, offset);
@@ -373,7 +373,7 @@ static void set_calculated_env_var(const char *var)
 	}
 	debug("%s: Address %llx\n", __func__, address);
 
-	err = env_set_hex(var, address);
+	err = env_set_hex(ctx_uboot, var, address);
 	if (err)
 		pr_err("Could not set %s\n", var);
 	if (aliases)
@@ -423,7 +423,7 @@ static void set_calculated_env_vars(void)
 	dump_ram_banks();
 #endif
 
-	vars = env_get("calculated_vars");
+	vars = env_get(ctx_uboot, "calculated_vars");
 	if (!vars) {
 		debug("%s: No env var calculated_vars\n", __func__);
 		return;
@@ -455,7 +455,7 @@ static int set_fdt_addr(void)
 {
 	int ret;
 
-	ret = env_set_hex("fdt_addr", cboot_boot_x0);
+	ret = env_set_hex(ctx_uboot, "fdt_addr", cboot_boot_x0);
 	if (ret) {
 		printf("Failed to set fdt_addr to point at DTB: %d\n", ret);
 		return ret;
@@ -612,7 +612,7 @@ int cboot_late_init(void)
 
 	bootargs = cboot_get_bootargs(fdt);
 	if (bootargs) {
-		env_set("cbootargs", bootargs);
+		env_set(ctx_uboot, "cbootargs", bootargs);
 		free(bootargs);
 	}
 

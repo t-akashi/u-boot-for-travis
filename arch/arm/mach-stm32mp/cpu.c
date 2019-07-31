@@ -380,8 +380,8 @@ static void setup_boot_mode(void)
 					 dev_of_offset(dev), &alias))
 			break;
 		sprintf(cmd, "%d", alias);
-		env_set("boot_device", "serial");
-		env_set("boot_instance", cmd);
+		env_set(ctx_uboot, "boot_device", "serial");
+		env_set(ctx_uboot, "boot_instance", cmd);
 
 		/* restore console on uart when not used */
 		if (gd->cur_serial_dev != dev) {
@@ -391,22 +391,22 @@ static void setup_boot_mode(void)
 		}
 		break;
 	case BOOT_SERIAL_USB:
-		env_set("boot_device", "usb");
-		env_set("boot_instance", "0");
+		env_set(ctx_uboot, "boot_device", "usb");
+		env_set(ctx_uboot, "boot_instance", "0");
 		break;
 	case BOOT_FLASH_SD:
 	case BOOT_FLASH_EMMC:
 		sprintf(cmd, "%d", instance);
-		env_set("boot_device", "mmc");
-		env_set("boot_instance", cmd);
+		env_set(ctx_uboot, "boot_device", "mmc");
+		env_set(ctx_uboot, "boot_instance", cmd);
 		break;
 	case BOOT_FLASH_NAND:
-		env_set("boot_device", "nand");
-		env_set("boot_instance", "0");
+		env_set(ctx_uboot, "boot_device", "nand");
+		env_set(ctx_uboot, "boot_instance", "0");
 		break;
 	case BOOT_FLASH_NOR:
-		env_set("boot_device", "nor");
-		env_set("boot_instance", "0");
+		env_set(ctx_uboot, "boot_device", "nor");
+		env_set(ctx_uboot, "boot_instance", "0");
 		break;
 	default:
 		pr_debug("unexpected boot mode = %x\n", boot_mode);
@@ -416,11 +416,11 @@ static void setup_boot_mode(void)
 	switch (forced_mode) {
 	case BOOT_FASTBOOT:
 		printf("Enter fastboot!\n");
-		env_set("preboot", "env set preboot; fastboot 0");
+		env_set(ctx_uboot, "preboot", "env set preboot; fastboot 0");
 		break;
 	case BOOT_STM32PROG:
-		env_set("boot_device", "usb");
-		env_set("boot_instance", "0");
+		env_set(ctx_uboot, "boot_device", "usb");
+		env_set(ctx_uboot, "boot_instance", "0");
 		break;
 	case BOOT_UMS_MMC0:
 	case BOOT_UMS_MMC1:
@@ -428,10 +428,11 @@ static void setup_boot_mode(void)
 		printf("Enter UMS!\n");
 		instance = forced_mode - BOOT_UMS_MMC0;
 		sprintf(cmd, "env set preboot; ums 0 mmc %d", instance);
-		env_set("preboot", cmd);
+		env_set(ctx_uboot, "preboot", cmd);
 		break;
 	case BOOT_RECOVERY:
-		env_set("preboot", "env set preboot; run altbootcmd");
+		env_set(ctx_uboot, "preboot",
+			"env set preboot; run altbootcmd");
 		break;
 	case BOOT_NORMAL:
 		break;
@@ -496,7 +497,7 @@ static int setup_serial_number(void)
 	struct udevice *dev;
 	int ret;
 
-	if (env_get("serial#"))
+	if (env_get(ctx_uboot, "serial#"))
 		return 0;
 
 	ret = uclass_get_device_by_driver(UCLASS_MISC,
@@ -511,7 +512,7 @@ static int setup_serial_number(void)
 		return ret;
 
 	sprintf(serial_string, "%08X%08X%08X", otp[0], otp[1], otp[2]);
-	env_set("serial#", serial_string);
+	env_set(ctx_uboot, "serial#", serial_string);
 
 	return 0;
 }

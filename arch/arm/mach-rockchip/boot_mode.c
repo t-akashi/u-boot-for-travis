@@ -72,11 +72,11 @@ int setup_boot_mode(void)
 	switch (boot_mode) {
 	case BOOT_FASTBOOT:
 		debug("%s: enter fastboot!\n", __func__);
-		env_set("preboot", "setenv preboot; fastboot usb0");
+		env_set(ctx_uboot, "preboot", "setenv preboot; fastboot usb0");
 		break;
 	case BOOT_UMS:
 		debug("%s: enter UMS!\n", __func__);
-		env_set("preboot", "setenv preboot; ums mmc 0");
+		env_set(ctx_uboot, "preboot", "setenv preboot; ums mmc 0");
 		break;
 	}
 

@@ -269,7 +269,7 @@ static void set_clocks_in_mhz (bd_t *kbd)
 {
 	char	*s;
 
-	s = env_get("clocks_in_mhz");
+	s = env_get(ctx_uboot, "clocks_in_mhz");
 	if (s) {
 		/* convert all clock information to MHz */
 		kbd->bi_intfreq /= 1000000L;
