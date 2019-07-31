@@ -53,7 +53,7 @@ static char *bootmenu_getoption(unsigned short int n)
 		return NULL;
 
 	sprintf(name, "bootmenu_%d", n);
-	return env_get(name);
+	return env_get(ctx_uboot, name);
 }
 
 static void bootmenu_print_entry(void *data)
@@ -265,7 +265,7 @@ static struct bootmenu_data *bootmenu_create(int delay)
 	menu->active = 0;
 	menu->first = NULL;
 
-	default_str = env_get("bootmenu_default");
+	default_str = env_get(ctx_uboot, "bootmenu_default");
 	if (default_str)
 		menu->active = (int)simple_strtol(default_str, NULL, 10);
 
@@ -494,7 +494,7 @@ int do_bootmenu(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 		delay_str = argv[1];
 
 	if (!delay_str)
-		delay_str = env_get("bootmenu_delay");
+		delay_str = env_get(ctx_uboot, "bootmenu_delay");
 
 	if (delay_str)
 		delay = (int)simple_strtol(delay_str, NULL, 10);

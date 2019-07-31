@@ -387,7 +387,7 @@ int ubi_volume_read(char *volume, char *buf, size_t size)
 	} while (size);
 
 	if (!size)
-		env_set_hex("filesize", len_read);
+		env_set_hex(ctx_uboot, "filesize", len_read);
 
 	free(tbuf);
 	return err;

@@ -275,7 +275,7 @@ int do_bootelf(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	unsigned long addr; /* Address of the ELF image */
 	unsigned long rc; /* Return value from user code */
 	char *sload = NULL;
-	const char *ep = env_get("autostart");
+	const char *ep = env_get(ctx_uboot, "autostart");
 	int rcode = 0;
 
 	/* Consume 'bootelf' */
@@ -383,7 +383,8 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	 * Get VxWorks's physical memory base address from environment,
 	 * if we don't specify it in the environment, use a default one.
 	 */
-	base = env_get_hex("vx_phys_mem_base", VXWORKS_PHYS_MEM_BASE);
+	base = env_get_hex(ctx_uboot, "vx_phys_mem_base",
+			   VXWORKS_PHYS_MEM_BASE);
 	data = (struct e820_entry *)(base + E820_DATA_OFFSET);
 	info = (struct e820_info *)(base + E820_INFO_OFFSET);
 
@@ -423,7 +424,7 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	 * (LOCAL_MEM_LOCAL_ADRS + BOOT_LINE_OFFSET) as defined by
 	 * VxWorks BSP. For example, on PowerPC it defaults to 0x4200.
 	 */
-	tmp = env_get("bootaddr");
+	tmp = env_get(ctx_uboot, "bootaddr");
 	if (!tmp) {
 #ifdef CONFIG_X86
 		bootaddr = base + X86_BOOT_LINE_OFFSET;
@@ -440,9 +441,9 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	 * Check to see if the bootline is defined in the 'bootargs' parameter.
 	 * If it is not defined, we may be able to construct the info.
 	 */
-	bootline = env_get("bootargs");
+	bootline = env_get(ctx_uboot, "bootargs");
 	if (!bootline) {
-		tmp = env_get("bootdev");
+		tmp = env_get(ctx_uboot, "bootdev");
 		if (tmp) {
 			strcpy(build_buf, tmp);
 			ptr = strlen(tmp);
@@ -450,7 +451,7 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			printf("## VxWorks boot device not specified\n");
 		}
 
-		tmp = env_get("bootfile");
+		tmp = env_get(ctx_uboot, "bootfile");
 		if (tmp)
 			ptr += sprintf(build_buf + ptr, "host:%s ", tmp);
 		else
@@ -460,12 +461,14 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		 * The following parameters are only needed if 'bootdev'
 		 * is an ethernet device, otherwise they are optional.
 		 */
-		tmp = env_get("ipaddr");
+		tmp = env_get(ctx_uboot, "ipaddr");
 		if (tmp) {
 			ptr += sprintf(build_buf + ptr, "e=%s", tmp);
-			tmp = env_get("netmask");
+			tmp = env_get(ctx_uboot, "netmask");
 			if (tmp) {
-				u32 mask = env_get_ip("netmask").s_addr;
+				u32 mask;
+
+				mask = env_get_ip(ctx_uboot, "netmask").s_addr;
 				ptr += sprintf(build_buf + ptr,
 					       ":%08x ", ntohl(mask));
 			} else {
@@ -473,19 +476,19 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			}
 		}
 
-		tmp = env_get("serverip");
+		tmp = env_get(ctx_uboot, "serverip");
 		if (tmp)
 			ptr += sprintf(build_buf + ptr, "h=%s ", tmp);
 
-		tmp = env_get("gatewayip");
+		tmp = env_get(ctx_uboot, "gatewayip");
 		if (tmp)
 			ptr += sprintf(build_buf + ptr, "g=%s ", tmp);
 
-		tmp = env_get("hostname");
+		tmp = env_get(ctx_uboot, "hostname");
 		if (tmp)
 			ptr += sprintf(build_buf + ptr, "tn=%s ", tmp);
 
-		tmp = env_get("othbootargs");
+		tmp = env_get(ctx_uboot, "othbootargs");
 		if (tmp) {
 			strcpy(build_buf + ptr, tmp);
 			ptr += strlen(tmp);

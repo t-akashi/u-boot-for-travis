@@ -430,7 +430,7 @@ static int do_tpm_load_key_by_sha1(cmd_tbl_t *cmdtp, int flag, int argc, char *
 				 &key_handle);
 	if (!err) {
 		printf("Key handle is 0x%x\n", key_handle);
-		env_set_hex("key_handle", key_handle);
+		env_set_hex(ctx_uboot, "key_handle", key_handle);
 	}
 
 	return report_return_code(err);

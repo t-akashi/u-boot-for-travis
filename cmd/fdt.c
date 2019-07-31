@@ -43,7 +43,7 @@ void set_working_fdt_addr(ulong addr)
 
 	buf = map_sysmem(addr, 0);
 	working_fdt = buf;
-	env_set_hex("fdtaddr", addr);
+	env_set_hex(ctx_uboot, "fdtaddr", addr);
 }
 
 /*
@@ -52,12 +52,12 @@ void set_working_fdt_addr(ulong addr)
 static int fdt_value_env_set(const void *nodep, int len, const char *var)
 {
 	if (is_printable_string(nodep, len))
-		env_set(var, (void *)nodep);
+		env_set(ctx_uboot, var, (void *)nodep);
 	else if (len == 4) {
 		char buf[11];
 
 		sprintf(buf, "0x%08X", fdt32_to_cpu(*(fdt32_t *)nodep));
-		env_set(var, buf);
+		env_set(ctx_uboot, var, buf);
 	} else if (len%4 == 0 && len <= 20) {
 		/* Needed to print things like sha1 hashes. */
 		char buf[41];
@@ -66,7 +66,7 @@ static int fdt_value_env_set(const void *nodep, int len, const char *var)
 		for (i = 0; i < len; i += sizeof(unsigned int))
 			sprintf(buf + (i * 2), "%08x",
 				*(unsigned int *)(nodep + i));
-		env_set(var, buf);
+		env_set(ctx_uboot, var, buf);
 	} else {
 		printf("error: unprintable value\n");
 		return 1;
@@ -101,7 +101,7 @@ static int fdt_get_header_value(int argc, char * const argv[])
 			continue;
 
 		val = fdt32_to_cpu(fdtp[i]);
-		env_set_hex(argv[3], val);
+		env_set_hex(ctx_uboot, argv[3], val);
 		return CMD_RET_SUCCESS;
 	}
 
@@ -145,7 +145,7 @@ static int do_fdt(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				return 1;
 			printf("The address of the fdt is %#08lx\n",
 			       control ? (ulong)map_to_sysmem(blob) :
-					env_get_hex("fdtaddr", 0));
+					env_get_hex(ctx_uboot, "fdtaddr", 0));
 			return 0;
 		}
 
@@ -395,7 +395,7 @@ static int do_fdt(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 					node_name = fdt_get_name(working_fdt,
 								 nextNodeOffset,
 								 NULL);
-					env_set(var, node_name);
+					env_set(ctx_uboot, var, node_name);
 					return 0;
 				}
 				nextNodeOffset = fdt_next_node(
@@ -405,7 +405,7 @@ static int do_fdt(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			}
 			if (subcmd[0] == 's') {
 				/* get the num nodes at this level */
-				env_set_ulong(var, curIndex + 1);
+				env_set_ulong(ctx_uboot, var, curIndex + 1);
 			} else {
 				/* node index not found */
 				printf("libfdt node not found\n");
@@ -416,7 +416,7 @@ static int do_fdt(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				working_fdt, nodeoffset, prop, &len);
 			if (len == 0) {
 				/* no property value */
-				env_set(var, "");
+				env_set(ctx_uboot, var, "");
 				return 0;
 			} else if (nodep && len > 0) {
 				if (subcmd[0] == 'v') {
@@ -431,13 +431,13 @@ static int do_fdt(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 					char buf[11];
 
 					sprintf(buf, "0x%p", nodep);
-					env_set(var, buf);
+					env_set(ctx_uboot, var, buf);
 				} else if (subcmd[0] == 's') {
 					/* Get size */
 					char buf[11];
 
 					sprintf(buf, "0x%08X", len);
-					env_set(var, buf);
+					env_set(ctx_uboot, var, buf);
 				} else
 					return CMD_RET_USAGE;
 				return 0;

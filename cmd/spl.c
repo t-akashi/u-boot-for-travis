@@ -119,8 +119,9 @@ static int spl_export(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		case SPL_EXPORT_FDT:
 			printf("Argument image is now in RAM: 0x%p\n",
 				(void *)images.ft_addr);
-			env_set_addr("fdtargsaddr", images.ft_addr);
-			env_set_hex("fdtargslen", fdt_totalsize(images.ft_addr));
+			env_set_addr(ctx_uboot, "fdtargsaddr", images.ft_addr);
+			env_set_hex(ctx_uboot, "fdtargslen",
+				    fdt_totalsize(images.ft_addr));
 #ifdef CONFIG_CMD_SPL_WRITE_SIZE
 			if (fdt_totalsize(images.ft_addr) >
 			    CONFIG_CMD_SPL_WRITE_SIZE)

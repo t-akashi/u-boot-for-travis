@@ -98,7 +98,7 @@ static ulong get_load_addr(void)
 	const char *addr_str;
 	unsigned long addr;
 
-	addr_str = env_get("loadaddr");
+	addr_str = env_get(ctx_uboot, "loadaddr");
 	if (addr_str)
 		addr = simple_strtoul(addr_str, NULL, 16);
 	else

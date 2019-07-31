@@ -252,8 +252,8 @@ do_imgextract(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 
 	flush_cache(dest, ALIGN(len, ARCH_DMA_MINALIGN));
 
-	env_set_hex("fileaddr", data);
-	env_set_hex("filesize", len);
+	env_set_hex(ctx_uboot, "fileaddr", data);
+	env_set_hex(ctx_uboot, "filesize", len);
 
 	return 0;
 }

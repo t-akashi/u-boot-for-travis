@@ -18,7 +18,7 @@
 static long do_fpga_get_device(char *arg)
 {
 	long dev = FPGA_INVALID_DEVICE;
-	char *devstr = env_get("fpga");
+	char *devstr = env_get(ctx_uboot, "fpga");
 
 	if (devstr)
 		/* Should be strtol to handle -1 cases */
@@ -239,7 +239,7 @@ static int do_fpga_loadmk(cmd_tbl_t *cmdtp, int flag, int argc,
 	ulong fit_addr;
 #endif
 	ulong dev = do_fpga_get_device(argv[0]);
-	char *datastr = env_get("fpgadata");
+	char *datastr = env_get(ctx_uboot, "fpgadata");
 
 	debug("fpga: argc %x, dev %lx, datastr %s\n", argc, dev, datastr);
 

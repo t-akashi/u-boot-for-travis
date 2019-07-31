@@ -120,23 +120,23 @@ static void netboot_update_env(void)
 
 	if (net_gateway.s_addr) {
 		ip_to_string(net_gateway, tmp);
-		env_set("gatewayip", tmp);
+		env_set(ctx_uboot, "gatewayip", tmp);
 	}
 
 	if (net_netmask.s_addr) {
 		ip_to_string(net_netmask, tmp);
-		env_set("netmask", tmp);
+		env_set(ctx_uboot, "netmask", tmp);
 	}
 
 	if (net_hostname[0])
-		env_set("hostname", net_hostname);
+		env_set(ctx_uboot, "hostname", net_hostname);
 
 	if (net_root_path[0])
-		env_set("rootpath", net_root_path);
+		env_set(ctx_uboot, "rootpath", net_root_path);
 
 	if (net_ip.s_addr) {
 		ip_to_string(net_ip, tmp);
-		env_set("ipaddr", tmp);
+		env_set(ctx_uboot, "ipaddr", tmp);
 	}
 #if !defined(CONFIG_BOOTP_SERVERIP)
 	/*
@@ -145,32 +145,32 @@ static void netboot_update_env(void)
 	 */
 	if (net_server_ip.s_addr) {
 		ip_to_string(net_server_ip, tmp);
-		env_set("serverip", tmp);
+		env_set(ctx_uboot, "serverip", tmp);
 	}
 #endif
 	if (net_dns_server.s_addr) {
 		ip_to_string(net_dns_server, tmp);
-		env_set("dnsip", tmp);
+		env_set(ctx_uboot, "dnsip", tmp);
 	}
 #if defined(CONFIG_BOOTP_DNS2)
 	if (net_dns_server2.s_addr) {
 		ip_to_string(net_dns_server2, tmp);
-		env_set("dnsip2", tmp);
+		env_set(ctx_uboot, "dnsip2", tmp);
 	}
 #endif
 	if (net_nis_domain[0])
-		env_set("domain", net_nis_domain);
+		env_set(ctx_uboot, "domain", net_nis_domain);
 
 #if defined(CONFIG_CMD_SNTP) && defined(CONFIG_BOOTP_TIMEOFFSET)
 	if (net_ntp_time_offset) {
 		sprintf(tmp, "%d", net_ntp_time_offset);
-		env_set("timeoffset", tmp);
+		env_set(ctx_uboot, "timeoffset", tmp);
 	}
 #endif
 #if defined(CONFIG_CMD_SNTP) && defined(CONFIG_BOOTP_NTPSERVER)
 	if (net_ntp_server.s_addr) {
 		ip_to_string(net_ntp_server, tmp);
-		env_set("ntpserverip", tmp);
+		env_set(ctx_uboot, "ntpserverip", tmp);
 	}
 #endif
 }
@@ -187,14 +187,15 @@ static int netboot_common(enum proto_t proto, cmd_tbl_t *cmdtp, int argc,
 	net_boot_file_name_explicit = false;
 
 	/* pre-set load_addr */
-	s = env_get("loadaddr");
+	s = env_get(ctx_uboot, "loadaddr");
 	if (s != NULL)
 		load_addr = simple_strtoul(s, NULL, 16);
 
 	switch (argc) {
 	case 1:
 		/* refresh bootfile name from env */
-		copy_filename(net_boot_file_name, env_get("bootfile"),
+		copy_filename(net_boot_file_name, env_get(ctx_uboot,
+							  "bootfile"),
 			      sizeof(net_boot_file_name));
 		break;
 
@@ -208,7 +209,8 @@ static int netboot_common(enum proto_t proto, cmd_tbl_t *cmdtp, int argc,
 		if (end == (argv[1] + strlen(argv[1]))) {
 			load_addr = addr;
 			/* refresh bootfile name from env */
-			copy_filename(net_boot_file_name, env_get("bootfile"),
+			copy_filename(net_boot_file_name,
+				      env_get(ctx_uboot, "bootfile"),
 				      sizeof(net_boot_file_name));
 		} else {
 			net_boot_file_name_explicit = true;
@@ -307,14 +309,14 @@ static void cdp_update_env(void)
 		printf("CDP offered appliance VLAN %d\n",
 		       ntohs(cdp_appliance_vlan));
 		vlan_to_string(cdp_appliance_vlan, tmp);
-		env_set("vlan", tmp);
+		env_set(ctx_uboot, "vlan", tmp);
 		net_our_vlan = cdp_appliance_vlan;
 	}
 
 	if (cdp_native_vlan != htons(-1)) {
 		printf("CDP offered native VLAN %d\n", ntohs(cdp_native_vlan));
 		vlan_to_string(cdp_native_vlan, tmp);
-		env_set("nvlan", tmp);
+		env_set(ctx_uboot, "nvlan", tmp);
 		net_native_vlan = cdp_native_vlan;
 	}
 }
@@ -347,7 +349,7 @@ int do_sntp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	char *toff;
 
 	if (argc < 2) {
-		net_ntp_server = env_get_ip("ntpserverip");
+		net_ntp_server = env_get_ip(ctx_uboot, "ntpserverip");
 		if (net_ntp_server.s_addr == 0) {
 			printf("ntpserverip not set\n");
 			return CMD_RET_FAILURE;
@@ -360,7 +362,7 @@ int do_sntp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		}
 	}
 
-	toff = env_get("timeoffset");
+	toff = env_get(ctx_uboot, "timeoffset");
 	if (toff == NULL)
 		net_ntp_time_offset = 0;
 	else
@@ -439,14 +441,14 @@ static int do_link_local(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	net_gateway.s_addr = 0;
 	ip_to_string(net_gateway, tmp);
-	env_set("gatewayip", tmp);
+	env_set(ctx_uboot, "gatewayip", tmp);
 
 	ip_to_string(net_netmask, tmp);
-	env_set("netmask", tmp);
+	env_set(ctx_uboot, "netmask", tmp);
 
 	ip_to_string(net_ip, tmp);
-	env_set("ipaddr", tmp);
-	env_set("llipaddr", tmp); /* store this for next time */
+	env_set(ctx_uboot, "ipaddr", tmp);
+	env_set(ctx_uboot, "llipaddr", tmp); /* store this for next time */
 
 	return CMD_RET_SUCCESS;
 }

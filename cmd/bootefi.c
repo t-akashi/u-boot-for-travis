@@ -36,7 +36,7 @@ static efi_status_t set_load_options(efi_handle_t handle, const char *env_var)
 {
 	struct efi_loaded_image *loaded_image_info;
 	size_t size;
-	const char *env = env_get(env_var);
+	const char *env = env_get(ctx_uboot, env_var);
 	u16 *pos;
 	efi_status_t ret;
 
@@ -234,7 +234,7 @@ static efi_status_t efi_install_fdt(const char *fdt_opt)
 		if (get_config_table(&efi_guid_fdt))
 			return EFI_SUCCESS;
 		/* Use our own device tree as default */
-		fdt_opt = env_get("fdtcontroladdr");
+		fdt_opt = env_get(ctx_uboot, "fdtcontroladdr");
 		if (!fdt_opt) {
 			printf("ERROR: need device tree\n");
 			return EFI_NOT_FOUND;
@@ -366,7 +366,7 @@ static int do_bootefi_image(const char *image_opt)
 	if (!strcmp(image_opt, "hello")) {
 		char *saddr;
 
-		saddr = env_get("loadaddr");
+		saddr = env_get(ctx_uboot, "loadaddr");
 		size = __efi_helloworld_end - __efi_helloworld_begin;
 
 		if (saddr)
@@ -382,7 +382,7 @@ static int do_bootefi_image(const char *image_opt)
 	} else
 #endif
 	{
-		size_str = env_get("filesize");
+		size_str = env_get(ctx_uboot, "filesize");
 		if (size_str)
 			size = simple_strtoul(size_str, NULL, 16);
 		else

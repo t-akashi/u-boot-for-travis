@@ -82,7 +82,7 @@ static int dtimg_get_fdt(int argc, char * const argv[], enum cmd_dtimg_info cmd)
 		return CMD_RET_FAILURE;
 	}
 
-	env_set(argv[3], buf);
+	env_set(ctx_uboot, argv[3], buf);
 
 	return CMD_RET_SUCCESS;
 }

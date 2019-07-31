@@ -164,7 +164,7 @@ static void ddr_check_ecc_status(void)
 	int ecc_test = 0;
 	char *env;
 
-	env = env_get("ecc_test");
+	env = env_get(ctx_uboot, "ecc_test");
 	if (env)
 		ecc_test = simple_strtol(env, NULL, 0);
 

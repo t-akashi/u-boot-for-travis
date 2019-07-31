@@ -306,9 +306,9 @@ static void nand_print_and_set_info(int idx)
 	printf("  bbt options 0x%08x\n", chip->bbt_options);
 
 	/* Set geometry info */
-	env_set_hex("nand_writesize", mtd->writesize);
-	env_set_hex("nand_oobsize", mtd->oobsize);
-	env_set_hex("nand_erasesize", mtd->erasesize);
+	env_set_hex(ctx_uboot, "nand_writesize", mtd->writesize);
+	env_set_hex(ctx_uboot, "nand_oobsize", mtd->oobsize);
+	env_set_hex(ctx_uboot, "nand_erasesize", mtd->erasesize);
 }
 
 static int raw_access(struct mtd_info *mtd, ulong addr, loff_t off,
@@ -384,7 +384,7 @@ static int do_nand(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #else
 	int quiet = 0;
 #endif
-	const char *quiet_str = env_get("quiet");
+	const char *quiet_str = env_get(ctx_uboot, "quiet");
 	int dev = nand_curr_device;
 	int repeat = flag & CMD_FLAG_REPEAT;
 
@@ -967,11 +967,11 @@ static int do_nandboot(cmd_tbl_t *cmdtp, int flag, int argc,
 	switch (argc) {
 	case 1:
 		addr = CONFIG_SYS_LOAD_ADDR;
-		boot_device = env_get("bootdevice");
+		boot_device = env_get(ctx_uboot, "bootdevice");
 		break;
 	case 2:
 		addr = simple_strtoul(argv[1], NULL, 16);
-		boot_device = env_get("bootdevice");
+		boot_device = env_get(ctx_uboot, "bootdevice");
 		break;
 	case 3:
 		addr = simple_strtoul(argv[1], NULL, 16);

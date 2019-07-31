@@ -16,10 +16,10 @@ static int get_args(int argc, char * const argv[], char **buff,
 	if (argc < 2)
 		return -1;
 	if (argc < 4) {
-		*buff_size = env_get_ulong("profsize", 16, 0);
-		*buff = map_sysmem(env_get_ulong("profbase", 16, 0),
+		*buff_size = env_get_ulong(ctx_uboot, "profsize", 16, 0);
+		*buff = map_sysmem(env_get_ulong(ctx_uboot, "profbase", 16, 0),
 				   *buff_size);
-		*buff_ptr = env_get_ulong("profoffset", 16, 0);
+		*buff_ptr = env_get_ulong(ctx_uboot, "profoffset", 16, 0);
 	} else {
 		*buff_size = simple_strtoul(argv[3], NULL, 16);
 		*buff = map_sysmem(simple_strtoul(argv[2], NULL, 16),
@@ -45,9 +45,9 @@ static int create_func_list(int argc, char * const argv[])
 	used = min(avail, (size_t)needed);
 	printf("Function trace dumped to %08lx, size %#zx\n",
 	       (ulong)map_to_sysmem(buff + buff_ptr), used);
-	env_set_hex("profbase", map_to_sysmem(buff));
-	env_set_hex("profsize", buff_size);
-	env_set_hex("profoffset", buff_ptr + used);
+	env_set_hex(ctx_uboot, "profbase", map_to_sysmem(buff));
+	env_set_hex(ctx_uboot, "profsize", buff_size);
+	env_set_hex(ctx_uboot, "profoffset", buff_ptr + used);
 
 	return 0;
 }
@@ -69,9 +69,9 @@ static int create_call_list(int argc, char * const argv[])
 	printf("Call list dumped to %08lx, size %#zx\n",
 	       (ulong)map_to_sysmem(buff + buff_ptr), used);
 
-	env_set_hex("profbase", map_to_sysmem(buff));
-	env_set_hex("profsize", buff_size);
-	env_set_hex("profoffset", buff_ptr + used);
+	env_set_hex(ctx_uboot, "profbase", map_to_sysmem(buff));
+	env_set_hex(ctx_uboot, "profsize", buff_size);
+	env_set_hex(ctx_uboot, "profoffset", buff_ptr + used);
 
 	return 0;
 }

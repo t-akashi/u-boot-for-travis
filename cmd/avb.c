@@ -283,7 +283,7 @@ int do_avb_verify_part(cmd_tbl_t *cmdtp, int flag,
 		else
 			cmdline = out_data->cmdline;
 
-		env_set(AVB_BOOTARGS, cmdline);
+		env_set(ctx_uboot, AVB_BOOTARGS, cmdline);
 
 		res = CMD_RET_SUCCESS;
 		break;

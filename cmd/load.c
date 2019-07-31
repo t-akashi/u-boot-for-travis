@@ -50,7 +50,7 @@ static int do_load_serial(cmd_tbl_t *cmdtp, int flag, int argc,
 	load_baudrate = current_baudrate = gd->baudrate;
 #endif
 
-	env_echo = env_get("loads_echo");
+	env_echo = env_get(ctx_uboot, "loads_echo");
 	if (env_echo && *env_echo == '1')
 		do_echo = 1;
 	else
@@ -182,7 +182,7 @@ static ulong load_serial(long offset)
 			    start_addr, end_addr, size, size
 		    );
 		    flush_cache(start_addr, size);
-		    env_set_hex("filesize", size);
+		    env_set_hex(ctx_uboot, "filesize", size);
 		    return (addr);
 		case SREC_START:
 		    break;
@@ -427,7 +427,7 @@ static int do_load_serial_bin(cmd_tbl_t *cmdtp, int flag, int argc,
 	offset = CONFIG_SYS_LOAD_ADDR;
 
 	/* pre-set offset from $loadaddr */
-	s = env_get("loadaddr");
+	s = env_get(ctx_uboot, "loadaddr");
 	if (s)
 		offset = simple_strtoul(s, NULL, 16);
 
@@ -529,7 +529,7 @@ static ulong load_serial_bin(ulong offset)
 	flush_cache(offset, size);
 
 	printf("## Total Size      = 0x%08x = %d Bytes\n", size, size);
-	env_set_hex("filesize", size);
+	env_set_hex(ctx_uboot, "filesize", size);
 
 	return offset;
 }
@@ -1000,7 +1000,7 @@ static ulong load_serial_ymodem(ulong offset, int mode)
 	flush_cache(offset, ALIGN(size, ARCH_DMA_MINALIGN));
 
 	printf("## Total Size      = 0x%08x = %d Bytes\n", size, size);
-	env_set_hex("filesize", size);
+	env_set_hex(ctx_uboot, "filesize", size);
 
 	return offset;
 }

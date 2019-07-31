@@ -224,7 +224,7 @@ int type_string_write_vars(const char *type_str, u8 *data,
 		default:
 			return -1;
 		}
-		if (env_set_ulong(*vars, value))
+		if (env_set_ulong(ctx_uboot, *vars, value))
 			return -1;
 	}
 

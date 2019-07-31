@@ -55,14 +55,14 @@ static int extract_env(const char *str, char **env)
 	memset(s + strlen(s) - 1, '\0', 1);
 	memmove(s, s + 2, strlen(s) - 1);
 
-	e = env_get(s);
+	e = env_get(ctx_uboot, s);
 	if (e == NULL) {
 #ifdef CONFIG_RANDOM_UUID
 		debug("%s unset. ", str);
 		gen_rand_uuid_str(uuid_str, UUID_STR_FORMAT_GUID);
-		env_set(s, uuid_str);
+		env_set(ctx_uboot, s, uuid_str);
 
-		e = env_get(s);
+		e = env_get(ctx_uboot, s);
 		if (e) {
 			debug("Set to random.\n");
 			ret = 0;
@@ -625,7 +625,7 @@ static int do_disk_guid(struct blk_desc *dev_desc, char * const namestr)
 		return CMD_RET_FAILURE;
 
 	if (namestr)
-		env_set(namestr, disk_guid);
+		env_set(ctx_uboot, namestr, disk_guid);
 	else
 		printf("%s\n", disk_guid);
 

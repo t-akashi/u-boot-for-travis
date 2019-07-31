@@ -28,7 +28,7 @@ void write_to_env_var(char *varname, u8 *result, ulong len)
 		str_ptr += 2;
 	}
 	*str_ptr = '\0';
-	env_set(varname, str_output);
+	env_set(ctx_uboot, varname, str_output);
 
 	free(str_output);
 }
@@ -37,7 +37,7 @@ void read_from_env_var(char *varname, u8 *result)
 {
 	char *str_value;
 
-	str_value = env_get(varname);
+	str_value = env_get(ctx_uboot, varname);
 	if (str_value)
 		hex2bin(result, str_value, strlen(str_value) / 2);
 	else

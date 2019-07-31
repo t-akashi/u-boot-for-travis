@@ -44,7 +44,7 @@ static int do_part_uuid(int argc, char * const argv[])
 		return 1;
 
 	if (argc > 2)
-		env_set(argv[2], info.uuid);
+		env_set(ctx_uboot, argv[2], info.uuid);
 	else
 		printf("%s\n", info.uuid);
 
@@ -105,7 +105,7 @@ static int do_part_list(int argc, char * const argv[])
 			sprintf(t, "%s%x", str[0] ? " " : "", p);
 			strcat(str, t);
 		}
-		env_set(var, str);
+		env_set(ctx_uboot, var, str);
 		return 0;
 	}
 
@@ -160,7 +160,7 @@ static int do_part_info(int argc, char * const argv[], enum cmd_part_info param)
 	}
 
 	if (argc > 3)
-		env_set(argv[3], buf);
+		env_set(ctx_uboot, argv[3], buf);
 	else
 		printf("%s\n", buf);
 

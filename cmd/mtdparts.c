@@ -242,7 +242,8 @@ static void index_partitions(void)
 			dev = list_entry(dentry, struct mtd_device, link);
 			if (dev == current_mtd_dev) {
 				mtddevnum += current_mtd_partnum;
-				env_set_ulong("mtddevnum", mtddevnum);
+				env_set_ulong(ctx_uboot, "mtddevnum",
+					      mtddevnum);
 				debug("=> mtddevnum %d,\n", mtddevnum);
 				break;
 			}
@@ -251,17 +252,17 @@ static void index_partitions(void)
 
 		part = mtd_part_info(current_mtd_dev, current_mtd_partnum);
 		if (part) {
-			env_set("mtddevname", part->name);
+			env_set(ctx_uboot, "mtddevname", part->name);
 
 			debug("=> mtddevname %s\n", part->name);
 		} else {
-			env_set("mtddevname", NULL);
+			env_set(ctx_uboot, "mtddevname", NULL);
 
 			debug("=> mtddevname NULL\n");
 		}
 	} else {
-		env_set("mtddevnum", NULL);
-		env_set("mtddevname", NULL);
+		env_set(ctx_uboot, "mtddevnum", NULL);
+		env_set(ctx_uboot, "mtddevname", NULL);
 
 		debug("=> mtddevnum NULL\n=> mtddevname NULL\n");
 	}
@@ -280,12 +281,12 @@ static void current_save(void)
 		sprintf(buf, "%s%d,%d", MTD_DEV_TYPE(current_mtd_dev->id->type),
 					current_mtd_dev->id->num, current_mtd_partnum);
 
-		env_set("partition", buf);
+		env_set(ctx_uboot, "partition", buf);
 		strncpy(last_partition, buf, 16);
 
 		debug("=> partition %s\n", buf);
 	} else {
-		env_set("partition", NULL);
+		env_set(ctx_uboot, "partition", NULL);
 		last_partition[0] = '\0';
 
 		debug("=> partition NULL\n");
@@ -1214,9 +1215,9 @@ static int generate_mtdparts_save(char *buf, u32 buflen)
 	ret = generate_mtdparts(buf, buflen);
 
 	if ((buf[0] != '\0') && (ret == 0))
-		env_set("mtdparts", buf);
+		env_set(ctx_uboot, "mtdparts", buf);
 	else
-		env_set("mtdparts", NULL);
+		env_set(ctx_uboot, "mtdparts", NULL);
 
 	return ret;
 }
@@ -1537,8 +1538,8 @@ static int spread_partitions(void)
 static const char *env_get_mtdparts(char *buf)
 {
 	if (gd->flags & GD_FLG_ENV_READY)
-		return env_get("mtdparts");
-	if (env_get_f("mtdparts", buf, MTDPARTS_MAXLEN) != -1)
+		return env_get(ctx_uboot, "mtdparts");
+	if (env_get_f(ctx_uboot, "mtdparts", buf, MTDPARTS_MAXLEN) != -1)
 		return buf;
 	return NULL;
 }
@@ -1742,9 +1743,9 @@ int mtdparts_init(void)
 	}
 
 	/* get variables */
-	ids = env_get("mtdids");
+	ids = env_get(ctx_uboot, "mtdids");
 	parts = env_get_mtdparts(tmp_parts);
-	current_partition = env_get("partition");
+	current_partition = env_get(ctx_uboot, "partition");
 
 	/* save it for later parsing, cannot rely on current partition pointer
 	 * as 'partition' variable may be updated during init */
@@ -1766,7 +1767,7 @@ int mtdparts_init(void)
 		if (mtdids_default) {
 			debug("mtdids variable not defined, using default\n");
 			ids = mtdids_default;
-			env_set("mtdids", (char *)ids);
+			env_set(ctx_uboot, "mtdids", (char *)ids);
 		} else {
 			printf("mtdids not defined, no default present\n");
 			return 1;
@@ -1782,7 +1783,7 @@ int mtdparts_init(void)
 	if (!parts) {
 		if (mtdparts_default && use_defaults) {
 			parts = mtdparts_default;
-			if (env_set("mtdparts", (char *)parts) == 0)
+			if (env_set(ctx_uboot, "mtdparts", (char *)parts) == 0)
 				use_defaults = 0;
 		} else
 			printf("mtdparts variable not set, see 'help mtdparts'\n");
@@ -1852,7 +1853,7 @@ int mtdparts_init(void)
 			current_mtd_partnum = pnum;
 			current_save();
 		}
-	} else if (env_get("partition") == NULL) {
+	} else if (!env_get(ctx_uboot, "partition")) {
 		debug("no partition variable set, setting...\n");
 		current_save();
 	}
@@ -1958,9 +1959,9 @@ static int do_mtdparts(cmd_tbl_t *cmdtp, int flag, int argc,
 {
 	if (argc == 2) {
 		if (strcmp(argv[1], "default") == 0) {
-			env_set("mtdids", NULL);
-			env_set("mtdparts", NULL);
-			env_set("partition", NULL);
+			env_set(ctx_uboot, "mtdids", NULL);
+			env_set(ctx_uboot, "mtdparts", NULL);
+			env_set(ctx_uboot, "partition", NULL);
 			use_defaults = 1;
 
 			mtdparts_init();
@@ -1969,7 +1970,7 @@ static int do_mtdparts(cmd_tbl_t *cmdtp, int flag, int argc,
 			/* this may be the first run, initialize lists if needed */
 			mtdparts_init();
 
-			env_set("mtdparts", NULL);
+			env_set(ctx_uboot, "mtdparts", NULL);
 
 			/* mtd_devices_init() calls current_save() */
 			return mtd_devices_init();

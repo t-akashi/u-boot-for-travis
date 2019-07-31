@@ -55,7 +55,7 @@ static int qemu_fwcfg_setup_kernel(void *load_addr, void *initrd_addr)
 		 * when invoking qemu), do not update bootargs
 		 */
 		if (*data_addr != '\0') {
-			if (env_set("bootargs", data_addr) < 0)
+			if (env_set(ctx_uboot, "bootargs", data_addr) < 0)
 				printf("warning: unable to change bootargs\n");
 		}
 	}
@@ -123,7 +123,7 @@ static int qemu_fwcfg_do_load(cmd_tbl_t *cmdtp, int flag,
 	void *load_addr;
 	void *initrd_addr;
 
-	env = env_get("loadaddr");
+	env = env_get(ctx_uboot, "loadaddr");
 	load_addr = env ?
 		(void *)simple_strtoul(env, NULL, 16) :
 #ifdef CONFIG_LOADADDR
@@ -132,7 +132,7 @@ static int qemu_fwcfg_do_load(cmd_tbl_t *cmdtp, int flag,
 		NULL;
 #endif
 
-	env = env_get("ramdiskaddr");
+	env = env_get(ctx_uboot, "ramdiskaddr");
 	initrd_addr = env ?
 		(void *)simple_strtoul(env, NULL, 16) :
 #ifdef CONFIG_RAMDISK_ADDR
