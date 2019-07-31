@@ -340,7 +340,7 @@ int board_init(void)
 	at91_set_A_periph(AT91_PIN_PE6, 1);	/* power up */
 
 	/* Select the second timing index for board rev 2 */
-	rev_str = env_get("board_rev");
+	rev_str = env_get(ctx_uboot, "board_rev");
 	if (rev_str && !strncmp(rev_str, "2", 1)) {
 		struct udevice *dev;
 
@@ -367,7 +367,7 @@ int board_late_init(void)
 	 * Set MAC address so we do not need to init Ethernet before Linux
 	 * boot
 	 */
-	env_str = env_get("ethaddr");
+	env_str = env_get(ctx_uboot, "ethaddr");
 	if (env_str) {
 		struct at91_emac *emac = (struct at91_emac *)ATMEL_BASE_EMAC;
 		/* Parse MAC address */
@@ -384,7 +384,7 @@ int board_late_init(void)
 		       &emac->sa2l);
 		writel((env_enetaddr[4] | env_enetaddr[5] << 8), &emac->sa2h);
 
-		printf("MAC:   %s\n", env_get("ethaddr"));
+		printf("MAC:   %s\n", env_get(ctx_uboot, "ethaddr"));
 	} else {
 		/* Not set in environment */
 		printf("MAC:   not set\n");

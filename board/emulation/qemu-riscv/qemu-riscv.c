@@ -46,7 +46,7 @@ int board_late_init(void)
 		return 0;
 	}
 
-	env_set_hex("kernel_start", kernel_start);
+	env_set_hex(ctx_uboot, "kernel_start", kernel_start);
 
 	return 0;
 }

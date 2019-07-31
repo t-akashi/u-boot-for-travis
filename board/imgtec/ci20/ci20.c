@@ -181,12 +181,12 @@ int misc_init_r(void)
 	eth_env_set_enetaddr("ethaddr", otp.mac);
 
 	/* Put other board information into the environment */
-	env_set_ulong("serial#", otp.serial_number);
-	env_set_ulong("board_date", otp.date);
+	env_set_ulong(ctx_uboot, "serial#", otp.serial_number);
+	env_set_ulong(ctx_uboot, "board_date", otp.date);
 	manufacturer[0] = otp.manufacturer[0];
 	manufacturer[1] = otp.manufacturer[1];
 	manufacturer[2] = 0;
-	env_set("board_mfr", manufacturer);
+	env_set(ctx_uboot, "board_mfr", manufacturer);
 
 	return 0;
 }

@@ -122,7 +122,7 @@ int board_late_init(void)
 	for (p = name; *p != '\0'; *p = tolower(*p), p++)
 		;
 	strcat(name, "-wb50n");
-	env_set(LAIRD_NAME, name);
+	env_set(ctx_uboot, LAIRD_NAME, name);
 
 #endif
 

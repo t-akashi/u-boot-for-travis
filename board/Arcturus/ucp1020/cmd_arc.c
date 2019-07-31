@@ -252,8 +252,8 @@ static int read_arc_info(void)
 static int do_get_arc_info(void)
 {
 	int l = read_arc_info();
-	char *oldserial = env_get("SERIAL");
-	char *oldversion = env_get("VERSION");
+	char *oldserial = env_get(ctx_uboot, "SERIAL");
+	char *oldversion = env_get(ctx_uboot, "VERSION");
 
 	if (oldversion != NULL)
 		if (strcmp(oldversion, U_BOOT_VERSION) != 0)
@@ -269,13 +269,13 @@ static int do_get_arc_info(void)
 		printf("<not found>\n");
 	} else {
 		printf("%s\n", smac[0]);
-		env_set("SERIAL", smac[0]);
+		env_set(ctx_uboot, "SERIAL", smac[0]);
 	}
 
 	if (strcmp(smac[1], "00:00:00:00:00:00") == 0) {
-		env_set("ethaddr", NULL);
-		env_set("eth1addr", NULL);
-		env_set("eth2addr", NULL);
+		env_set(ctx_uboot, "ethaddr", NULL);
+		env_set(ctx_uboot, "eth1addr", NULL);
+		env_set(ctx_uboot, "eth2addr", NULL);
 		goto done;
 	}
 
@@ -283,13 +283,13 @@ static int do_get_arc_info(void)
 	if (smac[1][0] == EMPY_CHAR) {
 		printf("<not found>\n");
 	} else {
-		char *ret = env_get("ethaddr");
+		char *ret = env_get(ctx_uboot, "ethaddr");
 
 		if (ret == NULL) {
-			env_set("ethaddr", smac[1]);
+			env_set(ctx_uboot, "ethaddr", smac[1]);
 			printf("%s\n", smac[1]);
 		} else if (strcmp(ret, __stringify(CONFIG_ETHADDR)) == 0) {
-			env_set("ethaddr", smac[1]);
+			env_set(ctx_uboot, "ethaddr", smac[1]);
 			printf("%s (factory)\n", smac[1]);
 		} else {
 			printf("%s\n", ret);
@@ -297,8 +297,8 @@ static int do_get_arc_info(void)
 	}
 
 	if (strcmp(smac[2], "00:00:00:00:00:00") == 0) {
-		env_set("eth1addr", NULL);
-		env_set("eth2addr", NULL);
+		env_set(ctx_uboot, "eth1addr", NULL);
+		env_set(ctx_uboot, "eth2addr", NULL);
 		goto done;
 	}
 
@@ -306,13 +306,13 @@ static int do_get_arc_info(void)
 	if (smac[2][0] == EMPY_CHAR) {
 		printf("<not found>\n");
 	} else {
-		char *ret = env_get("eth1addr");
+		char *ret = env_get(ctx_uboot, "eth1addr");
 
 		if (ret == NULL) {
-			env_set("ethaddr", smac[2]);
+			env_set(ctx_uboot, "ethaddr", smac[2]);
 			printf("%s\n", smac[2]);
 		} else if (strcmp(ret, __stringify(CONFIG_ETH1ADDR)) == 0) {
-			env_set("eth1addr", smac[2]);
+			env_set(ctx_uboot, "eth1addr", smac[2]);
 			printf("%s (factory)\n", smac[2]);
 		} else {
 			printf("%s\n", ret);
@@ -320,7 +320,7 @@ static int do_get_arc_info(void)
 	}
 
 	if (strcmp(smac[3], "00:00:00:00:00:00") == 0) {
-		env_set("eth2addr", NULL);
+		env_set(ctx_uboot, "eth2addr", NULL);
 		goto done;
 	}
 
@@ -328,13 +328,13 @@ static int do_get_arc_info(void)
 	if (smac[3][0] == EMPY_CHAR) {
 		printf("<not found>\n");
 	} else {
-		char *ret = env_get("eth2addr");
+		char *ret = env_get(ctx_uboot, "eth2addr");
 
 		if (ret == NULL) {
-			env_set("ethaddr", smac[3]);
+			env_set(ctx_uboot, "ethaddr", smac[3]);
 			printf("%s\n", smac[3]);
 		} else if (strcmp(ret, __stringify(CONFIG_ETH2ADDR)) == 0) {
-			env_set("eth2addr", smac[3]);
+			env_set(ctx_uboot, "eth2addr", smac[3]);
 			printf("%s (factory)\n", smac[3]);
 		} else {
 			printf("%s\n", ret);
@@ -343,8 +343,8 @@ static int do_get_arc_info(void)
 done:
 	if (oldserial == NULL || oldversion == NULL) {
 		if (oldversion == NULL)
-			env_set("VERSION", U_BOOT_VERSION);
-		env_save();
+			env_set(ctx_uboot, "VERSION", U_BOOT_VERSION);
+		env_save(ctx_uboot);
 	}
 
 	return 0;

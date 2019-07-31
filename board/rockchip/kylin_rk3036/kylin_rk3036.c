@@ -41,7 +41,7 @@ int rk_board_late_init(void)
 {
 	if (fastboot_key_pressed()) {
 		printf("enter fastboot!\n");
-		env_set("preboot", "setenv preboot; fastboot usb0");
+		env_set(ctx_uboot, "preboot", "setenv preboot; fastboot usb0");
 	}
 
 	return 0;

@@ -253,7 +253,7 @@ int power_init_board(void)
 
 int board_late_init(void)
 {
-	env_set("board_name", tqma6_get_boardname());
+	env_set(ctx_uboot, "board_name", tqma6_get_boardname());
 
 	tqma6_bb_board_late_init();
 

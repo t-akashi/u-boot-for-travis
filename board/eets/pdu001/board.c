@@ -79,15 +79,15 @@ static void env_set_boot_device(void)
 {
 	switch (boot_device()) {
 		case BOOT_DEVICE_MMC1: {
-			env_set("boot_device", "emmc");
+			env_set(ctx_uboot, "boot_device", "emmc");
 			break;
 		}
 		case BOOT_DEVICE_MMC2: {
-			env_set("boot_device", "sdcard");
+			env_set(ctx_uboot, "boot_device", "sdcard");
 			break;
 		}
 		default: {
-			env_set("boot_device", "unknown");
+			env_set(ctx_uboot, "boot_device", "unknown");
 			break;
 		}
 	}
@@ -117,7 +117,7 @@ static void env_set_serial(struct udevice *dev)
 		sprintf(serial + n, "%02X", val);
 	}
 	serial[2 * NODE_ID_BYTE_COUNT] = '\0';
-	env_set("serial#", serial);
+	env_set(ctx_uboot, "serial#", serial);
 }
 
 static void set_mpu_and_core_voltage(void)

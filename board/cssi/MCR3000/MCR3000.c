@@ -127,7 +127,7 @@ int misc_init_r(void)
 
 	/* if BTN_ACQ_AL is pressed then bootdelay is changed to 60 second */
 	if ((in_be16(&iop->iop_pcdat) & 0x0004) == 0)
-		env_set("bootdelay", "60");
+		env_set(ctx_uboot, "bootdelay", "60");
 
 	return 0;
 }

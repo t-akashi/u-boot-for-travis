@@ -51,24 +51,24 @@ int set_km_env(void)
 	pnvramaddr = gd->ram_size - CONFIG_KM_RESERVED_PRAM - CONFIG_KM_PHRAM
 			- CONFIG_KM_PNVRAM;
 	sprintf((char *)buf, "0x%x", pnvramaddr);
-	env_set("pnvramaddr", (char *)buf);
+	env_set(ctx_uboot, "pnvramaddr", (char *)buf);
 
 	/* try to read rootfssize (ram image) from environment */
-	p = env_get("rootfssize");
+	p = env_get(ctx_uboot, "rootfssize");
 	if (p != NULL)
 		strict_strtoul(p, 16, &rootfssize);
 	pram = (rootfssize + CONFIG_KM_RESERVED_PRAM + CONFIG_KM_PHRAM +
 		CONFIG_KM_PNVRAM) / 0x400;
 	sprintf((char *)buf, "0x%x", pram);
-	env_set("pram", (char *)buf);
+	env_set(ctx_uboot, "pram", (char *)buf);
 
 	varaddr = gd->ram_size - CONFIG_KM_RESERVED_PRAM - CONFIG_KM_PHRAM;
 	sprintf((char *)buf, "0x%x", varaddr);
-	env_set("varaddr", (char *)buf);
+	env_set(ctx_uboot, "varaddr", (char *)buf);
 
 	kernelmem = gd->ram_size - 0x400 * pram;
 	sprintf((char *)buf, "0x%x", kernelmem);
-	env_set("kernelmem", (char *)buf);
+	env_set(ctx_uboot, "kernelmem", (char *)buf);
 
 	return 0;
 }
@@ -169,7 +169,7 @@ static int do_setboardid(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 	strcpy((char *)buf, p);
-	env_set("boardid", (char *)buf);
+	env_set(ctx_uboot, "boardid", (char *)buf);
 	printf("set boardid=%s\n", buf);
 
 	p = get_local_var("IVM_HWKey");
@@ -178,7 +178,7 @@ static int do_setboardid(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 	strcpy((char *)buf, p);
-	env_set("hwkey", (char *)buf);
+	env_set(ctx_uboot, "hwkey", (char *)buf);
 	printf("set hwkey=%s\n", buf);
 	printf("Execute manually saveenv for persistent storage.\n");
 
@@ -236,10 +236,10 @@ static int do_checkboardidhwk(cmd_tbl_t *cmdtp, int flag, int argc,
 	}
 
 	/* now try to read values from environment if available */
-	p = env_get("boardid");
+	p = env_get(ctx_uboot, "boardid");
 	if (p != NULL)
 		rc = strict_strtoul(p, 16, &envbid);
-	p = env_get("hwkey");
+	p = env_get(ctx_uboot, "hwkey");
 	if (p != NULL)
 		rc = strict_strtoul(p, 16, &envhwkey);
 
@@ -253,7 +253,7 @@ static int do_checkboardidhwk(cmd_tbl_t *cmdtp, int flag, int argc,
 		 * BoardId/HWkey not available in the environment, so try the
 		 * environment variable for BoardId/HWkey list
 		 */
-		char *bidhwklist = env_get("boardIdListHex");
+		char *bidhwklist = env_get(ctx_uboot, "boardIdListHex");
 
 		if (bidhwklist) {
 			int found = 0;
@@ -311,9 +311,9 @@ static int do_checkboardidhwk(cmd_tbl_t *cmdtp, int flag, int argc,
 					envbid   = bid;
 					envhwkey = hwkey;
 					sprintf(buf, "%lx", bid);
-					env_set("boardid", buf);
+					env_set(ctx_uboot, "boardid", buf);
 					sprintf(buf, "%lx", hwkey);
-					env_set("hwkey", buf);
+					env_set(ctx_uboot, "hwkey", buf);
 				}
 			} /* end while( ! found ) */
 		}
@@ -355,7 +355,7 @@ static int do_checktestboot(cmd_tbl_t *cmdtp, int flag, int argc,
 #if defined(CONFIG_POST)
 	testpin = post_hotkeys_pressed();
 #endif
-	s = env_get("test_bank");
+	s = env_get(ctx_uboot, "test_bank");
 	/* when test_bank is not set, act as if testpin is not asserted */
 	testboot = (testpin != 0) && (s);
 	if (verbose) {

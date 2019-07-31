@@ -314,7 +314,7 @@ static int get_cfgblock_interactive(void)
 	wb = console_buffer[0];
 #endif
 
-	soc = env_get("soc");
+	soc = env_get(ctx_uboot, "soc");
 	if (!strcmp("mx6", soc)) {
 #ifdef CONFIG_TARGET_APALIS_IMX6
 		if (it == 'y' || it == 'Y') {

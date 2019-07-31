@@ -165,10 +165,11 @@ int board_late_init(void)
 	snprintf(othbootargs, sizeof(othbootargs),
 		 "u=vxWorksFTP pw=vxWorks o=0x%08x;0x%08x;0x%08x;0x%08x",
 		 (u32)gd->fb_base - 0x20,
-		 (u32)env_get_ulong("vx_memtop", 16, gd->fb_base - 0x20),
-		 (u32)env_get_ulong("vx_romfsbase", 16, 0),
-		 (u32)env_get_ulong("vx_romfssize", 16, 0));
-	env_set("othbootargs", othbootargs);
+		 (u32)env_get_ulong(ctx_uboot, "vx_memtop", 16,
+				    gd->fb_base - 0x20),
+		 (u32)env_get_ulong(ctx_uboot, "vx_romfsbase", 16, 0),
+		 (u32)env_get_ulong(ctx_uboot, "vx_romfssize", 16, 0));
+	env_set(ctx_uboot, "othbootargs", othbootargs);
 	/*
 	 * reset VBAR registers to its reset location, VxWorks 6.9.3.2 does
 	 * expect that vectors are there, original u-boot moves them to _start

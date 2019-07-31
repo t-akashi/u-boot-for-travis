@@ -283,7 +283,7 @@ static void reset_net_chip(void)
 int board_eth_init(bd_t *bis)
 {
 #if defined(CONFIG_SMC911X)
-	env_set("ethaddr", NULL);
+	env_set(ctx_uboot, "ethaddr", NULL);
 	return smc911x_initialize(0, CONFIG_SMC911X_BASE);
 #else
 	return 0;

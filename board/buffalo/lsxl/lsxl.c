@@ -229,7 +229,7 @@ static void erase_environment(void)
 static void rescue_mode(void)
 {
 	printf("Entering rescue mode..\n");
-	env_set("bootsource", "rescue");
+	env_set(ctx_uboot, "bootsource", "rescue");
 }
 
 static void check_push_button(void)

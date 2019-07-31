@@ -362,10 +362,10 @@ int misc_init_r(void)
 		return 0;
 	}
 
-	if (is_valid_ethaddr(mac1) && !env_get("ethaddr"))
+	if (is_valid_ethaddr(mac1) && !env_get(ctx_uboot, "ethaddr"))
 		eth_env_set_enetaddr("ethaddr", mac1);
 
-	if (is_valid_ethaddr(mac2) && !env_get("eth1addr"))
+	if (is_valid_ethaddr(mac2) && !env_get(ctx_uboot, "eth1addr"))
 		eth_env_set_enetaddr("eth1addr", mac2);
 
 	return 0;

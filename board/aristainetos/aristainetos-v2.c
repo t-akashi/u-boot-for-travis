@@ -651,7 +651,7 @@ int board_late_init(void)
 {
 	char *my_bootdelay;
 	char bootmode = 0;
-	char const *panel = env_get("panel");
+	char const *panel = env_get(ctx_uboot, "panel");
 
 	/*
 	 * Check the boot-source. If booting from NOR Flash,
@@ -668,11 +668,11 @@ int board_late_init(void)
 	bootmode |= (gpio_get_value(IMX_GPIO_NR(7, 1)) ? 1 : 0) << 2;
 
 	if (bootmode == 7) {
-		my_bootdelay = env_get("nor_bootdelay");
+		my_bootdelay = env_get(ctx_uboot, "nor_bootdelay");
 		if (my_bootdelay != NULL)
-			env_set("bootdelay", my_bootdelay);
+			env_set(ctx_uboot, "bootdelay", my_bootdelay);
 		else
-			env_set("bootdelay", "-2");
+			env_set(ctx_uboot, "bootdelay", "-2");
 	}
 
 	/* if we have the lg panel, we can initialze it now */

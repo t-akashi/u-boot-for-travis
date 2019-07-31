@@ -58,8 +58,8 @@ static int setup_boottargets(void)
 	}
 	debug("%s: booted from %s\n", __func__, boot_device);
 
-	env_default = env_get_default("boot_targets");
-	env = env_get("boot_targets");
+	env_default = env_get_default(ctx_uboot, "boot_targets");
+	env = env_get(ctx_uboot, "boot_targets");
 	if (!env) {
 		debug("%s: boot_targets does not exist\n", __func__);
 		return -1;
@@ -102,7 +102,7 @@ static int setup_boottargets(void)
 			mmc0[3] = '1';
 			mmc1[3] = '0';
 			debug("%s: set boot_targets to: %s\n", __func__, env);
-			env_set("boot_targets", env);
+			env_set(ctx_uboot, "boot_targets", env);
 		}
 	}
 
@@ -140,7 +140,7 @@ void get_board_serial(struct tag_serialnr *serialnr)
 	char *serial_string;
 	u64 serial = 0;
 
-	serial_string = env_get("serial#");
+	serial_string = env_get(ctx_uboot, "serial#");
 
 	if (serial_string)
 		serial = simple_strtoull(serial_string, NULL, 16);

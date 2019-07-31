@@ -22,11 +22,11 @@ static void mmc_late_init(void)
 	char mmcblk[32];
 	u32 dev_no = mmc_get_env_dev();
 
-	env_set_ulong("mmcdev", dev_no);
+	env_set_ulong(ctx_uboot, "mmcdev", dev_no);
 
 	/* Set mmcblk env */
 	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw", dev_no);
-	env_set("mmcroot", mmcblk);
+	env_set(ctx_uboot, "mmcroot", mmcblk);
 
 	sprintf(cmd, "mmc dev %d", dev_no);
 	run_command(cmd, 0);
@@ -39,25 +39,25 @@ static void setenv_fdt_file(void)
 
 	if (!strcmp(cmp_dtb, "imx6q-icore")) {
 		if (is_mx6dq())
-			env_set("fdt_file", "imx6q-icore.dtb");
+			env_set(ctx_uboot, "fdt_file", "imx6q-icore.dtb");
 		else if (is_mx6dl() || is_mx6solo())
-			env_set("fdt_file", "imx6dl-icore.dtb");
+			env_set(ctx_uboot, "fdt_file", "imx6dl-icore.dtb");
 	} else if (!strcmp(cmp_dtb, "imx6q-icore-mipi")) {
 		if (is_mx6dq())
-			env_set("fdt_file", "imx6q-icore-mipi.dtb");
+			env_set(ctx_uboot, "fdt_file", "imx6q-icore-mipi.dtb");
 		else if (is_mx6dl() || is_mx6solo())
-			env_set("fdt_file", "imx6dl-icore-mipi.dtb");
+			env_set(ctx_uboot, "fdt_file", "imx6dl-icore-mipi.dtb");
 	} else if (!strcmp(cmp_dtb, "imx6q-icore-rqs")) {
 		if (is_mx6dq())
-			env_set("fdt_file", "imx6q-icore-rqs.dtb");
+			env_set(ctx_uboot, "fdt_file", "imx6q-icore-rqs.dtb");
 		else if (is_mx6dl() || is_mx6solo())
-			env_set("fdt_file", "imx6dl-icore-rqs.dtb");
+			env_set(ctx_uboot, "fdt_file", "imx6dl-icore-rqs.dtb");
 	} else if (!strcmp(cmp_dtb, "imx6ul-geam"))
-		env_set("fdt_file", "imx6ul-geam.dtb");
+		env_set(ctx_uboot, "fdt_file", "imx6ul-geam.dtb");
 	else if (!strcmp(cmp_dtb, "imx6ul-isiot-emmc"))
-		env_set("fdt_file", "imx6ul-isiot-emmc.dtb");
+		env_set(ctx_uboot, "fdt_file", "imx6ul-isiot-emmc.dtb");
 	else if (!strcmp(cmp_dtb, "imx6ul-isiot-nand"))
-		env_set("fdt_file", "imx6ul-isiot-nand.dtb");
+		env_set(ctx_uboot, "fdt_file", "imx6ul-isiot-nand.dtb");
 }
 
 int board_late_init(void)
@@ -71,20 +71,20 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_IS_IN_MMC
 		mmc_late_init();
 #endif
-		env_set("modeboot", "mmcboot");
+		env_set(ctx_uboot, "modeboot", "mmcboot");
 		break;
 	case IMX6_BMODE_NAND_MIN ... IMX6_BMODE_NAND_MAX:
-		env_set("modeboot", "nandboot");
+		env_set(ctx_uboot, "modeboot", "nandboot");
 		break;
 	default:
-		env_set("modeboot", "");
+		env_set(ctx_uboot, "modeboot", "");
 		break;
 	}
 
 	if (is_mx6ul())
-		env_set("console", "ttymxc0");
+		env_set(ctx_uboot, "console", "ttymxc0");
 	else
-		env_set("console", "ttymxc3");
+		env_set(ctx_uboot, "console", "ttymxc3");
 
 	setenv_fdt_file();
 

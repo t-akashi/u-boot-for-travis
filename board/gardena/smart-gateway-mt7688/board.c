@@ -70,9 +70,9 @@ static bool prepare_uuid_var(const char *fd_ptr, const char *env_var_name,
 			str[i] = errorchar;
 	}
 
-	env = env_get(env_var_name);
+	env = env_get(ctx_uboot, env_var_name);
 	if (strcmp(env, str)) {
-		env_set(env_var_name, str);
+		env_set(ctx_uboot, env_var_name, str);
 		env_updated = true;
 	}
 
@@ -134,9 +134,9 @@ static void factory_data_env_config(void)
 	if (!is_valid_ethaddr(ptr))
 		printf("F-Data:Invalid MAC addr: wifi_mac %s\n", str);
 
-	env = env_get("wifiaddr");
+	env = env_get(ctx_uboot, "wifiaddr");
 	if (strcmp(env, str)) {
-		env_set("wifiaddr", str);
+		env_set(ctx_uboot, "wifiaddr", str);
 		env_updated = 1;
 	}
 
@@ -146,9 +146,9 @@ static void factory_data_env_config(void)
 	if (!is_valid_ethaddr(ptr))
 		printf("F-Data:Invalid MAC addr: eth_mac %s\n", str);
 
-	env = env_get("ethaddr");
+	env = env_get(ctx_uboot, "ethaddr");
 	if (strcmp(env, str)) {
-		env_set("ethaddr", str);
+		env_set(ctx_uboot, "ethaddr", str);
 		env_updated = 1;
 	}
 
@@ -161,7 +161,7 @@ static void factory_data_env_config(void)
 	/* Check if the environment was updated and needs to get stored */
 	if (env_updated != 0) {
 		printf("F-Data:Values don't match env values -> saving\n");
-		env_save();
+		env_save(ctx_uboot);
 	} else {
 		debug("F-Data:Values match current env values\n");
 	}
@@ -189,7 +189,7 @@ static void copy_or_generate_uuid(char *fd_ptr, const char *env_var_name)
 	char *env;
 
 	/* Don't use the UUID dest place, as the \0 char won't fit */
-	env = env_get(env_var_name);
+	env = env_get(ctx_uboot, env_var_name);
 	if (env)
 		strncpy(str, env, UUID_STR_LEN);
 	else

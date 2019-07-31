@@ -81,7 +81,7 @@ int show_board_info(void)
 			tdx_hw_tag.ver_minor,
 			(char)tdx_hw_tag.ver_assembly + 'A');
 
-		env_set("serial#", tdx_serial_str);
+		env_set(ctx_uboot, "serial#", tdx_serial_str);
 
 		printf("Model: Toradex %s %s, Serial# %s\n",
 		       toradex_modules[tdx_hw_tag.prodid],

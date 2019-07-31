@@ -484,7 +484,7 @@ int board_eth_init(bd_t *bis)
 	 * defining "dpmac_override" in hwconfig environment variable.
 	 */
 	if (hwconfig("dpmac_override")) {
-		env_dpmac = env_get("dpmac");
+		env_dpmac = env_get(ctx_uboot, "dpmac");
 		if (env_dpmac) {
 			ret = hwconfig_arg_f("srds", &len, env_dpmac);
 			if (ret) {

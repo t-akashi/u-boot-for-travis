@@ -212,7 +212,7 @@ int board_init(void)
 
 	val = in_le32(dcfg_ccsr + DCFG_RCWSR13 / 4);
 
-	env_hwconfig = env_get("hwconfig");
+	env_hwconfig = env_get(ctx_uboot, "hwconfig");
 
 	if (hwconfig_f("dspi", env_hwconfig) &&
 	    DCFG_RCWSR13_DSPI == (val & (u32)(0xf << 8)))

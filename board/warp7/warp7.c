@@ -148,9 +148,9 @@ int board_late_init(void)
 
 #ifdef CONFIG_SECURE_BOOT
 	/* Determine HAB state */
-	env_set_ulong(HAB_ENABLED_ENVNAME, imx_hab_is_enabled());
+	env_set_ulong(ctx_uboot, HAB_ENABLED_ENVNAME, imx_hab_is_enabled());
 #else
-	env_set_ulong(HAB_ENABLED_ENVNAME, 0);
+	env_set_ulong(ctx_uboot, HAB_ENABLED_ENVNAME, 0);
 #endif
 
 #ifdef CONFIG_SERIAL_TAG
@@ -158,7 +158,7 @@ int board_late_init(void)
 	get_board_serial(&serialnr);
 	snprintf(serial_string, sizeof(serial_string), "WaRP7-0x%08x%08x",
 		 serialnr.low, serialnr.high);
-	env_set("serial#", serial_string);
+	env_set(ctx_uboot, "serial#", serial_string);
 #endif
 
 	return 0;

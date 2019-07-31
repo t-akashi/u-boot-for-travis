@@ -623,14 +623,14 @@ int board_late_init(void)
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "SABREAUTO");
+	env_set(ctx_uboot, "board_name", "SABREAUTO");
 
 	if (is_mx6dqp())
-		env_set("board_rev", "MX6QP");
+		env_set(ctx_uboot, "board_rev", "MX6QP");
 	else if (is_mx6dq())
-		env_set("board_rev", "MX6Q");
+		env_set(ctx_uboot, "board_rev", "MX6Q");
 	else if (is_mx6sdl())
-		env_set("board_rev", "MX6DL");
+		env_set(ctx_uboot, "board_rev", "MX6DL");
 #endif
 
 	return 0;

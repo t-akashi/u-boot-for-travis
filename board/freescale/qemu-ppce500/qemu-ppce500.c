@@ -211,10 +211,10 @@ int last_stage_init(void)
 	/* -kernel boot */
 	prop = fdt_getprop(fdt, chosen, "qemu,boot-kernel", &len);
 	if (prop && (len >= 8))
-		env_set_hex("qemu_kernel_addr", *prop);
+		env_set_hex(ctx_uboot, "qemu_kernel_addr", *prop);
 
 	/* Give the user a variable for the host fdt */
-	env_set_hex("fdt_addr_r", (ulong)fdt);
+	env_set_hex("fdt_addr_r", (ctx_uboot, ulong)fdt);
 
 	return 0;
 }

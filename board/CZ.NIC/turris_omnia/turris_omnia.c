@@ -326,7 +326,7 @@ static int set_regdomain(void)
 		puts("EEPROM regdomain read failed.\n");
 
 	printf("Regdomain set to %s\n", rd);
-	return env_set("regdomain", rd);
+	return env_set(ctx_uboot, "regdomain", rd);
 }
 
 /*
@@ -359,11 +359,11 @@ static void handle_reset_button(void)
 		return;
 	}
 
-	env_set_ulong("omnia_reset", reset_status);
+	env_set_ulong(ctx_uboot, "omnia_reset", reset_status);
 
 	if (reset_status) {
 		printf("RESET button was pressed, overwriting bootcmd!\n");
-		env_set("bootcmd", OMNIA_FACTORY_RESET_BOOTCMD);
+		env_set(ctx_uboot, "bootcmd", OMNIA_FACTORY_RESET_BOOTCMD);
 	}
 }
 #endif

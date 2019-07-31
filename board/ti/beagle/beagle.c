@@ -340,16 +340,16 @@ int misc_init_r(void)
 	switch (get_board_revision()) {
 	case REVISION_AXBX:
 		printf("Beagle Rev Ax/Bx\n");
-		env_set("beaglerev", "AxBx");
+		env_set(ctx_uboot, "beaglerev", "AxBx");
 		break;
 	case REVISION_CX:
 		printf("Beagle Rev C1/C2/C3\n");
-		env_set("beaglerev", "Cx");
+		env_set(ctx_uboot, "beaglerev", "Cx");
 		MUX_BEAGLE_C();
 		break;
 	case REVISION_C4:
 		printf("Beagle Rev C4\n");
-		env_set("beaglerev", "C4");
+		env_set(ctx_uboot, "beaglerev", "C4");
 		MUX_BEAGLE_C();
 		/* Set VAUX2 to 1.8V for EHCI PHY */
 		twl4030_pmrecv_vsel_cfg(TWL4030_PM_RECEIVER_VAUX2_DEDICATED,
@@ -359,7 +359,7 @@ int misc_init_r(void)
 		break;
 	case REVISION_XM_AB:
 		printf("Beagle xM Rev A/B\n");
-		env_set("beaglerev", "xMAB");
+		env_set(ctx_uboot, "beaglerev", "xMAB");
 		MUX_BEAGLE_XM();
 		/* Set VAUX2 to 1.8V for EHCI PHY */
 		twl4030_pmrecv_vsel_cfg(TWL4030_PM_RECEIVER_VAUX2_DEDICATED,
@@ -370,7 +370,7 @@ int misc_init_r(void)
 		break;
 	case REVISION_XM_C:
 		printf("Beagle xM Rev C\n");
-		env_set("beaglerev", "xMC");
+		env_set(ctx_uboot, "beaglerev", "xMC");
 		MUX_BEAGLE_XM();
 		/* Set VAUX2 to 1.8V for EHCI PHY */
 		twl4030_pmrecv_vsel_cfg(TWL4030_PM_RECEIVER_VAUX2_DEDICATED,
@@ -396,14 +396,14 @@ int misc_init_r(void)
 			expansion_config.revision,
 			expansion_config.fab_revision);
 		MUX_TINCANTOOLS_ZIPPY();
-		env_set("buddy", "zippy");
+		env_set(ctx_uboot, "buddy", "zippy");
 		break;
 	case TINCANTOOLS_ZIPPY2:
 		printf("Recognized Tincantools Zippy2 board (rev %d %s)\n",
 			expansion_config.revision,
 			expansion_config.fab_revision);
 		MUX_TINCANTOOLS_ZIPPY();
-		env_set("buddy", "zippy2");
+		env_set(ctx_uboot, "buddy", "zippy2");
 		break;
 	case TINCANTOOLS_TRAINER:
 		printf("Recognized Tincantools Trainer board (rev %d %s)\n",
@@ -411,37 +411,37 @@ int misc_init_r(void)
 			expansion_config.fab_revision);
 		MUX_TINCANTOOLS_ZIPPY();
 		MUX_TINCANTOOLS_TRAINER();
-		env_set("buddy", "trainer");
+		env_set(ctx_uboot, "buddy", "trainer");
 		break;
 	case TINCANTOOLS_SHOWDOG:
 		printf("Recognized Tincantools Showdow board (rev %d %s)\n",
 			expansion_config.revision,
 			expansion_config.fab_revision);
 		/* Place holder for DSS2 definition for showdog lcd */
-		env_set("defaultdisplay", "showdoglcd");
-		env_set("buddy", "showdog");
+		env_set(ctx_uboot, "defaultdisplay", "showdoglcd");
+		env_set(ctx_uboot, "buddy", "showdog");
 		break;
 	case KBADC_BEAGLEFPGA:
 		printf("Recognized KBADC Beagle FPGA board\n");
 		MUX_KBADC_BEAGLEFPGA();
-		env_set("buddy", "beaglefpga");
+		env_set(ctx_uboot, "buddy", "beaglefpga");
 		break;
 	case LW_BEAGLETOUCH:
 		printf("Recognized Liquidware BeagleTouch board\n");
-		env_set("buddy", "beagletouch");
+		env_set(ctx_uboot, "buddy", "beagletouch");
 		break;
 	case BRAINMUX_LCDOG:
 		printf("Recognized Brainmux LCDog board\n");
-		env_set("buddy", "lcdog");
+		env_set(ctx_uboot, "buddy", "lcdog");
 		break;
 	case BRAINMUX_LCDOGTOUCH:
 		printf("Recognized Brainmux LCDog Touch board\n");
-		env_set("buddy", "lcdogtouch");
+		env_set(ctx_uboot, "buddy", "lcdogtouch");
 		break;
 	case BBTOYS_WIFI:
 		printf("Recognized BeagleBoardToys WiFi board\n");
 		MUX_BBTOYS_WIFI()
-		env_set("buddy", "bbtoys-wifi");
+		env_set(ctx_uboot, "buddy", "bbtoys-wifi");
 		break;
 	case BBTOYS_VGA:
 		printf("Recognized BeagleBoardToys VGA board\n");
@@ -458,20 +458,21 @@ int misc_init_r(void)
 	case LSR_COM6L_ADPT:
 		printf("Recognized LSR COM6L Adapter Board\n");
 		MUX_BBTOYS_WIFI()
-		env_set("buddy", "lsr-com6l-adpt");
+		env_set(ctx_uboot, "buddy", "lsr-com6l-adpt");
 		break;
 	case BEAGLE_NO_EEPROM:
 		printf("No EEPROM on expansion board\n");
-		env_set("buddy", "none");
+		env_set(ctx_uboot, "buddy", "none");
 		break;
 	default:
 		printf("Unrecognized expansion board: %x\n",
 			expansion_config.device_vendor);
-		env_set("buddy", "unknown");
+		env_set(ctx_uboot, "buddy", "unknown");
 	}
 
 	if (expansion_config.content == 1)
-		env_set(expansion_config.env_var, expansion_config.env_setting);
+		env_set(ctx_uboot, expansion_config.env_var,
+			expansion_config.env_setting);
 
 	twl4030_power_init();
 	switch (get_board_revision()) {
@@ -511,10 +512,10 @@ int misc_init_r(void)
 
 #if defined(CONFIG_MTDIDS_DEFAULT) && defined(CONFIG_MTDPARTS_DEFAULT)
 	if (strlen(CONFIG_MTDIDS_DEFAULT))
-		env_set("mtdids", CONFIG_MTDIDS_DEFAULT);
+		env_set(ctx_uboot, "mtdids", CONFIG_MTDIDS_DEFAULT);
 
 	if (strlen(CONFIG_MTDPARTS_DEFAULT))
-		env_set("mtdparts", CONFIG_MTDPARTS_DEFAULT);
+		env_set(ctx_uboot, "mtdparts", CONFIG_MTDPARTS_DEFAULT);
 #endif
 
 	return 0;

@@ -280,7 +280,7 @@ u32 get_board_rev(void)
 	u32 maxcpuclk = CONFIG_DA850_EVM_MAX_CPU_CLK;
 	u32 rev = 0;
 
-	s = env_get("maxcpuclk");
+	s = env_get(ctx_uboot, "maxcpuclk");
 	if (s)
 		maxcpuclk = simple_strtoul(s, NULL, 10);
 

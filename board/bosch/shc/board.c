@@ -246,7 +246,7 @@ static void check_button_status(void)
 
 	if (value == 0) {
 		printf("front button activated !\n");
-		env_set("harakiri", "1");
+		env_set(ctx_uboot, "harakiri", "1");
 	}
 }
 

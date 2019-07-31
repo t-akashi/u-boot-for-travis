@@ -41,27 +41,27 @@ int board_late_init(void)
 	switch ((zynq_slcr_get_boot_mode()) & ZYNQ_BM_MASK) {
 	case ZYNQ_BM_QSPI:
 		mode = "qspi";
-		env_set("modeboot", "qspiboot");
+		env_set(ctx_uboot, "modeboot", "qspiboot");
 		break;
 	case ZYNQ_BM_NAND:
 		mode = "nand";
-		env_set("modeboot", "nandboot");
+		env_set(ctx_uboot, "modeboot", "nandboot");
 		break;
 	case ZYNQ_BM_NOR:
 		mode = "nor";
-		env_set("modeboot", "norboot");
+		env_set(ctx_uboot, "modeboot", "norboot");
 		break;
 	case ZYNQ_BM_SD:
 		mode = "mmc";
-		env_set("modeboot", "sdboot");
+		env_set(ctx_uboot, "modeboot", "sdboot");
 		break;
 	case ZYNQ_BM_JTAG:
 		mode = "pxe dhcp";
-		env_set("modeboot", "jtagboot");
+		env_set(ctx_uboot, "modeboot", "jtagboot");
 		break;
 	default:
 		mode = "";
-		env_set("modeboot", "");
+		env_set(ctx_uboot, "modeboot", "");
 		break;
 	}
 
@@ -69,7 +69,7 @@ int board_late_init(void)
 	 * One terminating char + one byte for space between mode
 	 * and default boot_targets
 	 */
-	env_targets = env_get("boot_targets");
+	env_targets = env_get(ctx_uboot, "boot_targets");
 	if (env_targets)
 		env_targets_len = strlen(env_targets);
 
@@ -80,7 +80,7 @@ int board_late_init(void)
 	sprintf(new_targets, "%s %s", mode,
 		env_targets ? env_targets : "");
 
-	env_set("boot_targets", new_targets);
+	env_set(ctx_uboot, "boot_targets", new_targets);
 
 	return 0;
 }

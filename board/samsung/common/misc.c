@@ -51,7 +51,7 @@ void set_dfu_alt_info(char *interface, char *devstr)
 
 	alt_setting = get_dfu_alt_boot(interface, devstr);
 	if (alt_setting) {
-		env_set("dfu_alt_boot", alt_setting);
+		env_set(ctx_uboot, "dfu_alt_boot", alt_setting);
 		offset = snprintf(buf, buf_size, "%s", alt_setting);
 	}
 
@@ -71,7 +71,7 @@ void set_dfu_alt_info(char *interface, char *devstr)
 		status = "done\n";
 	}
 
-	env_set("dfu_alt_info", alt_info);
+	env_set(ctx_uboot, "dfu_alt_info", alt_info);
 	puts(status);
 }
 #endif
@@ -83,14 +83,14 @@ void set_board_info(void)
 
 	snprintf(info, ARRAY_SIZE(info), "%u.%u", (s5p_cpu_rev & 0xf0) >> 4,
 		 s5p_cpu_rev & 0xf);
-	env_set("soc_rev", info);
+	env_set(ctx_uboot, "soc_rev", info);
 
 	snprintf(info, ARRAY_SIZE(info), "%x", s5p_cpu_id);
-	env_set("soc_id", info);
+	env_set(ctx_uboot, "soc_id", info);
 
 #ifdef CONFIG_REVISION_TAG
 	snprintf(info, ARRAY_SIZE(info), "%x", get_board_rev());
-	env_set("board_rev", info);
+	env_set(ctx_uboot, "board_rev", info);
 #endif
 #ifdef CONFIG_OF_LIBFDT
 	const char *bdtype = "";
@@ -102,11 +102,11 @@ void set_board_info(void)
 		bdtype = "";
 
 	sprintf(info, "%s%s", bdname, bdtype);
-	env_set("board_name", info);
+	env_set(ctx_uboot, "board_name", info);
 #endif
 	snprintf(info, ARRAY_SIZE(info),  "%s%x-%s%s.dtb",
 		 CONFIG_SYS_SOC, s5p_cpu_id, bdname, bdtype);
-	env_set("fdtfile", info);
+	env_set(ctx_uboot, "fdtfile", info);
 #endif
 }
 #endif /* CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG */

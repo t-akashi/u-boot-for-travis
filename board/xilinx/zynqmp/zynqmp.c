@@ -479,7 +479,7 @@ static int reset_reason(void)
 
 	puts("\n");
 
-	env_set("reset_reason", reason);
+	env_set(ctx_uboot, "reset_reason", reason);
 
 	ret = zynqmp_mmio_write(~0, ~0, (ulong)&crlapb_base->reset_reason);
 	if (ret)
@@ -494,7 +494,7 @@ static int set_fdtfile(void)
 	const char *suffix = ".dtb";
 	const char *vendor = "xilinx/";
 
-	if (env_get("fdtfile"))
+	if (env_get(ctx_uboot, "fdtfile"))
 		return 0;
 
 	compatible = (char *)fdt_getprop(gd->fdt_blob, 0, "compatible", NULL);
@@ -511,7 +511,7 @@ static int set_fdtfile(void)
 
 		sprintf(fdtfile, "%s%s%s", vendor, compatible, suffix);
 
-		env_set("fdtfile", fdtfile);
+		env_set(ctx_uboot, "fdtfile", fdtfile);
 		free(fdtfile);
 	}
 
@@ -558,23 +558,23 @@ int board_late_init(void)
 	case USB_MODE:
 		puts("USB_MODE\n");
 		mode = "usb";
-		env_set("modeboot", "usb_dfu_spl");
+		env_set(ctx_uboot, "modeboot", "usb_dfu_spl");
 		break;
 	case JTAG_MODE:
 		puts("JTAG_MODE\n");
 		mode = "pxe dhcp";
-		env_set("modeboot", "jtagboot");
+		env_set(ctx_uboot, "modeboot", "jtagboot");
 		break;
 	case QSPI_MODE_24BIT:
 	case QSPI_MODE_32BIT:
 		mode = "qspi0";
 		puts("QSPI_MODE\n");
-		env_set("modeboot", "qspiboot");
+		env_set(ctx_uboot, "modeboot", "qspiboot");
 		break;
 	case EMMC_MODE:
 		puts("EMMC_MODE\n");
 		mode = "mmc0";
-		env_set("modeboot", "emmcboot");
+		env_set(ctx_uboot, "modeboot", "emmcboot");
 		break;
 	case SD_MODE:
 		puts("SD_MODE\n");
@@ -589,7 +589,7 @@ int board_late_init(void)
 
 		mode = "mmc";
 		bootseq = dev->seq;
-		env_set("modeboot", "sdboot");
+		env_set(ctx_uboot, "modeboot", "sdboot");
 		break;
 	case SD1_LSHFT_MODE:
 		puts("LVL_SHFT_");
@@ -607,12 +607,12 @@ int board_late_init(void)
 
 		mode = "mmc";
 		bootseq = dev->seq;
-		env_set("modeboot", "sdboot");
+		env_set(ctx_uboot, "modeboot", "sdboot");
 		break;
 	case NAND_MODE:
 		puts("NAND_MODE\n");
 		mode = "nand0";
-		env_set("modeboot", "nandboot");
+		env_set(ctx_uboot, "modeboot", "nandboot");
 		break;
 	default:
 		mode = "";
@@ -629,7 +629,7 @@ int board_late_init(void)
 	 * One terminating char + one byte for space between mode
 	 * and default boot_targets
 	 */
-	env_targets = env_get("boot_targets");
+	env_targets = env_get(ctx_uboot, "boot_targets");
 	if (env_targets)
 		env_targets_len = strlen(env_targets);
 
@@ -645,7 +645,7 @@ int board_late_init(void)
 		sprintf(new_targets, "%s %s", mode,
 			env_targets ? env_targets : "");
 
-	env_set("boot_targets", new_targets);
+	env_set(ctx_uboot, "boot_targets", new_targets);
 
 	reset_reason();
 

@@ -29,9 +29,12 @@ DECLARE_GLOBAL_DATA_PTR;
 
 void lcdbacklight(int on)
 {
-	unsigned int driver = env_get_ulong("ds1_bright_drv", 16, 0UL);
-	unsigned int bright = env_get_ulong("ds1_bright_def", 10, 50);
-	unsigned int pwmfrq = env_get_ulong("ds1_pwmfreq", 10, ~0UL);
+	unsigned int driver = env_get_ulong(ctx_uboot, "ds1_bright_drv", 16,
+					    0UL);
+	unsigned int bright = env_get_ulong(ctx_uboot, "ds1_bright_def", 10,
+					    50);
+	unsigned int pwmfrq = env_get_ulong(ctx_uboot, "ds1_pwmfreq", 10,
+					    ~0UL);
 	unsigned int tmp;
 	struct gptimer *timerhw;
 
@@ -87,20 +90,20 @@ int load_lcdtiming(struct am335x_lcdpanel *panel)
 {
 	struct am335x_lcdpanel pnltmp;
 
-	pnltmp.hactive = env_get_ulong("ds1_hactive", 10, ~0UL);
-	pnltmp.vactive = env_get_ulong("ds1_vactive", 10, ~0UL);
-	pnltmp.bpp = env_get_ulong("ds1_bpp", 10, ~0UL);
-	pnltmp.hfp = env_get_ulong("ds1_hfp", 10, ~0UL);
-	pnltmp.hbp = env_get_ulong("ds1_hbp", 10, ~0UL);
-	pnltmp.hsw = env_get_ulong("ds1_hsw", 10, ~0UL);
-	pnltmp.vfp = env_get_ulong("ds1_vfp", 10, ~0UL);
-	pnltmp.vbp = env_get_ulong("ds1_vbp", 10, ~0UL);
-	pnltmp.vsw = env_get_ulong("ds1_vsw", 10, ~0UL);
-	pnltmp.pxl_clk = env_get_ulong("ds1_pxlclk", 10, ~0UL);
-	pnltmp.pol = env_get_ulong("ds1_pol", 16, ~0UL);
-	pnltmp.pup_delay = env_get_ulong("ds1_pupdelay", 10, ~0UL);
-	pnltmp.pon_delay = env_get_ulong("ds1_tondelay", 10, ~0UL);
-	panel_info.vl_rot = env_get_ulong("ds1_rotation", 10, 0);
+	pnltmp.hactive = env_get_ulong(ctx_uboot, "ds1_hactive", 10, ~0UL);
+	pnltmp.vactive = env_get_ulong(ctx_uboot, "ds1_vactive", 10, ~0UL);
+	pnltmp.bpp = env_get_ulong(ctx_uboot, "ds1_bpp", 10, ~0UL);
+	pnltmp.hfp = env_get_ulong(ctx_uboot, "ds1_hfp", 10, ~0UL);
+	pnltmp.hbp = env_get_ulong(ctx_uboot, "ds1_hbp", 10, ~0UL);
+	pnltmp.hsw = env_get_ulong(ctx_uboot, "ds1_hsw", 10, ~0UL);
+	pnltmp.vfp = env_get_ulong(ctx_uboot, "ds1_vfp", 10, ~0UL);
+	pnltmp.vbp = env_get_ulong(ctx_uboot, "ds1_vbp", 10, ~0UL);
+	pnltmp.vsw = env_get_ulong(ctx_uboot, "ds1_vsw", 10, ~0UL);
+	pnltmp.pxl_clk = env_get_ulong(ctx_uboot, "ds1_pxlclk", 10, ~0UL);
+	pnltmp.pol = env_get_ulong(ctx_uboot, "ds1_pol", 16, ~0UL);
+	pnltmp.pup_delay = env_get_ulong(ctx_uboot, "ds1_pupdelay", 10, ~0UL);
+	pnltmp.pon_delay = env_get_ulong(ctx_uboot, "ds1_tondelay", 10, ~0UL);
+	panel_info.vl_rot = env_get_ulong(ctx_uboot, "ds1_rotation", 10, 0);
 
 	if (
 	   ~0UL == (pnltmp.hactive) ||
@@ -151,11 +154,11 @@ static void br_summaryscreen_printenv(char *prefix,
 				       char *name, char *altname,
 				       char *suffix)
 {
-	char *envval = env_get(name);
+	char *envval = env_get(ctx_uboot, name);
 	if (0 != envval) {
 		lcd_printf("%s %s %s", prefix, envval, suffix);
 	} else if (0 != altname) {
-		envval = env_get(altname);
+		envval = env_get(ctx_uboot, altname);
 		if (0 != envval)
 			lcd_printf("%s %s %s", prefix, envval, suffix);
 	} else {
@@ -178,7 +181,7 @@ void lcdpower(int on)
 	u32 pin, swval, i;
 	char buf[16] = { 0 };
 
-	pin = env_get_ulong("ds1_pwr", 16, ~0UL);
+	pin = env_get_ulong(ctx_uboot, "ds1_pwr", 16, ~0UL);
 
 	if (pin == ~0UL) {
 		puts("no pwrpin in dtb/env, cannot powerup display!\n");
@@ -295,8 +298,8 @@ int brdefaultip_setup(int bus, int chip)
 			"if test -r ${ipaddr}; then; else setenv ipaddr 192.168.60.1; setenv serverip 192.168.60.254; setenv gatewayip 192.168.60.254; setenv netmask 255.255.255.0; fi;",
 			sizeof(defip));
 
-	env_set("brdefaultip", defip);
-	env_set_hex("board_id", u8buf);
+	env_set(ctx_uboot, "brdefaultip", defip);
+	env_set_hex(ctx_uboot, "board_id", u8buf);
 
 	return 0;
 }

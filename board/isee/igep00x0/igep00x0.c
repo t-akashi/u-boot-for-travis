@@ -199,8 +199,8 @@ void set_boardname(void)
 	int i = get_board_revision();
 
 	rev[i+1] = 0;
-	env_set("board_rev", rev + i);
-	env_set("board_name", i < 2 ? "igep0020" : "igep0030");
+	env_set(ctx_uboot, "board_rev", rev + i);
+	env_set(ctx_uboot, "board_name", i < 2 ? "igep0020" : "igep0030");
 }
 
 /*

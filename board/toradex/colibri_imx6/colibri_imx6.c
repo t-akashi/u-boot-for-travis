@@ -661,14 +661,14 @@ int board_late_init(void)
 
 	rev = get_board_rev();
 	snprintf(env_str, ARRAY_SIZE(env_str), "%.4x", rev);
-	env_set("board_rev", env_str);
+	env_set(ctx_uboot, "board_rev", env_str);
 #endif
 
 #ifdef CONFIG_CMD_USB_SDP
 	if (is_boot_from_usb()) {
 		printf("Serial Downloader recovery mode, using sdp command\n");
-		env_set("bootdelay", "0");
-		env_set("bootcmd", "sdp 0");
+		env_set(ctx_uboot, "bootdelay", "0");
+		env_set(ctx_uboot, "bootcmd", "sdp 0");
 	}
 #endif /* CONFIG_CMD_USB_SDP */
 
@@ -702,7 +702,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 
 	ft_common_board_setup(blob, bd);
 
-	cma_size = env_get_ulong("cma-size", 10, 320 * 1024 * 1024);
+	cma_size = env_get_ulong(ctx_uboot, "cma-size", 10, 320 * 1024 * 1024);
 	cma_size = min((u32)(gd->ram_size >> 1), cma_size);
 
 	fdt_setprop_u32(blob,

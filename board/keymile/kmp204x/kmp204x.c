@@ -220,7 +220,7 @@ int last_stage_init(void)
 	if (dip_switch != 0) {
 		/* start bootloader */
 		puts("DIP:   Enabled\n");
-		env_set("actual_bank", "0");
+		env_set(ctx_uboot, "actual_bank", "0");
 	}
 #endif
 	set_km_env();
@@ -237,7 +237,7 @@ void fdt_fixup_fman_mac_addresses(void *blob)
 	unsigned char mac_addr[6];
 
 	/* get the mac addr from env */
-	tmp = env_get("ethaddr");
+	tmp = env_get(ctx_uboot, "ethaddr");
 	if (!tmp) {
 		printf("ethaddr env variable not defined\n");
 		return;

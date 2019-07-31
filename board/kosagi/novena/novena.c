@@ -201,7 +201,7 @@ int misc_init_r(void)
 	int ret;
 
 	/* If 'ethaddr' is already set, do nothing. */
-	if (env_get("ethaddr"))
+	if (env_get(ctx_uboot, "ethaddr"))
 		return 0;
 
 	/* EEPROM is at bus 2. */

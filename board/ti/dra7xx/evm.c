@@ -691,7 +691,7 @@ int board_late_init(void)
 	 * on HS devices.
 	 */
 	if (get_device_type() == HS_DEVICE)
-		env_set("boot_fit", "1");
+		env_set(ctx_uboot, "boot_fit", "1");
 
 	omap_die_id_serial();
 	omap_set_fastboot_vars();
@@ -980,7 +980,7 @@ int spl_start_uboot(void)
 
 #ifdef CONFIG_SPL_ENV_SUPPORT
 	env_init();
-	env_load();
+	env_load(ctx_uboot);
 	if (env_get_yesno("boot_os") != 1)
 		return 1;
 #endif
@@ -1048,7 +1048,7 @@ int board_eth_init(bd_t *bis)
 	mac_addr[4] = (mac_lo & 0xFF00) >> 8;
 	mac_addr[5] = mac_lo & 0xFF;
 
-	if (!env_get("ethaddr")) {
+	if (!env_get(ctx_uboot, "ethaddr")) {
 		printf("<ethaddr> not set. Validating first E-fuse MAC\n");
 
 		if (is_valid_ethaddr(mac_addr))
@@ -1064,7 +1064,7 @@ int board_eth_init(bd_t *bis)
 	mac_addr[4] = (mac_lo & 0xFF00) >> 8;
 	mac_addr[5] = mac_lo & 0xFF;
 
-	if (!env_get("eth1addr")) {
+	if (!env_get(ctx_uboot, "eth1addr")) {
 		if (is_valid_ethaddr(mac_addr))
 			eth_env_set_enetaddr("eth1addr", mac_addr);
 	}
@@ -1152,8 +1152,8 @@ int board_fit_config_name_match(const char *name)
 int fastboot_set_reboot_flag(void)
 {
 	printf("Setting reboot to fastboot flag ...\n");
-	env_set("dofastboot", "1");
-	env_save();
+	env_set(ctx_uboot, "dofastboot", "1");
+	env_save(ctx_uboot);
 	return 0;
 }
 #endif

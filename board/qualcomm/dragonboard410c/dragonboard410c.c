@@ -139,8 +139,8 @@ int misc_init_r(void)
 	}
 
 	if (dm_gpio_get_value(&resin)) {
-		env_set("bootdelay", "-1");
-		env_set("bootcmd", "fastboot 0");
+		env_set(ctx_uboot, "bootdelay", "-1");
+		env_set(ctx_uboot, "bootcmd", "fastboot 0");
 		printf("key_vol_down pressed - Starting fastboot.\n");
 	}
 
@@ -158,7 +158,7 @@ int board_late_init(void)
 
 	memset(serial, 0, 16);
 	snprintf(serial, 13, "%x", msm_board_serial());
-	env_set("serial#", serial);
+	env_set(ctx_uboot, "serial#", serial);
 	return 0;
 }
 

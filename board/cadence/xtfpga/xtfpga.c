@@ -86,14 +86,14 @@ int misc_init_r(void)
 	 * Default MAC address comes from CONFIG_ETHADDR + DIP switches 1-6.
 	 */
 
-	char *s = env_get("ethaddr");
+	char *s = env_get(ctx_uboot, "ethaddr");
 	if (s == 0) {
 		unsigned int x;
 		char s[] = __stringify(CONFIG_ETHBASE);
 		x = (*(volatile u32 *)CONFIG_SYS_FPGAREG_DIPSW)
 			& FPGAREG_MAC_MASK;
 		sprintf(&s[15], "%02x", x);
-		env_set("ethaddr", s);
+		env_set(ctx_uboot, "ethaddr", s);
 	}
 #endif /* CONFIG_CMD_NET */
 

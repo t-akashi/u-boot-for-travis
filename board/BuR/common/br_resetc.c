@@ -230,7 +230,7 @@ int br_resetc_bmode(void)
 		printf("Reset: STM32 controller\n");
 
 	printf("Mode:  %s\n", bootmodeascii[regw & 0x0F]);
-	env_set_ulong("b_mode", regw & 0x0F);
+	env_set_ulong(ctx_uboot, "b_mode", regw & 0x0F);
 
 	return rc;
 }

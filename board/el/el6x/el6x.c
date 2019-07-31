@@ -467,7 +467,7 @@ int board_late_init(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 
-	env_set("board_name", BOARD_NAME);
+	env_set(ctx_uboot, "board_name", BOARD_NAME);
 	return 0;
 }
 

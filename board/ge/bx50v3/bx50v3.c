@@ -470,17 +470,17 @@ static void process_vpd(struct vpd_cache *vpd)
 
 	switch (vpd->product_id) {
 	case VPD_PRODUCT_B450:
-		env_set("confidx", "1");
+		env_set(ctx_uboot, "confidx", "1");
 		i210_index = 0;
 		fec_index = 1;
 		break;
 	case VPD_PRODUCT_B650:
-		env_set("confidx", "2");
+		env_set(ctx_uboot, "confidx", "2");
 		i210_index = 0;
 		fec_index = 1;
 		break;
 	case VPD_PRODUCT_B850:
-		env_set("confidx", "3");
+		env_set(ctx_uboot, "confidx", "3");
 		i210_index = 1;
 		fec_index = 2;
 		break;
@@ -647,9 +647,10 @@ int board_late_init(void)
 #endif
 
 	if (is_b850v3())
-		env_set("videoargs", "video=DP-1:1024x768@60 video=HDMI-A-1:1024x768@60");
+		env_set(ctx_uboot, "videoargs",
+			"video=DP-1:1024x768@60 video=HDMI-A-1:1024x768@60");
 	else
-		env_set("videoargs", "video=LVDS-1:1024x768@65");
+		env_set(ctx_uboot, "videoargs", "video=LVDS-1:1024x768@65");
 
 	/* board specific pmic init */
 	pmic_init();
@@ -669,7 +670,7 @@ static void remove_ethaddr_env_var(int index)
 	char env_var_name[9];
 
 	sprintf(env_var_name, index == 0 ? "ethaddr" : "eth%daddr", index);
-	env_set(env_var_name, NULL);
+	env_set(ctx_uboot, env_var_name, NULL);
 }
 
 int last_stage_init(void)

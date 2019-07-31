@@ -145,7 +145,8 @@ void reset_cpu(ulong addr)
 		hang();
 }
 
-enum env_location env_get_location(enum env_operation op, int prio)
+enum env_location env_get_location(struct env_context *ctx,
+				   enum env_operation op, int prio)
 {
 	const u32 load_magic = 0xb33fc0de;
 

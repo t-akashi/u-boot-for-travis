@@ -64,7 +64,7 @@ void at91_pda_detect(void)
 	}
 
 pda_detect_err:
-	env_set("pda", (const char *)buf);
+	env_set(ctx_uboot, "pda", (const char *)buf);
 }
 #else
 void at91_pda_detect(void)
@@ -74,5 +74,5 @@ void at91_pda_detect(void)
 
 void at91_prepare_cpu_var(void)
 {
-	env_set("cpu", get_cpu_name());
+	env_set(ctx_uboot, "cpu", get_cpu_name());
 }

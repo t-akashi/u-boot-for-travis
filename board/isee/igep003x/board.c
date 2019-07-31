@@ -193,13 +193,13 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	switch (get_board_revision()) {
 		case 0:
-			env_set("board_name", "igep0034-lite");
+			env_set(ctx_uboot, "board_name", "igep0034-lite");
 			break;
 		case 1:
-			env_set("board_name", "igep0034");
+			env_set(ctx_uboot, "board_name", "igep0034");
 			break;
 		default:
-			env_set("board_name", "igep0033");
+			env_set(ctx_uboot, "board_name", "igep0033");
 			break;
 	}
 #endif

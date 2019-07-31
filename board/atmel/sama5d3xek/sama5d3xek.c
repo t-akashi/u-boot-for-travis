@@ -187,7 +187,7 @@ int board_late_init(void)
 		*p = tolower(*p);
 
 	strcat(name, "ek.dtb");
-	env_set("dtb_name", name);
+	env_set(ctx_uboot, "dtb_name", name);
 #endif
 #ifdef CONFIG_DM_VIDEO
 	at91_video_show_board_info();

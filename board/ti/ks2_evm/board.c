@@ -113,7 +113,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 	u64 start[2];
 	u32 ddr3a_size;
 
-	env = env_get("mem_lpae");
+	env = env_get(ctx_uboot, "mem_lpae");
 	lpae = env && simple_strtol(env, NULL, 0);
 
 	ddr3a_size = 0;
@@ -140,13 +140,13 @@ int ft_board_setup(void *blob, bd_t *bd)
 	}
 
 	/* reserve memory at start of bank */
-	env = env_get("mem_reserve_head");
+	env = env_get(ctx_uboot, "mem_reserve_head");
 	if (env) {
 		start[0] += ustrtoul(env, &endp, 0);
 		size[0] -= ustrtoul(env, &endp, 0);
 	}
 
-	env = env_get("mem_reserve");
+	env = env_get(ctx_uboot, "mem_reserve");
 	if (env)
 		size[0] -= ustrtoul(env, &endp, 0);
 
@@ -163,9 +163,9 @@ void ft_board_setup_ex(void *blob, bd_t *bd)
 	u64 *reserve_start;
 	int unitrd_fixup = 0;
 
-	env = env_get("mem_lpae");
+	env = env_get(ctx_uboot, "mem_lpae");
 	lpae = env && simple_strtol(env, NULL, 0);
-	env = env_get("uinitrd_fixup");
+	env = env_get(ctx_uboot, "uinitrd_fixup");
 	unitrd_fixup = env && simple_strtol(env, NULL, 0);
 
 	/* Fix up the initrd */

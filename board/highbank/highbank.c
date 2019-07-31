@@ -80,11 +80,12 @@ int misc_init_r(void)
 
 	boot_choice = readl(HB_SREG_A9_BOOT_SRC_STAT) & 0xff;
 	sprintf(envbuffer, "bootcmd%d", boot_choice);
-	if (env_get(envbuffer)) {
+	if (env_get(ctx_uboot, envbuffer)) {
 		sprintf(envbuffer, "run bootcmd%d", boot_choice);
-		env_set("bootcmd", envbuffer);
-	} else
-		env_set("bootcmd", "");
+		env_set(ctx_uboot, "bootcmd", envbuffer);
+	} else {
+		env_set(ctx_uboot, "bootcmd", "");
+	}
 
 	return 0;
 }

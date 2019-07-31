@@ -749,7 +749,7 @@ size_t display_count = ARRAY_SIZE(displays);
 
 int board_cfb_skip(void)
 {
-	return NULL != env_get("novideo");
+	return env_get(ctx_uboot, "novideo") != NULL;
 }
 
 static void setup_display(void)
@@ -954,7 +954,7 @@ static int do_kbd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	char envvalue[ARRAY_SIZE(buttons)+1];
 	int numpressed = read_keys(envvalue);
-	env_set("keybd", envvalue);
+	env_set(ctx_uboot, "keybd", envvalue);
 	return numpressed == 0;
 }
 
@@ -974,7 +974,7 @@ static void preboot_keys(void)
 	char keypress[ARRAY_SIZE(buttons)+1];
 	numpressed = read_keys(keypress);
 	if (numpressed) {
-		char *kbd_magic_keys = env_get("magic_keys");
+		char *kbd_magic_keys = env_get(ctx_uboot, "magic_keys");
 		char *suffix;
 		/*
 		 * loop over all magic keys
@@ -983,7 +983,7 @@ static void preboot_keys(void)
 			char *keys;
 			char magic[sizeof(kbd_magic_prefix) + 1];
 			sprintf(magic, "%s%c", kbd_magic_prefix, *suffix);
-			keys = env_get(magic);
+			keys = env_get(ctx_uboot, magic);
 			if (keys) {
 				if (!strcmp(keys, keypress))
 					break;
@@ -993,9 +993,9 @@ static void preboot_keys(void)
 			char cmd_name[sizeof(kbd_command_prefix) + 1];
 			char *cmd;
 			sprintf(cmd_name, "%s%c", kbd_command_prefix, *suffix);
-			cmd = env_get(cmd_name);
+			cmd = env_get(ctx_uboot, cmd_name);
 			if (cmd) {
-				env_set("preboot", cmd);
+				env_set(ctx_uboot, "preboot", cmd);
 				return;
 			}
 		}
@@ -1021,6 +1021,6 @@ int misc_init_r(void)
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
 #endif
-	env_set_hex("reset_cause", get_imx_reset_cause());
+	env_set_hex(ctx_uboot, "reset_cause", get_imx_reset_cause(void));
 	return 0;
 }

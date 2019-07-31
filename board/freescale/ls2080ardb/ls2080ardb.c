@@ -265,7 +265,7 @@ int misc_init_r(void)
 
 	val = in_le32(dcfg_ccsr + DCFG_RCWSR13 / 4);
 
-	env_hwconfig = env_get("hwconfig");
+	env_hwconfig = env_get(ctx_uboot, "hwconfig");
 
 	if (hwconfig_f("dspi", env_hwconfig) &&
 	    DCFG_RCWSR13_DSPI == (val & (u32)(0xf << 8)))
@@ -295,10 +295,10 @@ int misc_init_r(void)
 	 */
 	if ((SVR_SOC_VER(svr) == SVR_LS2088A) ||
 	    (SVR_SOC_VER(svr) == SVR_LS2048A))
-		env_set("board", "ls2088ardb");
+		env_set(ctx_uboot, "board", "ls2088ardb");
 	else if ((SVR_SOC_VER(svr) == SVR_LS2081A) ||
 	    (SVR_SOC_VER(svr) == SVR_LS2041A))
-		env_set("board", "ls2081ardb");
+		env_set(ctx_uboot, "board", "ls2081ardb");
 
 	return 0;
 }

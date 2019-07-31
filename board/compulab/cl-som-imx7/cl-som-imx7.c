@@ -311,7 +311,7 @@ void cl_som_imx7_setup_wdog(void)
 
 int board_late_init(void)
 {
-	env_set("board_name", "CL-SOM-iMX7");
+	env_set(ctx_uboot, "board_name", "CL-SOM-iMX7");
 	cl_som_imx7_setup_wdog();
 	return 0;
 }

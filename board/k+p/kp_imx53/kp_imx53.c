@@ -124,9 +124,9 @@ void board_misc_setup(void)
 	gpio_direction_input(KEY1);
 
 	if (gpio_get_value(KEY1))
-		env_set("key1", "off");
+		env_set(ctx_uboot, "key1", "off");
 	else
-		env_set("key1", "on");
+		env_set(ctx_uboot, "key1", "on");
 }
 
 int board_late_init(void)

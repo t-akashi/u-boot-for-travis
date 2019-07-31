@@ -65,13 +65,13 @@ int misc_init_r(void)
 	char serialno[25];
 	uint32_t u_id_low, u_id_mid, u_id_high;
 
-	if (!env_get("serial#")) {
+	if (!env_get(ctx_uboot, "serial#")) {
 		u_id_low  = readl(&STM32_U_ID->u_id_low);
 		u_id_mid  = readl(&STM32_U_ID->u_id_mid);
 		u_id_high = readl(&STM32_U_ID->u_id_high);
 		sprintf(serialno, "%08x%08x%08x",
 			u_id_high, u_id_mid, u_id_low);
-		env_set("serial#", serialno);
+		env_set(ctx_uboot, "serial#", serialno);
 	}
 
 	return 0;

@@ -120,7 +120,7 @@ int board_late_init(void)
 	 * Set fdtcontroladdr in the environment so that scripts can
 	 * refer to it, for example, to reuse it for fdtaddr.
 	 */
-	env_set_hex("fdtcontroladdr", prior_stage_fdt_address);
+	env_set_hex(ctx_uboot, "fdtcontroladdr", prior_stage_fdt_address);
 
 	/*
 	 * Do not set machid to the machine identifier value provided

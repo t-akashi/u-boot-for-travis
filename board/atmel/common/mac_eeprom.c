@@ -18,7 +18,7 @@ int at91_set_ethaddr(int offset)
 	struct udevice *dev;
 	int ret;
 
-	if (env_get(ETHADDR_NAME))
+	if (env_get(ctx_uboot, ETHADDR_NAME))
 		return 0;
 
 	ret = uclass_first_device_err(UCLASS_I2C_EEPROM, &dev);

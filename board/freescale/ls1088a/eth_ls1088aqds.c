@@ -529,7 +529,7 @@ void ls1088a_handle_phy_interface_sgmii(int dpmac_id)
 	serdes1_prtcl = serdes_get_number(FSL_SRDS_1, cfg);
 
 	int *riser_phy_addr;
-	char *env_hwconfig = env_get("hwconfig");
+	char *env_hwconfig = env_get(ctx_uboot, "hwconfig");
 
 	if (hwconfig_f("xqsgmii", env_hwconfig))
 		riser_phy_addr = &xqsgii_riser_phy_addr[0];
@@ -670,7 +670,7 @@ int board_eth_init(bd_t *bis)
 	int error = 0, i;
 #ifdef CONFIG_FSL_MC_ENET
 	struct memac_mdio_info *memac_mdio0_info;
-	char *env_hwconfig = env_get("hwconfig");
+	char *env_hwconfig = env_get(ctx_uboot, "hwconfig");
 
 	initialize_dpmac_to_slot();
 

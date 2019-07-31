@@ -65,7 +65,7 @@ static int baltos_set_console(void)
 	printf("DIPs: 0x%1x\n", (~dips) & 0xf);
 
 	if ((dips & 0xf) == 0xe)
-		env_set("console", "ttyUSB0,115200n8");
+		env_set(ctx_uboot, "console", "ttyUSB0,115200n8");
 
 	return 0;
 }
@@ -367,7 +367,7 @@ int board_late_init(void)
 		return -ENODEV;
 	}
 
-	env_set("board_name", model);
+	env_set(ctx_uboot, "board_name", model);
 #endif
 
 	return 0;
@@ -447,7 +447,7 @@ int board_eth_init(bd_t *bis)
 
 #if (defined(CONFIG_DRIVER_TI_CPSW) && !defined(CONFIG_SPL_BUILD)) || \
 	(defined(CONFIG_SPL_ETH_SUPPORT) && defined(CONFIG_SPL_BUILD))
-	if (!env_get("ethaddr")) {
+	if (!env_get(ctx_uboot, "ethaddr")) {
 		printf("<ethaddr> not set. Validating first E-fuse MAC\n");
 
 		if (is_valid_ethaddr(mac_addr))

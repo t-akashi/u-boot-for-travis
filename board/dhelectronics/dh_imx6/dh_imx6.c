@@ -251,7 +251,7 @@ int board_late_init(void)
 		break;
 	}
 
-	env_set("dhcom", buf);
+	env_set(ctx_uboot, "dhcom", buf);
 
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);

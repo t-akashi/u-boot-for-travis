@@ -569,29 +569,29 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	switch (board_type()) {
 	case CUBOXI:
-		env_set("board_name", "CUBOXI");
+		env_set(ctx_uboot, "board_name", "CUBOXI");
 		break;
 	case HUMMINGBOARD:
-		env_set("board_name", "HUMMINGBOARD");
+		env_set(ctx_uboot, "board_name", "HUMMINGBOARD");
 		break;
 	case HUMMINGBOARD2:
-		env_set("board_name", "HUMMINGBOARD2");
+		env_set(ctx_uboot, "board_name", "HUMMINGBOARD2");
 		break;
 	case UNKNOWN:
 	default:
-		env_set("board_name", "CUBOXI");
+		env_set(ctx_uboot, "board_name", "CUBOXI");
 	}
 
 	if (is_mx6dq())
-		env_set("board_rev", "MX6Q");
+		env_set(ctx_uboot, "board_rev", "MX6Q");
 	else
-		env_set("board_rev", "MX6DL");
+		env_set(ctx_uboot, "board_rev", "MX6DL");
 
 	if (is_rev_15_som())
-		env_set("som_rev", "V15");
+		env_set(ctx_uboot, "som_rev", "V15");
 
 	if (has_emmc())
-		env_set("has_emmc", "yes");
+		env_set(ctx_uboot, "has_emmc", "yes");
 
 #endif
 

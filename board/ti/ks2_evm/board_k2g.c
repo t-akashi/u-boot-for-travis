@@ -353,11 +353,11 @@ int board_late_init(void)
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (board_is_k2g_gp())
-		env_set("board_name", "66AK2GGP\0");
+		env_set(ctx_uboot, "board_name", "66AK2GGP\0");
 	else if (board_is_k2g_g1())
-		env_set("board_name", "66AK2GG1\0");
+		env_set(ctx_uboot, "board_name", "66AK2GG1\0");
 	else if (board_is_k2g_ice())
-		env_set("board_name", "66AK2GIC\0");
+		env_set(ctx_uboot, "board_name", "66AK2GIC\0");
 #endif
 	return 0;
 }
@@ -384,7 +384,7 @@ void spl_init_keystone_plls(void)
 #ifdef CONFIG_TI_SECURE_DEVICE
 void board_pmmc_image_process(ulong pmmc_image, size_t pmmc_size)
 {
-	int id = env_get_ulong("dev_pmmc", 10, 0);
+	int id = env_get_ulong(ctx_uboot, "dev_pmmc", 10, 0);
 	int ret;
 
 	if (!rproc_is_initialized())

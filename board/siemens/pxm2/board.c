@@ -444,12 +444,12 @@ int board_late_init(void)
 			factory_dat.pxm50 = 0;
 		sprintf(tmp, "%s_%s", factory_dat.asn,
 			factory_dat.comp_version);
-		ret = env_set("boardid", tmp);
+		ret = env_set(ctx_uboot, "boardid", tmp);
 		if (ret)
 			printf("error setting board id\n");
 	} else {
 		factory_dat.pxm50 = 1;
-		ret = env_set("boardid", "PXM50_1.0");
+		ret = env_set(ctx_uboot, "boardid", "PXM50_1.0");
 		if (ret)
 			printf("error setting board id\n");
 	}

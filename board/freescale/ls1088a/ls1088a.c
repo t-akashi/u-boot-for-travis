@@ -984,7 +984,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 #ifdef CONFIG_MTD_NOR_FLASH
 int is_flash_available(void)
 {
-	char *env_hwconfig = env_get("hwconfig");
+	char *env_hwconfig = env_get(ctx_uboot, "hwconfig");
 	enum boot_src src = get_boot_src();
 	int is_nor_flash_available = 1;
 

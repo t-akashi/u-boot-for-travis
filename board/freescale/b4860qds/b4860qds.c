@@ -195,7 +195,7 @@ static int adjust_vdd(ulong vdd_override)
 	      vid, vdd_target/10);
 
 	/* check override variable for overriding VDD */
-	vdd_string = env_get("b4qds_vdd_mv");
+	vdd_string = env_get(ctx_uboot, "b4qds_vdd_mv");
 	if (vdd_override == 0 && vdd_string &&
 	    !strict_strtoul(vdd_string, 10, &vdd_string_override))
 		vdd_override = vdd_string_override;
@@ -542,7 +542,8 @@ int configure_vsc3316_3308(void)
 			 * Extract hwconfig from environment since environment
 			 * is not setup properly yet
 			 */
-			env_get_f("hwconfig", buffer, sizeof(buffer));
+			env_get_f(ctx_uboot, "hwconfig", buffer,
+				  sizeof(buffer));
 			buf = buffer;
 
 			if (hwconfig_subarg_cmp_f("fsl_b4860_serdes2",

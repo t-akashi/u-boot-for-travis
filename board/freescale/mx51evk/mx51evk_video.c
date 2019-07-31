@@ -76,7 +76,7 @@ void setup_iomux_lcd(void)
 int board_video_skip(void)
 {
 	int ret;
-	char const *e = env_get("panel");
+	char const *e = env_get(ctx_uboot, "panel");
 
 	if (e) {
 		if (strcmp(e, "claa") == 0) {

@@ -64,7 +64,7 @@ void board_gpio_init(void)
 
 	for (i = 0; i < GPIO_MAX_NUM; i++) {
 		sprintf(envname, "GPIO%d", i);
-		val = env_get(envname);
+		val = env_get(ctx_uboot, envname);
 		if (val) {
 			char direction = toupper(val[0]);
 			char level = toupper(val[1]);
@@ -82,7 +82,7 @@ void board_gpio_init(void)
 		}
 	}
 
-	val = env_get("PCIE_OFF");
+	val = env_get(ctx_uboot, "PCIE_OFF");
 	if (val) {
 		gpio_direction_input(GPIO_PCIE1_EN);
 		gpio_direction_input(GPIO_PCIE2_EN);
@@ -91,7 +91,7 @@ void board_gpio_init(void)
 		gpio_direction_output(GPIO_PCIE2_EN, 1);
 	}
 
-	val = env_get("SDHC_CDWP_OFF");
+	val = env_get(ctx_uboot, "SDHC_CDWP_OFF");
 	if (!val) {
 		ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 
@@ -218,7 +218,7 @@ int last_stage_init(void)
 	else
 		printf("NCT72(0x%x): ready\n", id2);
 
-	kval = env_get("kernelargs");
+	kval = env_get(ctx_uboot, "kernelargs");
 
 #ifdef CONFIG_MMC
 	mmc = find_mmc_device(0);
@@ -235,22 +235,22 @@ int last_stage_init(void)
 				strcat(newkernelargs, mmckargs);
 				strcat(newkernelargs, " ");
 				strcat(newkernelargs, &tmp[n]);
-				env_set("kernelargs", newkernelargs);
+				env_set(ctx_uboot, "kernelargs", newkernelargs);
 			} else {
-				env_set("kernelargs", mmckargs);
+				env_set(ctx_uboot, "kernelargs", mmckargs);
 			}
 		}
 #endif
 	get_arc_info();
 
 	if (kval) {
-		sval = env_get("SERIAL");
+		sval = env_get(ctx_uboot, "SERIAL");
 		if (sval) {
 			strcpy(newkernelargs, "SN=");
 			strcat(newkernelargs, sval);
 			strcat(newkernelargs, " ");
 			strcat(newkernelargs, kval);
-			env_set("kernelargs", newkernelargs);
+			env_set(ctx_uboot, "kernelargs", newkernelargs);
 		}
 	} else {
 		printf("Error reading kernelargs env variable!\n");

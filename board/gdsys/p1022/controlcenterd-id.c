@@ -231,7 +231,7 @@ static u8 *get_2nd_stage_bl_location(ulong target_addr)
 {
 	ulong addr;
 #ifdef CCDM_SECOND_STAGE
-	addr = env_get_ulong("loadaddr", 16, CONFIG_LOADADDR);
+	addr = env_get_ulong(ctx_uboot, "loadaddr", 16, CONFIG_LOADADDR);
 #else
 	addr = target_addr;
 #endif
@@ -249,7 +249,7 @@ static u8 *get_image_location(void)
 {
 	ulong addr;
 	/* TODO use other area? */
-	addr = env_get_ulong("loadaddr", 16, CONFIG_LOADADDR);
+	addr = env_get_ulong(ctx_uboot, "loadaddr", 16, CONFIG_LOADADDR);
 	return (u8 *)(addr);
 }
 #endif
@@ -1072,13 +1072,13 @@ static int second_stage_init(void)
 		goto failure;
 
 	/* run "prepboot" from env to get "mmcdev" set */
-	cptr = env_get("prepboot");
+	cptr = env_get(ctx_uboot, "prepboot");
 	if (cptr && !run_command(cptr, 0))
-		mmcdev = env_get("mmcdev");
+		mmcdev = env_get(ctx_uboot, "mmcdev");
 	if (!mmcdev)
 		goto failure;
 
-	cptr = env_get("ramdiskimage");
+	cptr = env_get(ctx_uboot, "ramdiskimage");
 	if (cptr)
 		image_path = cptr;
 

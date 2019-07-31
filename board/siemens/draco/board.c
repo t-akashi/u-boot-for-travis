@@ -270,13 +270,13 @@ int board_late_init(void)
 #ifdef CONFIG_FACTORYSET
 	/* Set ASN in environment*/
 	if (factory_dat.asn[0] != 0) {
-		env_set("dtb_name", (char *)factory_dat.asn);
+		env_set(ctx_uboot, "dtb_name", (char *)factory_dat.asn);
 	} else {
 		/* dtb suffix gets added in load script */
-		env_set("dtb_name", "am335x-draco");
+		env_set(ctx_uboot, "dtb_name", "am335x-draco");
 	}
 #else
-	env_set("dtb_name", "am335x-draco");
+	env_set(ctx_uboot, "dtb_name", "am335x-draco");
 #endif
 
 	return 0;

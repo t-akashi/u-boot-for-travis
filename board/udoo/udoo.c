@@ -254,9 +254,9 @@ int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (is_cpu_type(MXC_CPU_MX6Q))
-		env_set("board_rev", "MX6Q");
+		env_set(ctx_uboot, "board_rev", "MX6Q");
 	else
-		env_set("board_rev", "MX6DL");
+		env_set(ctx_uboot, "board_rev", "MX6DL");
 #endif
 	return 0;
 }

@@ -157,7 +157,7 @@ int misc_init_r(void)
 	gpio_hog(&led_en, "atl,led-enable", "enable-gpio", 1);
 
 #ifdef MTDPARTS_MTDOOPS
-	env_set("mtdoops", MTDPARTS_MTDOOPS);
+	env_set(ctx_uboot, "mtdoops", MTDPARTS_MTDOOPS);
 #endif
 
 	led_7seg_init(0xff);

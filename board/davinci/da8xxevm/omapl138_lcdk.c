@@ -275,7 +275,7 @@ static void dspwake(void)
 	if ((REG(CHIP_REV_ID_REG) & 0x3f) == 0x10)
 		return;
 
-	if (!strcmp(env_get("dspwake"), "no"))
+	if (!strcmp(env_get(ctx_uboot, "dspwake"), "no"))
 		return;
 
 	*resetvect++ = 0x1E000; /* DSP Idle */
@@ -305,7 +305,7 @@ int misc_init_r(void)
 	uint8_t tmp[20], addr[10];
 
 
-	if (env_get("ethaddr") == NULL) {
+	if (!env_get(ctx_uboot, "ethaddr")) {
 		/* Read Ethernet MAC address from EEPROM */
 		if (dvevm_read_mac_address(addr)) {
 			/* Set Ethernet MAC address from EEPROM */
@@ -319,7 +319,7 @@ int misc_init_r(void)
 				addr[0], addr[1], addr[2], addr[3], addr[4],
 				addr[5]);
 
-			env_set("ethaddr", (char *)tmp);
+			env_set(ctx_uboot, "ethaddr", (char *)tmp);
 		} else {
 			printf("Invalid MAC address read.\n");
 		}

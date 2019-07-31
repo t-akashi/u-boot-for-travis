@@ -309,7 +309,7 @@ int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (is_reva())
-		env_set("board_rev", "REVA");
+		env_set(ctx_uboot, "board_rev", "REVA");
 #endif
 	return 0;
 }

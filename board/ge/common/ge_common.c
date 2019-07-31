@@ -29,7 +29,7 @@ void check_time(void)
 	}
 
 	if (ret < 0)
-		env_set("rtc_status", "RTC_ERROR");
+		env_set(ctx_uboot, "rtc_status", "RTC_ERROR");
 
 	if (tm.tm_year > 2037) {
 		tm.tm_sec  = 0;
@@ -47,7 +47,7 @@ void check_time(void)
 		}
 
 		if (ret < 0)
-			env_set("rtc_status", "RTC_ERROR");
+			env_set(ctx_uboot, "rtc_status", "RTC_ERROR");
 	}
 
 	i2c_set_bus_num(current_i2c_bus);

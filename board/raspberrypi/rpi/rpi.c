@@ -290,11 +290,11 @@ static void set_fdtfile(void)
 {
 	const char *fdtfile;
 
-	if (env_get("fdtfile"))
+	if (env_get(ctx_uboot, "fdtfile"))
 		return;
 
 	fdtfile = model->fdtfile;
-	env_set("fdtfile", fdtfile);
+	env_set(ctx_uboot, "fdtfile", fdtfile);
 }
 
 /*
@@ -303,13 +303,13 @@ static void set_fdtfile(void)
  */
 static void set_fdt_addr(void)
 {
-	if (env_get("fdt_addr"))
+	if (env_get(ctx_uboot, "fdt_addr"))
 		return;
 
 	if (fdt_magic(fw_dtb_pointer) != FDT_MAGIC)
 		return;
 
-	env_set_hex("fdt_addr", fw_dtb_pointer);
+	env_set_hex(ctx_uboot, "fdt_addr", fw_dtb_pointer);
 }
 
 /*
@@ -330,7 +330,7 @@ static void set_usbethaddr(void)
 	if (!model->has_onboard_eth)
 		return;
 
-	if (env_get("usbethaddr"))
+	if (env_get(ctx_uboot, "usbethaddr"))
 		return;
 
 	BCM2835_MBOX_INIT_HDR(msg);
@@ -345,8 +345,8 @@ static void set_usbethaddr(void)
 
 	eth_env_set_enetaddr("usbethaddr", msg->get_mac_address.body.resp.mac);
 
-	if (!env_get("ethaddr"))
-		env_set("ethaddr", env_get("usbethaddr"));
+	if (!env_get(ctx_uboot, "ethaddr"))
+		env_set(ctx_uboot, "ethaddr", env_get("usbethaddr"));
 
 	return;
 }
@@ -357,13 +357,13 @@ static void set_board_info(void)
 	char s[11];
 
 	snprintf(s, sizeof(s), "0x%X", revision);
-	env_set("board_revision", s);
+	env_set(ctx_uboot, "board_revision", s);
 	snprintf(s, sizeof(s), "%d", rev_scheme);
-	env_set("board_rev_scheme", s);
+	env_set(ctx_uboot, "board_rev_scheme", s);
 	/* Can't rename this to board_rev_type since it's an ABI for scripts */
 	snprintf(s, sizeof(s), "0x%X", rev_type);
-	env_set("board_rev", s);
-	env_set("board_name", model->name);
+	env_set(ctx_uboot, "board_rev", s);
+	env_set(ctx_uboot, "board_name", model->name);
 }
 #endif /* CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG */
 
@@ -373,7 +373,7 @@ static void set_serial_number(void)
 	int ret;
 	char serial_string[17] = { 0 };
 
-	if (env_get("serial#"))
+	if (env_get(ctx_uboot, "serial#"))
 		return;
 
 	BCM2835_MBOX_INIT_HDR(msg);
@@ -388,7 +388,7 @@ static void set_serial_number(void)
 
 	snprintf(serial_string, sizeof(serial_string), "%016llx",
 		 msg->get_board_serial.body.resp.serial);
-	env_set("serial#", serial_string);
+	env_set(ctx_uboot, "serial#", serial_string);
 }
 
 int misc_init_r(void)

@@ -290,8 +290,8 @@ int board_late_init(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 
-	env_set("boardname", "kp-tpc");
-	env_set("boardsoc", "imx6q");
+	env_set(ctx_uboot, "boardname", "kp-tpc");
+	env_set(ctx_uboot, "boardsoc", "imx6q");
 	return 0;
 }
 

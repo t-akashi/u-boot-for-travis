@@ -392,7 +392,7 @@ int board_late_init(void)
 #endif
 
 	snprintf(buf, sizeof(buf), "%d", get_board_rev());
-	env_set("board_rev", buf);
+	env_set(ctx_uboot, "board_rev", buf);
 
 	return 0;
 }

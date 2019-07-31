@@ -398,7 +398,7 @@ void lcd_ctrl_init(void *lcdbase)
 {
 	struct prcm *prcm = (struct prcm *)PRCM_BASE;
 	char *custom_lcd;
-	char *displaytype = env_get("displaytype");
+	char *displaytype = env_get(ctx_uboot, "displaytype");
 
 	if (displaytype == NULL)
 		return;
@@ -406,7 +406,7 @@ void lcd_ctrl_init(void *lcdbase)
 	lcd_def = env_parse_displaytype(displaytype);
 	/* If we did not recognize the preset, check if it's an env variable */
 	if (lcd_def == NONE) {
-		custom_lcd = env_get(displaytype);
+		custom_lcd = env_get(ctx_uboot, displaytype);
 		if (custom_lcd == NULL || parse_customlcd(custom_lcd) < 0)
 			return;
 	}

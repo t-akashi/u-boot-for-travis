@@ -274,7 +274,7 @@ int misc_init_r(void)
 	else
 		cause = "POR";
 
-	env_set("bootcause", cause);
+	env_set(ctx_uboot, "bootcause", cause);
 
 	return 0;
 }

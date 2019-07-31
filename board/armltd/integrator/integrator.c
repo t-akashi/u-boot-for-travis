@@ -116,7 +116,7 @@ extern void cm_remap(void);
 
 int misc_init_r (void)
 {
-	env_set("verify", "n");
+	env_set(ctx_uboot, "verify", "n");
 	return (0);
 }
 

@@ -222,7 +222,7 @@ void hw_watchdog_reset(void)
 #ifdef CONFIG_TRAILBLAZER
 int do_bootd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	return run_command(env_get("bootcmd"), flag);
+	return run_command(env_get(ctx_uboot, "bootcmd"), flag);
 }
 
 int board_early_init_r(void)

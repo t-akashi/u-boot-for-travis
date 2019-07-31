@@ -701,7 +701,7 @@ int board_late_init(void)
 
 	rev = get_board_rev();
 	snprintf(env_str, ARRAY_SIZE(env_str), "%.4x", rev);
-	env_set("board_rev", env_str);
+	env_set(ctx_uboot, "board_rev", env_str);
 
 #ifndef CONFIG_TDX_APALIS_IMX6_V1_0
 	if ((rev & 0xfff0) == 0x0100) {
@@ -711,12 +711,12 @@ int board_late_init(void)
 		setup_iomux_dce_uart();
 
 		/* if using the default device tree, use version for V1.0 HW */
-		fdt_env = env_get("fdt_file");
+		fdt_env = env_get(ctx_uboot, "fdt_file");
 		if ((fdt_env != NULL) && (strcmp(FDT_FILE, fdt_env) == 0)) {
-			env_set("fdt_file", FDT_FILE_V1_0);
+			env_set(ctx_uboot, "fdt_file", FDT_FILE_V1_0);
 			printf("patching fdt_file to " FDT_FILE_V1_0 "\n");
 #ifndef CONFIG_ENV_IS_NOWHERE
-			env_save();
+			env_save(ctx_uboot);
 #endif
 		}
 	}
@@ -726,8 +726,8 @@ int board_late_init(void)
 #ifdef CONFIG_CMD_USB_SDP
 	if (is_boot_from_usb()) {
 		printf("Serial Downloader recovery mode, using sdp command\n");
-		env_set("bootdelay", "0");
-		env_set("bootcmd", "sdp 0");
+		env_set(ctx_uboot, "bootdelay", "0");
+		env_set(ctx_uboot, "bootcmd", "sdp 0");
 	}
 #endif /* CONFIG_CMD_USB_SDP */
 

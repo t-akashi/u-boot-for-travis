@@ -31,7 +31,7 @@ void show_eeprom(void)
 
 	if (!strncmp(safe_string, "TQM", 3)) {
 		printf("  ID: %s\n", safe_string);
-		env_set("boardtype", safe_string);
+		env_set(ctx_uboot, "boardtype", safe_string);
 	} else {
 		puts("  unknown hardware variant\n");
 	}
@@ -45,7 +45,7 @@ void show_eeprom(void)
 
 	if (strlen(safe_string) == 8) {
 		printf("  SN: %s\n", safe_string);
-		env_set("serial#", safe_string);
+		env_set(ctx_uboot, "serial#", safe_string);
 	} else {
 		puts("  unknown serial number\n");
 	}
@@ -103,18 +103,18 @@ int read_board_id(void)
 	sprintf(rev_str, "%02X", rev_id);
 	if (rev_id & 0x80) {
 		printf("BBoard:4x00 Rev:%s\n", rev_str);
-		env_set("boardtype", "ddc");
-		env_set("fit_config", "imx53_kb_conf");
+		env_set(ctx_uboot, "boardtype", "ddc");
+		env_set(ctx_uboot, "fit_config", "imx53_kb_conf");
 	} else {
 		printf("BBoard:40x0 Rev:%s\n", rev_str);
-		env_set("boardtype", "hsc");
-		env_set("fit_config", "imx53_kb_40x0_conf");
+		env_set(ctx_uboot, "boardtype", "hsc");
+		env_set(ctx_uboot, "fit_config", "imx53_kb_40x0_conf");
 	}
 
-	sprintf(buf, "kp-%s", env_get("boardtype"));
-	env_set("boardname", buf);
-	env_set("boardsoc", "imx53");
-	env_set("kb53_rev", rev_str);
+	sprintf(buf, "kp-%s", env_get(ctx_uboot, "boardtype"));
+	env_set(ctx_uboot, "boardname", buf);
+	env_set(ctx_uboot, "boardsoc", "imx53");
+	env_set(ctx_uboot, "kb53_rev", rev_str);
 
 	return 0;
 }

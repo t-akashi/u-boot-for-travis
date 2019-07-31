@@ -149,12 +149,12 @@ int board_init(void)
 
 int board_late_init(void)
 {
-	env_set("board_name", "imx6logic");
+	env_set(ctx_uboot, "board_name", "imx6logic");
 
 	if (is_mx6dq()) {
-		env_set("board_rev", "MX6DQ");
-		if (!env_get("fdt_file"))
-			env_set("fdt_file", "imx6q-logicpd.dtb");
+		env_set(ctx_uboot, "board_rev", "MX6DQ");
+		if (!env_get(ctx_uboot, "fdt_file"))
+			env_set(ctx_uboot, "fdt_file", "imx6q-logicpd.dtb");
 	}
 
 	return 0;

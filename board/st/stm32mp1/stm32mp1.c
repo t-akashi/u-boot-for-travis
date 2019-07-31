@@ -544,9 +544,9 @@ int board_late_init(void)
 				 &fdt_compat_len);
 	if (fdt_compat && fdt_compat_len) {
 		if (strncmp(fdt_compat, "st,", 3) != 0)
-			env_set("board_name", fdt_compat);
+			env_set(ctx_uboot, "board_name", fdt_compat);
 		else
-			env_set("board_name", fdt_compat + 3);
+			env_set(ctx_uboot, "board_name", fdt_compat + 3);
 	}
 #endif
 
@@ -623,7 +623,8 @@ int board_interface_eth_init(phy_interface_t interface_type,
 	return 0;
 }
 
-enum env_location env_get_location(enum env_operation op, int prio)
+enum env_location env_get_location(struct env_context *ctx,
+				   enum env_operation op, int prio)
 {
 	u32 bootmode = get_bootmode();
 
@@ -688,8 +689,8 @@ const char *env_ext4_get_dev_part(void)
 static const char *env_get_mtdparts(const char *str, char *buf)
 {
 	if (gd->flags & GD_FLG_ENV_READY)
-		return env_get(str);
-	if (env_get_f(str, buf, MTDPARTS_LEN) != -1)
+		return env_get(ctx_uboot, str);
+	if (env_get_f(ctx_uboot, str, buf, MTDPARTS_LEN) != -1)
 		return buf;
 
 	return NULL;

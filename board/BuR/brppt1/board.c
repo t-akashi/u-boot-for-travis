@@ -180,10 +180,10 @@ int board_late_init(void)
 		bmode = 4;
 
 	printf("Mode:  %s\n", bootmodeascii[bmode & 0x0F]);
-	env_set_ulong("b_mode", bmode);
+	env_set_ulong(ctx_uboot, "b_mode", bmode);
 
 	/* get sure that bootcmd isn't affected by any bootcount value */
-	env_set_ulong("bootlimit", 0);
+	env_set_ulong(ctx_uboot, "bootlimit", 0);
 
 	return 0;
 }

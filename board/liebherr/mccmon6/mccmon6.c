@@ -367,7 +367,7 @@ int board_init(void)
 
 int board_late_init(void)
 {
-	env_set("board_name", "mccmon6");
+	env_set(ctx_uboot, "board_name", "mccmon6");
 
 	return 0;
 }
@@ -467,7 +467,7 @@ int spl_start_uboot(void)
 		return 1;
 
 	env_init();
-	ret = env_get_f("boot_os", s, sizeof(s));
+	ret = env_get_f("boot_os", s, sizeof(ctx_uboot, s));
 	if ((ret != -1) && (strcmp(s, "no") == 0))
 		return 1;
 
@@ -481,7 +481,7 @@ int spl_start_uboot(void)
 	 * recovery_status = <any value> -> start SWUpdate
 	 *
 	 */
-	ret = env_get_f("recovery_status", s, sizeof(s));
+	ret = env_get_f("recovery_status", s, sizeof(ctx_uboot, s));
 	if (ret != -1)
 		return 1;
 

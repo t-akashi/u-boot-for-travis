@@ -284,10 +284,10 @@ void board_boot_order(u32 *spl_boot_list)
 	/* 'fastboot' */
 	const char *s;
 
-	if (env_init() || env_load())
+	if (env_init() || env_load(ctx_uboot))
 		return;
 
-	s = env_get("BOOT_FROM");
+	s = env_get(ctx_uboot, "BOOT_FROM");
 	if (s && !bootcount_error() && strcmp(s, "ACTIVE") == 0) {
 		spl_boot_list[0] = BOOT_DEVICE_MMC1;
 		spl_boot_list[1] = spl_boot_device();

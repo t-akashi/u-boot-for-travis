@@ -181,7 +181,7 @@ int checkboard(void)
 		puts("Board: EtherCAN/2 Gateway");
 		break;
 	}
-	if (env_get_f("serial#", str, sizeof(str)) > 0) {
+	if (env_get_f("serial#", str, sizeof(ctx_uboot, str)) > 0) {
 		puts(", serial# ");
 		puts(str);
 	}
@@ -198,7 +198,7 @@ void get_board_serial(struct tag_serialnr *serialnr)
 {
 	char *str;
 
-	char *serial = env_get("serial#");
+	char *serial = env_get(ctx_uboot, "serial#");
 	if (serial) {
 		str = strchr(serial, '_');
 		if (str && (strlen(str) >= 4)) {
@@ -231,7 +231,7 @@ int misc_init_r(void)
 	 * In some cases this this needs to be set to 4.
 	 * Check the user has set environment mdiv to 4 to change the divisor.
 	 */
-	str = env_get("mdiv");
+	str = env_get(ctx_uboot, "mdiv");
 	if (str && (strcmp(str, "4") == 0)) {
 		writel((readl(&pmc->mckr) & ~AT91_PMC_MDIV) |
 			AT91SAM9_PMC_MDIV_4, &pmc->mckr);

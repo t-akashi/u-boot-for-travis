@@ -451,18 +451,18 @@ int board_late_init(void)
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (is_mx6dqp())
-		env_set("board_rev", "MX6QP");
+		env_set(ctx_uboot, "board_rev", "MX6QP");
 	else if (is_mx6dq())
-		env_set("board_rev", "MX6Q");
+		env_set(ctx_uboot, "board_rev", "MX6Q");
 	else
-		env_set("board_rev", "MX6DL");
+		env_set(ctx_uboot, "board_rev", "MX6DL");
 
 	if (is_revd1())
-		env_set("board_name", "D1");
+		env_set(ctx_uboot, "board_name", "D1");
 	else if (is_revc1())
-		env_set("board_name", "C1");
+		env_set(ctx_uboot, "board_name", "C1");
 	else
-		env_set("board_name", "B1");
+		env_set(ctx_uboot, "board_name", "B1");
 #endif
 	return 0;
 }

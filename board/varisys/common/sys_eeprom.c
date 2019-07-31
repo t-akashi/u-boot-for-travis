@@ -401,7 +401,7 @@ int mac_read_from_generic_eeprom(const char *envvar, int chip,
 			mac[5]);
 
 		printf("MAC: %s\n", ethaddr);
-		env_set(envvar, ethaddr);
+		env_set(ctx_uboot, envvar, ethaddr);
 	}
 
 	return ret;
@@ -486,8 +486,8 @@ int mac_read_from_eeprom_common(void)
 			/* Only initialize environment variables that are blank
 			 * (i.e. have not yet been set)
 			 */
-			if (!env_get(enetvar))
-				env_set(enetvar, ethaddr);
+			if (!env_get(ctx_uboot, enetvar))
+				env_set(ctx_uboot, enetvar, ethaddr);
 		}
 	}
 

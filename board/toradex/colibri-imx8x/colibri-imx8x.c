@@ -129,8 +129,8 @@ int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 /* TODO move to common */
-	env_set("board_name", "Colibri iMX8QXP");
-	env_set("board_rev", "v1.0");
+	env_set(ctx_uboot, "board_name", "Colibri iMX8QXP");
+	env_set(ctx_uboot, "board_rev", "v1.0");
 #endif
 
 	return 0;

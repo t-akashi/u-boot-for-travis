@@ -131,12 +131,12 @@ int load_and_run_keyprog(struct udevice *tpm)
 	char *hexprog;
 	struct key_program *prog;
 
-	cmd = env_get("loadkeyprogram");
+	cmd = env_get(ctx_uboot, "loadkeyprogram");
 
 	if (!cmd || run_command(cmd, 0))
 		return 1;
 
-	hexprog = env_get("keyprogram");
+	hexprog = env_get(ctx_uboot, "keyprogram");
 
 	if (decode_hexstr(hexprog, &binprog))
 		return 1;

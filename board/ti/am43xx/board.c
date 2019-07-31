@@ -728,7 +728,7 @@ int board_late_init(void)
 	 * on HS devices.
 	 */
 	if (get_device_type() == HS_DEVICE)
-		env_set("boot_fit", "1");
+		env_set(ctx_uboot, "boot_fit", "1");
 #endif
 
 #if CONFIG_IS_ENABLED(DM_USB) && CONFIG_IS_ENABLED(OF_CONTROL)
@@ -902,7 +902,7 @@ int board_eth_init(bd_t *bis)
 	mac_addr[4] = mac_lo & 0xFF;
 	mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 
-	if (!env_get("ethaddr")) {
+	if (!env_get(ctx_uboot, "ethaddr")) {
 		puts("<ethaddr> not set. Validating first E-fuse MAC\n");
 		if (is_valid_ethaddr(mac_addr))
 			eth_env_set_enetaddr("ethaddr", mac_addr);
@@ -917,7 +917,7 @@ int board_eth_init(bd_t *bis)
 	mac_addr[4] = mac_lo & 0xFF;
 	mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 
-	if (!env_get("eth1addr")) {
+	if (!env_get(ctx_uboot, "eth1addr")) {
 		if (is_valid_ethaddr(mac_addr))
 			eth_env_set_enetaddr("eth1addr", mac_addr);
 	}

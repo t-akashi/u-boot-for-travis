@@ -178,7 +178,7 @@ int board_late_init(void)
 	 */
 	if (tdx_hw_tag.prodid == COLIBRI_IMX6ULL_WIFI_BT_IT ||
 	    tdx_hw_tag.prodid == COLIBRI_IMX6ULL_WIFI_BT)
-		env_set("variant", "-wifi");
+		env_set(ctx_uboot, "variant", "-wifi");
 #endif
 
 	/*
@@ -196,8 +196,8 @@ int board_late_init(void)
 #ifdef CONFIG_CMD_USB_SDP
 	if (is_boot_from_usb()) {
 		printf("Serial Downloader recovery mode, using sdp command\n");
-		env_set("bootdelay", "0");
-		env_set("bootcmd", "sdp 0");
+		env_set(ctx_uboot, "bootdelay", "0");
+		env_set(ctx_uboot, "bootcmd", "sdp 0");
 	}
 #endif /* CONFIG_CMD_USB_SDP */
 

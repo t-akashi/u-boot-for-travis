@@ -177,7 +177,7 @@ int board_usb_init(int index, enum usb_init_type init)
 
 int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 {
-	if (!env_get("serial#"))
+	if (!env_get(ctx_uboot, "serial#"))
 		g_dnl_set_serialnumber("0123456789POPLAR");
 	return 0;
 }

@@ -854,19 +854,19 @@ static int do_hsdk_clock_get(cmd_tbl_t *cmdtp, int flag, int argc,
 	if (soc_clk_ctl("cpu-clk", &rate, CLK_GET | CLK_MHZ))
 		return CMD_RET_FAILURE;
 
-	if (env_set_ulong("cpu_freq", rate))
+	if (env_set_ulong(ctx_uboot, "cpu_freq", rate))
 		return CMD_RET_FAILURE;
 
 	if (soc_clk_ctl("tun-clk", &rate, CLK_GET | CLK_MHZ))
 		return CMD_RET_FAILURE;
 
-	if (env_set_ulong("tun_freq", rate))
+	if (env_set_ulong(ctx_uboot, "tun_freq", rate))
 		return CMD_RET_FAILURE;
 
 	if (soc_clk_ctl("axi-clk", &rate, CLK_GET | CLK_MHZ))
 		return CMD_RET_FAILURE;
 
-	if (env_set_ulong("axi_freq", rate))
+	if (env_set_ulong(ctx_uboot, "axi_freq", rate))
 		return CMD_RET_FAILURE;
 
 	printf("Clock values are saved to environment\n");

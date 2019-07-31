@@ -85,7 +85,7 @@ int board_early_init_r(void)
 int checkboard(void)
 {
 	struct udevice *board;
-	char *s = env_get("serial#");
+	char *s = env_get(ctx_uboot, "serial#");
 	int mc = 0;
 	int con = 0;
 
@@ -137,7 +137,7 @@ int last_stage_init(void)
 			printf("Could not determind FPGA HW revision (res = %d)\n", res);
 	}
 
-	env_set_ulong("fpga_hw_rev", fpga_hw_rev);
+	env_set_ulong(ctx_uboot, "fpga_hw_rev", fpga_hw_rev);
 
 	ret = get_tpm(&tpm);
 	if (ret || tpm_init(tpm) || tpm_startup(tpm, TPM_ST_CLEAR) ||

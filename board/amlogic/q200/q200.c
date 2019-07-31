@@ -35,11 +35,11 @@ int misc_init_r(void)
 			meson_generate_serial_ethaddr();
 	}
 
-	if (!env_get("serial#")) {
+	if (!env_get(ctx_uboot, "serial#")) {
 		len = meson_sm_read_efuse(EFUSE_SN_OFFSET, serial,
 					  EFUSE_SN_SIZE);
 		if (len == EFUSE_SN_SIZE)
-			env_set("serial#", serial);
+			env_set(ctx_uboot, "serial#", serial);
 	}
 
 	return 0;

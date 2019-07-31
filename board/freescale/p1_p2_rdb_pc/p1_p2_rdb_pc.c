@@ -350,7 +350,7 @@ int board_eth_init(bd_t *bis)
 
 #ifdef CONFIG_VSC7385_ENET
 	/* If a VSC7385 microcode image is present, then upload it. */
-	tmp = env_get("vscfw_addr");
+	tmp = env_get(ctx_uboot, "vscfw_addr");
 	if (tmp) {
 		vscfw_addr = simple_strtoul(tmp, NULL, 16);
 		printf("uploading VSC7385 microcode from %x\n", vscfw_addr);

@@ -339,7 +339,7 @@ int board_late_init(void)
 
 	splash_get_pos(&xpos, &ypos);
 
-	s = env_get("splashimage");
+	s = env_get(ctx_uboot, "splashimage");
 	if (!s)
 		return 0;
 

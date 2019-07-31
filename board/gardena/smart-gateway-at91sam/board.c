@@ -15,7 +15,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static void at91_prepare_cpu_var(void)
 {
-	env_set("cpu", get_cpu_name());
+	env_set(ctx_uboot, "cpu", get_cpu_name());
 }
 
 int board_late_init(void)

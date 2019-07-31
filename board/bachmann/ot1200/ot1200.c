@@ -301,9 +301,9 @@ int board_eth_init(bd_t *bis)
 
 	/* depending on the phy address we can detect our board version */
 	if (phydev->addr == 0)
-		env_set("boardver", "");
+		env_set(ctx_uboot, "boardver", "");
 	else
-		env_set("boardver", "mr");
+		env_set(ctx_uboot, "boardver", "mr");
 
 	printf("using phy at %d\n", phydev->addr);
 	ret = fec_probe(bis, -1, base, bus, phydev);

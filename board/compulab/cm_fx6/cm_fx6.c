@@ -117,10 +117,10 @@ int board_video_skip(void)
 {
 	int ret;
 	struct display_info_t *preset;
-	char const *panel = env_get("displaytype");
+	char const *panel = env_get(ctx_uboot, "displaytype");
 
 	if (!panel) /* Also accept panel for backward compatibility */
-		panel = env_get("panel");
+		panel = env_get(ctx_uboot, "panel");
 
 	if (!panel)
 		return -ENOENT;
@@ -628,16 +628,16 @@ int board_late_init(void)
 	int err;
 
 	if (is_mx6dq())
-		env_set("board_rev", "MX6Q");
+		env_set(ctx_uboot, "board_rev", "MX6Q");
 	else if (is_mx6dl())
-		env_set("board_rev", "MX6DL");
+		env_set(ctx_uboot, "board_rev", "MX6DL");
 
 	err = cl_eeprom_get_product_name((uchar *)baseboard_name, 0);
 	if (err)
 		return 0;
 
 	if (!strncmp("SB-FX6m", baseboard_name, 7))
-		env_set("board_name", "Utilite");
+		env_set(ctx_uboot, "board_name", "Utilite");
 #endif
 	return 0;
 }

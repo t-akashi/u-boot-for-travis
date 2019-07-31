@@ -127,7 +127,7 @@ int board_mmc_init(bd_t *bis)
 
 static int check_mmc_autodetect(void)
 {
-	char *autodetect_str = env_get("mmcautodetect");
+	char *autodetect_str = env_get(ctx_uboot, "mmcautodetect");
 
 	if ((autodetect_str != NULL) &&
 	    (strcmp(autodetect_str, "yes") == 0)) {
@@ -146,12 +146,12 @@ void board_late_mmc_init(void)
 	if (!check_mmc_autodetect())
 		return;
 
-	env_set_ulong("mmcdev", dev_no);
+	env_set_ulong(ctx_uboot, "mmcdev", dev_no);
 
 	/* Set mmcblk env */
 	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
 		dev_no);
-	env_set("mmcroot", mmcblk);
+	env_set(ctx_uboot, "mmcroot", mmcblk);
 
 	sprintf(cmd, "mmc dev %d", dev_no);
 	run_command(cmd, 0);

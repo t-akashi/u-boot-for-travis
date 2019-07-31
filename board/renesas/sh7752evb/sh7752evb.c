@@ -223,10 +223,10 @@ static void init_ethernet_mac(void)
 	for (i = 0; i < SH7752EVB_ETHERNET_NUM_CH; i++) {
 		get_sh_eth_mac(i, mac_string, buf);
 		if (i == 0)
-			env_set("ethaddr", mac_string);
+			env_set(ctx_uboot, "ethaddr", mac_string);
 		else {
 			sprintf(env_string, "eth%daddr", i);
-			env_set(env_string, mac_string);
+			env_set(ctx_uboot, env_string, mac_string);
 		}
 		set_mac_to_sh_giga_eth_register(i, mac_string);
 	}

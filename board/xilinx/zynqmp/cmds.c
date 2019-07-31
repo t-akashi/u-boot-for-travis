@@ -57,7 +57,7 @@ static int do_zynqmp_verify_secure(cmd_tbl_t *cmdtp, int flag, int argc,
 	} else {
 		addr = (u64)ret_payload[1] << 32 | ret_payload[2];
 		printf("Verified image at 0x%llx\n", addr);
-		env_set_hex("zynqmp_verified_img_addr", addr);
+		env_set_hex(ctx_uboot, "zynqmp_verified_img_addr", addr);
 	}
 
 	return ret;

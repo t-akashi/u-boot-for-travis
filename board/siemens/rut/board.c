@@ -480,7 +480,7 @@ int board_late_init(void)
 	else
 		strcpy(tmp, "QMX7.E38_4.0");
 
-	ret = env_set("boardid", tmp);
+	ret = env_set(ctx_uboot, "boardid", tmp);
 	if (ret)
 		printf("error setting board id\n");
 

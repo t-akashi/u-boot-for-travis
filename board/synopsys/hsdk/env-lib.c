@@ -21,10 +21,12 @@ static int env_read_common(u32 index, const struct env_map_common *map)
 
 	if (!env_get_yesno(map[index].env_name)) {
 		if (map[index].type == ENV_HEX) {
-			val = (u32)env_get_hex(map[index].env_name, 0);
+			val = (u32)env_get_hex(ctx_uboot, map[index].env_name,
+					       0);
 			debug("ENV: %s: = %#x\n", map[index].env_name, val);
 		} else {
-			val = (u32)env_get_ulong(map[index].env_name, 10, 0);
+			val = (u32)env_get_ulong(ctx_uboot,
+						 map[index].env_name, 10, 0);
 			debug("ENV: %s: = %d\n", map[index].env_name, val);
 		}
 
@@ -52,10 +54,11 @@ static int env_read_core(u32 index, const struct env_map_percpu *map)
 		sprintf(command, "%s_%u", map[index].env_name, i);
 		if (!env_get_yesno(command)) {
 			if (map[index].type == ENV_HEX) {
-				val = (u32)env_get_hex(command, 0);
+				val = (u32)env_get_hex(ctx_uboot, command, 0);
 				debug("ENV: %s: = %#x\n", command, val);
 			} else {
-				val = (u32)env_get_ulong(command, 10, 0);
+				val = (u32)env_get_ulong(ctx_uboot, command,
+							 10, 0);
 				debug("ENV: %s: = %d\n", command, val);
 			}
 

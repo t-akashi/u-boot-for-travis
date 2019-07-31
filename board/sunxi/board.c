@@ -194,7 +194,8 @@ void i2c_init_board(void)
 }
 
 #if defined(CONFIG_ENV_IS_IN_MMC) && defined(CONFIG_ENV_IS_IN_FAT)
-enum env_location env_get_location(enum env_operation op, int prio)
+enum env_location env_get_location(struct env_context *ctx,
+				   enum env_operation op, int prio)
 {
 	switch (prio) {
 	case 0:
@@ -725,7 +726,7 @@ void get_board_serial(struct tag_serialnr *serialnr)
 	char *serial_string;
 	unsigned long long serial;
 
-	serial_string = env_get("serial#");
+	serial_string = env_get(ctx_uboot, "serial#");
 
 	if (serial_string) {
 		serial = simple_strtoull(serial_string, NULL, 16);
@@ -764,7 +765,7 @@ static void parse_spl_header(const uint32_t spl_addr)
 		return;
 	}
 	/* otherwise assume .scr format (mkimage-type script) */
-	env_set_hex("fel_scriptaddr", spl->fel_script_address);
+	env_set_hex(ctx_uboot, "fel_scriptaddr", spl->fel_script_address);
 }
 
 /*
@@ -812,7 +813,7 @@ static void setup_environment(const void *fdt)
 			else
 				sprintf(ethaddr, "eth%daddr", i);
 
-			if (env_get(ethaddr))
+			if (env_get(ctx_uboot, ethaddr))
 				continue;
 
 			/* Non OUI / registered MAC address */
@@ -826,11 +827,11 @@ static void setup_environment(const void *fdt)
 			eth_env_set_enetaddr(ethaddr, mac_addr);
 		}
 
-		if (!env_get("serial#")) {
+		if (!env_get(ctx_uboot, "serial#")) {
 			snprintf(serial_string, sizeof(serial_string),
 				"%08x%08x", sid[0], sid[3]);
 
-			env_set("serial#", serial_string);
+			env_set(ctx_uboot, "serial#", serial_string);
 		}
 	}
 }
@@ -839,20 +840,20 @@ int misc_init_r(void)
 {
 	uint boot;
 
-	env_set("fel_booted", NULL);
-	env_set("fel_scriptaddr", NULL);
-	env_set("mmc_bootdev", NULL);
+	env_set(ctx_uboot, "fel_booted", NULL);
+	env_set(ctx_uboot, "fel_scriptaddr", NULL);
+	env_set(ctx_uboot, "mmc_bootdev", NULL);
 
 	boot = sunxi_get_boot_device();
 	/* determine if we are running in FEL mode */
 	if (boot == BOOT_DEVICE_BOARD) {
-		env_set("fel_booted", "1");
+		env_set(ctx_uboot, "fel_booted", "1");
 		parse_spl_header(SPL_ADDR);
 	/* or if we booted from MMC, and which one */
 	} else if (boot == BOOT_DEVICE_MMC1) {
-		env_set("mmc_bootdev", "0");
+		env_set(ctx_uboot, "mmc_bootdev", "0");
 	} else if (boot == BOOT_DEVICE_MMC2) {
-		env_set("mmc_bootdev", "1");
+		env_set(ctx_uboot, "mmc_bootdev", "1");
 	}
 
 	setup_environment(gd->fdt_blob);

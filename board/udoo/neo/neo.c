@@ -437,7 +437,7 @@ int checkboard(void)
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", board_string());
+	env_set(ctx_uboot, "board_name", board_string());
 #endif
 
 	return 0;

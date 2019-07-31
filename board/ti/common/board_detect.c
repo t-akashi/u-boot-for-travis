@@ -580,21 +580,21 @@ void __maybe_unused set_board_info_env(char *name)
 	struct ti_common_eeprom *ep = TI_EEPROM_DATA;
 
 	if (name)
-		env_set("board_name", name);
+		env_set(ctx_uboot, "board_name", name);
 	else if (ep->name)
-		env_set("board_name", ep->name);
+		env_set(ctx_uboot, "board_name", ep->name);
 	else
-		env_set("board_name", unknown);
+		env_set(ctx_uboot, "board_name", unknown);
 
 	if (ep->version)
-		env_set("board_rev", ep->version);
+		env_set(ctx_uboot, "board_rev", ep->version);
 	else
-		env_set("board_rev", unknown);
+		env_set(ctx_uboot, "board_rev", unknown);
 
 	if (ep->serial)
-		env_set("board_serial", ep->serial);
+		env_set(ctx_uboot, "board_serial", ep->serial);
 	else
-		env_set("board_serial", unknown);
+		env_set(ctx_uboot, "board_serial", unknown);
 }
 
 void __maybe_unused set_board_info_env_am6(char *name)
