@@ -629,11 +629,11 @@ void tftp_start(enum proto_t protocol)
 	 * TFTP protocol has a minimal timeout of 1 second.
 	 */
 
-	ep = env_get("tftpblocksize");
+	ep = env_get(ctx_uboot, "tftpblocksize");
 	if (ep != NULL)
 		tftp_block_size_option = simple_strtol(ep, NULL, 10);
 
-	ep = env_get("tftptimeout");
+	ep = env_get(ctx_uboot, "tftptimeout");
 	if (ep != NULL)
 		timeout_ms = simple_strtol(ep, NULL, 10);
 
@@ -643,7 +643,7 @@ void tftp_start(enum proto_t protocol)
 		timeout_ms = 1000;
 	}
 
-	ep = env_get("tftptimeoutcountmax");
+	ep = env_get(ctx_uboot, "tftptimeoutcountmax");
 	if (ep != NULL)
 		tftp_timeout_count_max = simple_strtol(ep, NULL, 10);
 
@@ -743,10 +743,10 @@ void tftp_start(enum proto_t protocol)
 	tftp_our_port = 1024 + (get_timer(0) % 3072);
 
 #ifdef CONFIG_TFTP_PORT
-	ep = env_get("tftpdstp");
+	ep = env_get(ctx_uboot, "tftpdstp");
 	if (ep != NULL)
 		tftp_remote_port = simple_strtol(ep, NULL, 10);
-	ep = env_get("tftpsrcp");
+	ep = env_get(ctx_uboot, "tftpsrcp");
 	if (ep != NULL)
 		tftp_our_port = simple_strtol(ep, NULL, 10);
 #endif

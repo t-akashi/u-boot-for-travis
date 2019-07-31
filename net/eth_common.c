@@ -46,13 +46,13 @@ int eth_mac_skip(int index)
 	char *skip_state;
 
 	sprintf(enetvar, index ? "eth%dmacskip" : "ethmacskip", index);
-	skip_state = env_get(enetvar);
+	skip_state = env_get(ctx_uboot, enetvar);
 	return skip_state != NULL;
 }
 
 void eth_current_changed(void)
 {
-	char *act = env_get("ethact");
+	char *act = env_get(ctx_uboot, "ethact");
 	char *ethrotate;
 
 	/*
@@ -60,21 +60,21 @@ void eth_current_changed(void)
 	 * ethernet device if uc_priv->current == NULL. This is not what
 	 * we want when 'ethrotate' variable is 'no'.
 	 */
-	ethrotate = env_get("ethrotate");
+	ethrotate = env_get(ctx_uboot, "ethrotate");
 	if ((ethrotate != NULL) && (strcmp(ethrotate, "no") == 0))
 		return;
 
 	/* update current ethernet name */
 	if (eth_get_dev()) {
 		if (act == NULL || strcmp(act, eth_get_name()) != 0)
-			env_set("ethact", eth_get_name());
+			env_set(ctx_uboot, "ethact", eth_get_name());
 	}
 	/*
 	 * remove the variable completely if there is no active
 	 * interface
 	 */
 	else if (act != NULL)
-		env_set("ethact", NULL);
+		env_set(ctx_uboot, "ethact", NULL);
 }
 
 void eth_try_another(int first_restart)
@@ -86,7 +86,7 @@ void eth_try_another(int first_restart)
 	 * Do not rotate between network interfaces when
 	 * 'ethrotate' variable is set to 'no'.
 	 */
-	ethrotate = env_get("ethrotate");
+	ethrotate = env_get(ctx_uboot, "ethrotate");
 	if ((ethrotate != NULL) && (strcmp(ethrotate, "no") == 0))
 		return;
 
@@ -110,14 +110,14 @@ void eth_set_current(void)
 	static int  env_changed_id;
 	int	env_id;
 
-	env_id = env_get_id();
+	env_id = env_get_id(ctx_uboot);
 	if ((act == NULL) || (env_changed_id != env_id)) {
-		act = env_get("ethact");
+		act = env_get(ctx_uboot, "ethact");
 		env_changed_id = env_id;
 	}
 
 	if (act == NULL) {
-		char *ethprime = env_get("ethprime");
+		char *ethprime = env_get(ctx_uboot, "ethprime");
 		void *dev = NULL;
 
 		if (ethprime)

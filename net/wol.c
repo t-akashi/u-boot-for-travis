@@ -56,7 +56,7 @@ void wol_receive(struct ip_udp_hdr *ip, unsigned int len)
 		struct in_addr *ip = (struct in_addr *)(wol->wol_passwd);
 
 		ip_to_string(*ip, buffer);
-		env_set("wolpassword", buffer);
+		env_set(ctx_uboot, "wolpassword", buffer);
 	}
 	net_set_state(NETLOOP_SUCCESS);
 }

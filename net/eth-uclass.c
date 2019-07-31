@@ -240,8 +240,8 @@ U_BOOT_ENV_CALLBACK(ethaddr, on_ethaddr);
 
 int eth_init(void)
 {
-	char *ethact = env_get("ethact");
-	char *ethrotate = env_get("ethrotate");
+	char *ethact = env_get(ctx_uboot, "ethact");
+	char *ethrotate = env_get(ctx_uboot, "ethrotate");
 	struct udevice *current = NULL;
 	struct udevice *old_current;
 	int ret = -ENODEV;
@@ -401,7 +401,7 @@ int eth_initialize(void)
 		printf("No ethernet found.\n");
 		bootstage_error(BOOTSTAGE_ID_NET_ETH_START);
 	} else {
-		char *ethprime = env_get("ethprime");
+		char *ethprime = env_get(ctx_uboot, "ethprime");
 		struct udevice *prime_dev = NULL;
 
 		if (ethprime)

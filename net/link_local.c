@@ -105,7 +105,7 @@ static void configure_wait(void)
 
 void link_local_start(void)
 {
-	ip = env_get_ip("llipaddr");
+	ip = env_get_ip(ctx_uboot, "llipaddr");
 	if (ip.s_addr != 0 &&
 	    (ntohl(ip.s_addr) & IN_CLASSB_NET) != LINKLOCAL_ADDR) {
 		puts("invalid link address");

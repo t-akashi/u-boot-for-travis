@@ -176,7 +176,7 @@ static void store_net_params(struct bootp_hdr *bp)
 	 * not contain a new value
 	 */
 	if (*net_boot_file_name)
-		env_set("bootfile", net_boot_file_name);
+		env_set(ctx_uboot, "bootfile", net_boot_file_name);
 #endif
 	net_copy_ip(&net_ip, &bp->bp_yiaddr);
 }
@@ -395,7 +395,7 @@ static void bootp_timeout_handler(void)
 #ifdef CONFIG_BOOTP_MAY_FAIL
 		char *ethrotate;
 
-		ethrotate = env_get("ethrotate");
+		ethrotate = env_get(ctx_uboot, "ethrotate");
 		if ((ethrotate && strcmp(ethrotate, "no") == 0) ||
 		    net_restart_wrap) {
 			puts("\nRetry time exceeded\n");
@@ -427,7 +427,7 @@ static void bootp_timeout_handler(void)
 static u8 *add_vci(u8 *e)
 {
 	char *vci = NULL;
-	char *env_vci = env_get("bootp_vci");
+	char *env_vci = env_get(ctx_uboot, "bootp_vci");
 
 #if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_NET_VCI_STRING)
 	vci = CONFIG_SPL_NET_VCI_STRING;
@@ -501,7 +501,7 @@ static int dhcp_extended(u8 *e, int message_type, struct in_addr server_ip,
 		*e++ = tmp & 0xff;
 	}
 #if defined(CONFIG_BOOTP_SEND_HOSTNAME)
-	hostname = env_get("hostname");
+	hostname = env_get(ctx_uboot, "hostname");
 	if (hostname) {
 		int hostnamelen = strlen(hostname);
 
@@ -516,8 +516,9 @@ static int dhcp_extended(u8 *e, int message_type, struct in_addr server_ip,
 	clientarch = CONFIG_BOOTP_PXE_CLIENTARCH;
 #endif
 
-	if (env_get("bootp_arch"))
-		clientarch = env_get_ulong("bootp_arch", 16, clientarch);
+	if (env_get(ctx_uboot, "bootp_arch"))
+		clientarch = env_get_ulong(ctx_uboot, "bootp_arch", 16,
+					   clientarch);
 
 	if (clientarch > 0) {
 		*e++ = 93;	/* Client System Architecture */
@@ -533,7 +534,7 @@ static int dhcp_extended(u8 *e, int message_type, struct in_addr server_ip,
 	*e++ = 0;	/* minor revision */
 
 #ifdef CONFIG_LIB_UUID
-	uuid = env_get("pxeuuid");
+	uuid = env_get(ctx_uboot, "pxeuuid");
 
 	if (uuid) {
 		if (uuid_str_valid(uuid)) {
@@ -726,7 +727,7 @@ void bootp_request(void)
 	dhcp_state = INIT;
 #endif
 
-	ep = env_get("bootpretryperiod");
+	ep = env_get(ctx_uboot, "bootpretryperiod");
 	if (ep != NULL)
 		time_taken_max = simple_strtoul(ep, NULL, 10);
 	else
