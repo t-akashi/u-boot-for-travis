@@ -647,7 +647,7 @@ int do_size(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 	if (fs_size(argv[3], &size) < 0)
 		return CMD_RET_FAILURE;
 
-	env_set_hex("filesize", size);
+	env_set_hex(ctx_uboot, "filesize", size);
 
 	return 0;
 }
@@ -678,7 +678,7 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 		if (ep == argv[3] || *ep != '\0')
 			return CMD_RET_USAGE;
 	} else {
-		addr_str = env_get("loadaddr");
+		addr_str = env_get(ctx_uboot, "loadaddr");
 		if (addr_str != NULL)
 			addr = simple_strtoul(addr_str, NULL, 16);
 		else
@@ -687,7 +687,7 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 	if (argc >= 5) {
 		filename = argv[4];
 	} else {
-		filename = env_get("bootfile");
+		filename = env_get(ctx_uboot, "bootfile");
 		if (!filename) {
 			puts("** No boot file defined **\n");
 			return 1;
@@ -720,8 +720,8 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 	}
 	puts("\n");
 
-	env_set_hex("fileaddr", addr);
-	env_set_hex("filesize", len_read);
+	env_set_hex(ctx_uboot, "fileaddr", addr);
+	env_set_hex(ctx_uboot, "filesize", len_read);
 
 	return 0;
 }
@@ -812,7 +812,7 @@ int do_fs_uuid(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 		return CMD_RET_FAILURE;
 
 	if (argc == 4)
-		env_set(argv[3], uuid);
+		env_set(ctx_uboot, argv[3], uuid);
 	else
 		printf("%s\n", uuid);
 
@@ -832,7 +832,7 @@ int do_fs_type(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	info = fs_get_info(fs_type);
 
 	if (argc == 4)
-		env_set(argv[3], info->name);
+		env_set(ctx_uboot, argv[3], info->name);
 	else
 		printf("%s\n", info->name);
 

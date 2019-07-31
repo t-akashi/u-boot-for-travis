@@ -944,7 +944,7 @@ int ubifs_load(char *filename, u32 addr, u32 size)
 
 	err = ubifs_read(filename, (void *)(uintptr_t)addr, 0, size, &actread);
 	if (err == 0) {
-		env_set_hex("filesize", actread);
+		env_set_hex(ctx_uboot, "filesize", actread);
 		printf("Done\n");
 	}
 
