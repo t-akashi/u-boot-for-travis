@@ -39,7 +39,7 @@ static int part_get_info_by_name_or_alias(struct blk_desc *dev_desc,
 		/* check for alias */
 		strcpy(env_alias_name, "fastboot_partition_alias_");
 		strncat(env_alias_name, name, PART_NAME_LEN);
-		aliased_part_name = env_get(env_alias_name);
+		aliased_part_name = env_get(ctx_uboot, env_alias_name);
 		if (aliased_part_name != NULL)
 			ret = part_get_info_by_name(dev_desc,
 					aliased_part_name, info);

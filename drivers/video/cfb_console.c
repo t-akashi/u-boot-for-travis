@@ -1861,7 +1861,7 @@ static void *video_logo(void)
 	splash_get_pos(&video_logo_xpos, &video_logo_ypos);
 
 #ifdef CONFIG_SPLASH_SCREEN
-	s = env_get("splashimage");
+	s = env_get(&ctx_boot, "splashimage");
 	if (s != NULL) {
 		ret = splash_screen_prepare();
 		if (ret < 0)

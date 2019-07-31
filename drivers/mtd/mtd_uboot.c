@@ -19,7 +19,7 @@ void board_mtdparts_default(const char **mtdids, const char **mtdparts);
 static const char *get_mtdids(void)
 {
 	__maybe_unused const char *mtdparts = NULL;
-	const char *mtdids = env_get("mtdids");
+	const char *mtdids = env_get(ctx_uboot, "mtdids");
 
 	if (mtdids)
 		return mtdids;
@@ -33,7 +33,7 @@ static const char *get_mtdids(void)
 #endif
 
 	if (mtdids)
-		env_set("mtdids", mtdids);
+		env_set(ctx_uboot, "mtdids", mtdids);
 
 	return mtdids;
 }
@@ -126,8 +126,9 @@ static const char *get_mtdparts(void)
 	const char *mtdparts = NULL;
 
 	if (gd->flags & GD_FLG_ENV_READY)
-		mtdparts = env_get("mtdparts");
-	else if (env_get_f("mtdparts", tmp_parts, sizeof(tmp_parts)) != -1)
+		mtdparts = env_get(ctx_uboot, "mtdparts");
+	else if (env_get_f(ctx_uboot, "mtdparts", tmp_parts,
+			   sizeof(tmp_parts)) != -1)
 		mtdparts = tmp_parts;
 
 	if (mtdparts)
@@ -142,7 +143,7 @@ static const char *get_mtdparts(void)
 #endif
 
 	if (mtdparts)
-		env_set("mtdparts", mtdparts);
+		env_set(ctx_uboot, "mtdparts", mtdparts);
 
 	return mtdparts;
 }

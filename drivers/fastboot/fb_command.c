@@ -250,7 +250,7 @@ void fastboot_data_complete(char *response)
 	fastboot_okay(NULL, response);
 	printf("\ndownloading of %d bytes finished\n", fastboot_bytes_received);
 	image_size = fastboot_bytes_received;
-	env_set_hex("filesize", image_size);
+	env_set_hex(ctx_uboot, "filesize", image_size);
 	fastboot_bytes_expected = 0;
 	fastboot_bytes_received = 0;
 }
@@ -322,7 +322,7 @@ static void oem_format(char *cmd_parameter, char *response)
 {
 	char cmdbuf[32];
 
-	if (!env_get("partitions")) {
+	if (!env_get(ctx_uboot, "partitions")) {
 		fastboot_fail("partitions not set", response);
 	} else {
 		sprintf(cmdbuf, "gpt write mmc %x $partitions",

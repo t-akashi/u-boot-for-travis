@@ -28,8 +28,8 @@ static int sb_eth_raw_start(struct udevice *dev)
 
 	ret = sandbox_eth_raw_os_start(priv, pdata->enetaddr);
 	if (priv->local) {
-		env_set("ipaddr", "127.0.0.1");
-		env_set("serverip", "127.0.0.1");
+		env_set(ctx_uboot, "ipaddr", "127.0.0.1");
+		env_set(ctx_uboot, "serverip", "127.0.0.1");
 		net_ip = string_to_ip("127.0.0.1");
 		net_server_ip = net_ip;
 	}

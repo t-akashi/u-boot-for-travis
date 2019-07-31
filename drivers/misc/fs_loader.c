@@ -142,10 +142,10 @@ static int fw_get_filesystem_firmware(struct udevice *dev)
 	char *storage_interface, *dev_part, *ubi_mtdpart, *ubi_volume;
 	int ret;
 
-	storage_interface = env_get("storage_interface");
-	dev_part = env_get("fw_dev_part");
-	ubi_mtdpart = env_get("fw_ubi_mtdpart");
-	ubi_volume = env_get("fw_ubi_volume");
+	storage_interface = env_get(ctx_uboot, "storage_interface");
+	dev_part = env_get(ctx_uboot, "fw_dev_part");
+	ubi_mtdpart = env_get(ctx_uboot, "fw_ubi_mtdpart");
+	ubi_volume = env_get(ctx_uboot, "fw_ubi_volume");
 
 	if (storage_interface && dev_part) {
 		ret = fs_set_blk_dev(storage_interface, dev_part, FS_TYPE_ANY);

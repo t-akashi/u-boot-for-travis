@@ -207,7 +207,7 @@ void *video_hw_init(void)
 	puts("Video: ");
 
 	/* Suck display configuration from "videomode" variable */
-	penv = env_get("videomode");
+	penv = env_get(ctx_uboot, "videomode");
 	if (!penv) {
 		puts("MXSFB: 'videomode' variable not set!\n");
 		return NULL;

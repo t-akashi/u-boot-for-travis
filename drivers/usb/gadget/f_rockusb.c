@@ -182,7 +182,7 @@ static int rockusb_bind(struct usb_configuration *c, struct usb_function *f)
 		f->hs_descriptors = rkusb_hs_function;
 	}
 
-	s = env_get("serial#");
+	s = env_get(ctx_uboot, "serial#");
 	if (s)
 		g_dnl_set_serialnumber((char *)s);
 

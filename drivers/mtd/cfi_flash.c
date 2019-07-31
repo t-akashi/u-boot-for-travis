@@ -2374,7 +2374,7 @@ unsigned long flash_init(void)
 	/* read environment from EEPROM */
 	char s[64];
 
-	env_get_f("unlock", s, sizeof(s));
+	env_get_f(ctx_uboot, "unlock", s, sizeof(s));
 #endif
 
 #ifdef CONFIG_CFI_FLASH /* for driver model */

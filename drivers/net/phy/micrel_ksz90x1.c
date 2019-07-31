@@ -267,7 +267,7 @@ static int ksz9021_config(struct phy_device *phydev)
 	if (ret)
 		return ret;
 
-	if (env_get("disable_giga"))
+	if (env_get(ctx_uboot, "disable_giga"))
 		features &= ~(SUPPORTED_1000baseT_Half |
 		SUPPORTED_1000baseT_Full);
 	/* force master mode for 1000BaseT due to chip errata */
@@ -353,7 +353,7 @@ static int ksz9031_config(struct phy_device *phydev)
 		return ret;
 
 	/* add an option to disable the gigabit feature of this PHY */
-	if (env_get("disable_giga")) {
+	if (env_get(ctx_uboot, "disable_giga")) {
 		unsigned features;
 		unsigned bmcr;
 

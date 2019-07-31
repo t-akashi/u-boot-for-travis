@@ -428,7 +428,7 @@ int fm_init_common(int index, struct ccsr_fman *reg)
 	rc = fman_upload_firmware(index, &reg->fm_imem, addr);
 	if (rc)
 		return rc;
-	env_set_addr("fman_ucode", addr);
+	env_set_addr(ctx_uboot, "fman_ucode", addr);
 
 	fm_init_muram(index, &reg->muram);
 	fm_init_qmi(&reg->fm_qmi_common);
@@ -511,7 +511,7 @@ int fm_init_common(int index, struct ccsr_fman *reg)
 	rc = fman_upload_firmware(index, &reg->fm_imem, addr);
 	if (rc)
 		return rc;
-	env_set_addr("fman_ucode", addr);
+	env_set_addr(ctx_uboot, "fman_ucode", addr);
 
 	fm_init_muram(index, &reg->muram);
 	fm_init_qmi(&reg->fm_qmi_common);

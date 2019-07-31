@@ -116,7 +116,7 @@ void fastboot_boot(void)
 {
 	char *s;
 
-	s = env_get("fastboot_bootcmd");
+	s = env_get(ctx_uboot, "fastboot_bootcmd");
 	if (s) {
 		run_command(s, CMD_FLAG_ENV);
 	} else {

@@ -681,7 +681,7 @@ int scsi_scan(bool verbose)
 
 	printf("Found %d device(s).\n", scsi_max_devs);
 #ifndef CONFIG_SPL_BUILD
-	env_set_ulong("scsidevs", scsi_max_devs);
+	env_set_ulong(ctx_uboot, "scsidevs", scsi_max_devs);
 #endif
 	return 0;
 }

@@ -165,7 +165,7 @@ int video_get_params (struct ctfb_res_modes *pPar, char *penv)
 	/* first search for the environment containing the real param string */
 	s = penv;
 
-	p = env_get(s);
+	p = env_get(ctx_uboot, s);
 	if (p)
 		s = p;
 
@@ -235,7 +235,7 @@ int video_get_params (struct ctfb_res_modes *pPar, char *penv)
 int video_get_video_mode(unsigned int *xres, unsigned int *yres,
 	unsigned int *depth, unsigned int *freq, const char **options)
 {
-	char *p = env_get("video-mode");
+	char *p = env_get(ctx_uboot, "video-mode");
 	if (!p)
 		return 0;
 

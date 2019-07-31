@@ -526,7 +526,7 @@ int drv_usbtty_init (void)
 	int snlen;
 
 	/* Get serial number */
-	sn = env_get("serial#");
+	sn = env_get(ctx_uboot, "serial#");
 	if (!sn)
 		sn = "000000000000";
 	snlen = strlen(sn);
@@ -540,7 +540,7 @@ int drv_usbtty_init (void)
 
 	/* Decide on which type of UDC device to be.
 	 */
-	tt = env_get("usbtty");
+	tt = env_get(ctx_uboot, "usbtty");
 	if (!tt)
 		tt = "generic";
 	usbtty_init_terminal_type(strcmp(tt,"cdc_acm"));

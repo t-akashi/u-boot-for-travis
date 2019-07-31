@@ -48,7 +48,7 @@ static bool socfpga_reset_keep_enabled(void)
 	const char *env_str;
 	long val;
 
-	env_str = env_get("socfpga_legacy_reset_compat");
+	env_str = env_get(ctx_uboot, "socfpga_legacy_reset_compat");
 	if (env_str) {
 		val = simple_strtol(env_str, NULL, 0);
 		if (val == 1)

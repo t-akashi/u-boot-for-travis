@@ -60,8 +60,8 @@ static int is_broadcast(struct in_addr ip)
 
 	/* update only when the environment has changed */
 	if (env_changed_id != env_id) {
-		netmask = env_get_ip("netmask");
-		our_ip = env_get_ip("ipaddr");
+		netmask = env_get_ip(ctx_uboot, "netmask");
+		our_ip = env_get_ip(ctx_uboot, "ipaddr");
 
 		env_changed_id = env_id;
 	}
@@ -80,11 +80,11 @@ static int refresh_settings_from_env(void)
 
 	/* update only when the environment has changed */
 	if (env_changed_id != env_id) {
-		if (env_get("ncip")) {
-			nc_ip = env_get_ip("ncip");
+		if (env_get(ctx_uboot, "ncip")) {
+			nc_ip = env_get_ip(ctx_uboot, "ncip");
 			if (!nc_ip.s_addr)
 				return -1;	/* ncip is 0.0.0.0 */
-			p = strchr(env_get("ncip"), ':');
+			p = strchr(env_get(ctx_uboot, "ncip"), ':');
 			if (p != NULL) {
 				nc_out_port = simple_strtoul(p + 1, NULL, 10);
 				nc_in_port = nc_out_port;
@@ -93,10 +93,10 @@ static int refresh_settings_from_env(void)
 			nc_ip.s_addr = ~0; /* ncip is not set, so broadcast */
 		}
 
-		p = env_get("ncoutport");
+		p = env_get(ctx_uboot, "ncoutport");
 		if (p != NULL)
 			nc_out_port = simple_strtoul(p, NULL, 10);
-		p = env_get("ncinport");
+		p = env_get(ctx_uboot, "ncinport");
 		if (p != NULL)
 			nc_in_port = simple_strtoul(p, NULL, 10);
 

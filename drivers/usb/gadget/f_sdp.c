@@ -359,7 +359,7 @@ static void sdp_rx_data_complete(struct usb_ep *ep, struct usb_request *req)
 		return;
 
 #ifndef CONFIG_SPL_BUILD
-	env_set_hex("filesize", sdp->dnl_bytes);
+	env_set_hex(ctx_uboot, "filesize", sdp->dnl_bytes);
 #endif
 	printf("done\n");
 

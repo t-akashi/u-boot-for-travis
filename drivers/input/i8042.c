@@ -269,7 +269,7 @@ static int i8042_start(struct udevice *dev)
 
 	/* Init keyboard device (default US layout) */
 	keymap = KBD_US;
-	penv = env_get("keymap");
+	penv = env_get(ctx_uboot, "keymap");
 	if (penv != NULL) {
 		if (strncmp(penv, "de", 3) == 0)
 			keymap = KBD_GER;

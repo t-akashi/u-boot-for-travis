@@ -814,7 +814,7 @@ void *video_hw_init(void)
 
 	videomode = CONFIG_SYS_DEFAULT_VIDEO_MODE;
 	/* get video mode via environment */
-	penv = env_get("videomode");
+	penv = env_get(ctx_uboot, "videomode");
 	if (penv) {
 		/* decide if it is a string */
 		if (penv[0] <= '9') {

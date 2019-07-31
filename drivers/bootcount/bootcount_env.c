@@ -9,21 +9,23 @@
 
 void bootcount_store(ulong a)
 {
-	int upgrade_available = env_get_ulong("upgrade_available", 10, 0);
+	int upgrade_available = env_get_ulong(ctx_uboot, "upgrade_available",
+					      10, 0);
 
 	if (upgrade_available) {
-		env_set_ulong("bootcount", a);
-		env_save();
+		env_set_ulong(ctx_uboot, "bootcount", a);
+		env_save(ctx_uboot);
 	}
 }
 
 ulong bootcount_load(void)
 {
-	int upgrade_available = env_get_ulong("upgrade_available", 10, 0);
+	int upgrade_available = env_get_ulong(ctx_uboot, "upgrade_available",
+					      10, 0);
 	ulong val = 0;
 
 	if (upgrade_available)
-		val = env_get_ulong("bootcount", 10, 0);
+		val = env_get_ulong(ctx_uboot, "bootcount", 10, 0);
 
 	return val;
 }

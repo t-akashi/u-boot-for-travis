@@ -141,7 +141,7 @@ static void getvar_downloadsize(char *var_parameter, char *response)
 
 static void getvar_serialno(char *var_parameter, char *response)
 {
-	const char *tmp = env_get("serial#");
+	const char *tmp = env_get(ctx_uboot, "serial#");
 
 	if (tmp)
 		fastboot_okay(tmp, response);
@@ -156,7 +156,7 @@ static void getvar_version_baseband(char *var_parameter, char *response)
 
 static void getvar_product(char *var_parameter, char *response)
 {
-	const char *board = env_get("board");
+	const char *board = env_get(ctx_uboot, "board");
 
 	if (board)
 		fastboot_okay(board, response);
@@ -166,7 +166,7 @@ static void getvar_product(char *var_parameter, char *response)
 
 static void getvar_platform(char *var_parameter, char *response)
 {
-	const char *p = env_get("platform");
+	const char *p = env_get(ctx_uboot, "platform");
 
 	if (p)
 		fastboot_okay(p, response);
@@ -276,7 +276,7 @@ void fastboot_getvar(char *cmd_parameter, char *response)
 
 		snprintf(envstr, sizeof(envstr) - 1,
 			 FASTBOOT_ENV_PREFIX "%s", cmd_parameter);
-		s = env_get(envstr);
+		s = env_get(ctx_uboot, envstr);
 		if (s) {
 			fastboot_response("OKAY", response, "%s", s);
 			return;
