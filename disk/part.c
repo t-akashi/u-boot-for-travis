@@ -491,7 +491,7 @@ int blk_get_device_part_str(const char *ifname, const char *dev_part_str,
 	/* If no dev_part_str, use bootdevice environment variable */
 	if (!dev_part_str || !strlen(dev_part_str) ||
 	    !strcmp(dev_part_str, "-"))
-		dev_part_str = env_get("bootdevice");
+		dev_part_str = env_get(ctx_uboot, "bootdevice");
 
 	/* If still no dev_part_str, it's an error */
 	if (!dev_part_str) {
