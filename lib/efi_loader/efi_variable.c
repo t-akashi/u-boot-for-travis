@@ -185,7 +185,9 @@ efi_status_t EFIAPI efi_get_variable(u16 *variable_name,
 
 	EFI_PRINT("get '%s'\n", native_name);
 
-	val = env_get(native_name);
+	val = env_get(ctx_efi, native_name);
+	if (!val)
+		val = env_get(ctx_efi_volatile, native_name);
 	free(native_name);
 	if (!val)
 		return EFI_EXIT(EFI_NOT_FOUND);
@@ -388,12 +390,48 @@ efi_status_t EFIAPI efi_get_next_variable_name(efi_uintn_t *variable_name_size,
 		efi_cur_variable = NULL;
 
 		snprintf(regex, 256, "efi_.*-.*-.*-.*-.*_.*");
-		list_len = hexport_r(&env_htab, '\n',
+		list_len = hexport_r(ctx_efi->htab, '\n',
 				     H_MATCH_REGEX | H_MATCH_KEY,
 				     &efi_variables_list, 0, 1, regexlist);
 		/* 1 indicates that no match was found */
-		if (list_len <= 1)
-			return EFI_EXIT(EFI_NOT_FOUND);
+		if (list_len <= 1) {
+			list_len = hexport_r(ctx_efi_volatile->htab, '\n',
+					     H_MATCH_REGEX | H_MATCH_KEY,
+					     &efi_variables_list, 0, 1,
+					     regexlist);
+
+			if (list_len <= 1)
+				return EFI_EXIT(EFI_NOT_FOUND);
+		} else {
+			char *list_volatile, *list_tmp;
+			size_t total_len;
+
+			list_volatile = NULL;
+			total_len = list_len;
+			list_len = hexport_r(ctx_efi_volatile->htab, '\n',
+					     H_MATCH_REGEX | H_MATCH_KEY,
+					     &list_volatile, 0, 1,
+					     regexlist);
+
+			/* concatenate two lists */
+			if (list_len > 1) {
+				total_len += list_len - 1;
+				list_tmp = efi_variables_list;
+
+				efi_variables_list = malloc(total_len);
+				if (efi_variables_list) {
+					strcpy(efi_variables_list, list_tmp);
+					strcat(efi_variables_list,
+					       list_volatile);
+				}
+
+				free(list_tmp);
+				free(list_volatile);
+
+				if (!efi_variables_list)
+					return EFI_EXIT(EFI_OUT_OF_RESOURCES);
+			}
+		}
 
 		variable = efi_variables_list;
 	}
@@ -424,8 +462,9 @@ efi_status_t EFIAPI efi_set_variable(u16 *variable_name,
 				     efi_uintn_t data_size, const void *data)
 {
 	char *native_name = NULL, *val = NULL, *s;
+	struct env_context *ctx;
+	u32 attr, non_volatile;
 	efi_status_t ret = EFI_SUCCESS;
-	u32 attr;
 
 	EFI_ENTRY("\"%ls\" %pUl %x %zu %p", variable_name, vendor, attributes,
 		  data_size, data);
@@ -447,12 +486,17 @@ efi_status_t EFIAPI efi_set_variable(u16 *variable_name,
 
 	if ((data_size == 0) || !(attributes & ACCESS_ATTR)) {
 		/* delete the variable: */
-		env_set(native_name, NULL);
+		env_set(ctx_efi, native_name, NULL);
 		ret = EFI_SUCCESS;
 		goto out;
 	}
 
-	val = env_get(native_name);
+	if (attributes & EFI_VARIABLE_NON_VOLATILE)
+		ctx = ctx_efi;
+	else
+		ctx = ctx_efi_volatile;
+
+	val = env_get(ctx, native_name);
 	if (val) {
 		parse_attr(val, &attr);
 
@@ -485,6 +529,7 @@ efi_status_t EFIAPI efi_set_variable(u16 *variable_name,
 	 * store attributes
 	 * TODO: several attributes are not supported
 	 */
+	non_volatile = (attributes & EFI_VARIABLE_NON_VOLATILE);
 	attributes &= (EFI_VARIABLE_NON_VOLATILE |
 		       EFI_VARIABLE_BOOTSERVICE_ACCESS |
 		       EFI_VARIABLE_RUNTIME_ACCESS);
@@ -512,7 +557,9 @@ efi_status_t EFIAPI efi_set_variable(u16 *variable_name,
 
 	EFI_PRINT("setting: %s=%s\n", native_name, val);
 
-	if (env_set(native_name, val))
+	if (env_set(ctx, native_name, val))
+		ret = EFI_DEVICE_ERROR;
+	else if (non_volatile && env_save(ctx))
 		ret = EFI_DEVICE_ERROR;
 
 out:
@@ -619,5 +666,33 @@ void efi_variables_boot_exit_notify(void)
  */
 efi_status_t efi_init_variables(void)
 {
+	int ret;
+
+	/*
+	 * Volatile variables:
+	 * Context for volatile variables has no backing storage
+	 */
+	ret = env_ctx_init(ctx_efi_volatile);
+	if (ret) {
+		printf("Initializing efi variables(volatile) failed\n");
+
+		return EFI_DEVICE_ERROR;
+	}
+
+	/* Non-Volatile variables */
+	ret = env_ctx_init(ctx_efi);
+	if (ret) {
+		printf("Initializing efi variables failed\n");
+
+		return EFI_DEVICE_ERROR;
+	}
+
+	ret = env_load(ctx_efi);
+	if (ret && ret != -ENODEV) {
+		printf("Loading efi variables failed\n");
+
+		return EFI_DEVICE_ERROR;
+	}
+
 	return EFI_SUCCESS;
 }
