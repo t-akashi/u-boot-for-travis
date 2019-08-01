@@ -3,7 +3,7 @@
 # (C) Copyright 2004-2006
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
 
-obj-y += common.o env.o
+obj-y += common.o env.o env_ctx_uboot.o
 
 ifndef CONFIG_SPL_BUILD
 obj-y += attr.o

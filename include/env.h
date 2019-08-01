@@ -9,6 +9,7 @@
 #ifndef __ENV_H
 #define __ENV_H
 
+#include <linker_lists.h>
 #include <stdbool.h>
 #include <linux/types.h>
 
@@ -62,6 +63,8 @@ enum env_redund_flags {
 	ENV_REDUND_OBSOLETE = 0,
 	ENV_REDUND_ACTIVE = 1,
 };
+
+#define ctx_uboot ll_entry_get(struct env_context, uboot, env_contexts)
 
 /* Accessor functions */
 void env_set_ready(struct env_context *ctx);
