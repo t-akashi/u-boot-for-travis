@@ -4,6 +4,7 @@
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
 
 obj-y += common.o env.o env_ctx_uboot.o
+obj-$(CONFIG_EFI_LOADER) += env_ctx_efi.o
 
 ifndef CONFIG_SPL_BUILD
 obj-y += attr.o

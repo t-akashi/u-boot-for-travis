@@ -47,5 +47,6 @@ config ENV_DRV_UBI
 	bool
 
 source "env/Kconfig.uboot"
+source "env/Kconfig.efi"
 
 endmenu

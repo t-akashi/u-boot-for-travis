@@ -66,6 +66,9 @@ enum env_redund_flags {
 };
 
 #define ctx_uboot ll_entry_get(struct env_context, uboot, env_contexts)
+#define ctx_efi ll_entry_get(struct env_context, efi, env_contexts)
+#define ctx_efi_volatile ll_entry_get(struct env_context, efi_volatile, \
+				      env_contexts)
 
 /* Accessor functions */
 void env_set_ready(struct env_context *ctx);
