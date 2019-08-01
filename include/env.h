@@ -398,5 +398,7 @@ int env_flash_init_params(struct env_context *ctx,
 			  struct environment_hdr *flash_addr_new,
 			  ulong end_addr_new,
 			  ulong default_env_addr);
+int env_fat_init_params(struct env_context *ctx, const char *interface,
+			const char *dev_part, const char *file);
 
 #endif

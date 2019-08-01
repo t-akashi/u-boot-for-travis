@@ -31,25 +31,57 @@
 # endif
 #endif
 
-#ifdef CMD_SAVEENV
-static int env_fat_save(void)
+struct env_fat_context {
+	const char *interface;
+	const char *dev_and_part;
+	const char *file;
+};
+
+int env_fat_init_params(struct env_context *ctx, const char *interface,
+			const char *dev_part, const char *file)
 {
-	env_t __aligned(ARCH_DMA_MINALIGN) env_new;
+	struct env_fat_context *params;
+
+	params = calloc(sizeof(*params), 1);
+	if (!params)
+		return -1;
+
+	params->interface = interface;
+	params->dev_and_part = dev_part;
+	params->file = file;
+	ctx->drv_params[ENVL_FAT] = params;
+
+	return 0;
+}
+
+#ifdef CMD_SAVEENV
+static int env_fat_save(struct env_context *ctx)
+{
+	env_hdr_t *env_new;
 	struct blk_desc *dev_desc = NULL;
 	disk_partition_t info;
 	int dev, part;
+	struct env_fat_context *params = ctx->drv_params[ENVL_FAT];
 	int err;
 	loff_t size;
 
-	err = env_export(&env_new);
-	if (err)
-		return err;
-
-	part = blk_get_device_part_str(CONFIG_ENV_FAT_INTERFACE,
-					CONFIG_ENV_FAT_DEVICE_AND_PART,
-					&dev_desc, &info, 1);
-	if (part < 0)
+	if (!params)
 		return 1;
+
+	env_new = malloc_cache_aligned(sizeof(env_hdr_t) + ctx->env_size);
+	if (!env_new)
+		return 1;
+
+	err = env_export(ctx, env_new);
+	if (err)
+		goto out;
+	err = 1;
+
+	part = blk_get_device_part_str(params->interface,
+				       params->dev_and_part,
+				       &dev_desc, &info, 1);
+	if (part < 0)
+		goto out;
 
 	dev = dev_desc->devnum;
 	if (fat_set_blk_dev(dev_desc, &info) != 0) {
@@ -58,43 +90,51 @@ static int env_fat_save(void)
 		 * will calling it. The missing \n is intentional.
 		 */
 		printf("Unable to use %s %d:%d... ",
-		       CONFIG_ENV_FAT_INTERFACE, dev, part);
-		return 1;
+		       params->interface, dev, part);
+		goto out;
 	}
 
-	err = file_fat_write(CONFIG_ENV_FAT_FILE, (void *)&env_new, 0, sizeof(env_t),
-			     &size);
+	err = file_fat_write(params->file, (void *)env_new, 0,
+			     sizeof(env_hdr_t) + ctx->env_size, &size);
 	if (err == -1) {
 		/*
 		 * This printf is embedded in the messages from env_save that
 		 * will calling it. The missing \n is intentional.
 		 */
 		printf("Unable to write \"%s\" from %s%d:%d... ",
-			CONFIG_ENV_FAT_FILE, CONFIG_ENV_FAT_INTERFACE, dev, part);
-		return 1;
+			params->file, params->interface, dev, part);
+		err = 1;
+		goto out;
 	}
+	err = 0;
+out:
+	free(env_new);
 
-	return 0;
+	return err;
 }
 #endif /* CMD_SAVEENV */
 
 #ifdef LOADENV
-static int env_fat_load(void)
+static int env_fat_load(struct env_context *ctx)
 {
-	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
+	struct env_fat_context *params = ctx->drv_params[ENVL_FAT];
+	ALLOC_CACHE_ALIGN_BUFFER(char, buf, sizeof(env_hdr_t) + ctx->env_size);
 	struct blk_desc *dev_desc = NULL;
 	disk_partition_t info;
 	int dev, part;
 	int err;
 
+	if (!params)
+		return -ENODEV;
+
 #ifdef CONFIG_MMC
-	if (!strcmp(CONFIG_ENV_FAT_INTERFACE, "mmc"))
+	if (!strcmp(params->interface, "mmc"))
 		mmc_initialize(NULL);
 #endif
 
-	part = blk_get_device_part_str(CONFIG_ENV_FAT_INTERFACE,
-					CONFIG_ENV_FAT_DEVICE_AND_PART,
-					&dev_desc, &info, 1);
+	part = blk_get_device_part_str(params->interface,
+				       params->dev_and_part,
+				       &dev_desc, &info, 1);
 	if (part < 0)
 		goto err_env_relocate;
 
@@ -105,29 +145,38 @@ static int env_fat_load(void)
 		 * will calling it. The missing \n is intentional.
 		 */
 		printf("Unable to use %s %d:%d... ",
-		       CONFIG_ENV_FAT_INTERFACE, dev, part);
+		       params->interface, dev, part);
 		goto err_env_relocate;
 	}
 
-	err = file_fat_read(CONFIG_ENV_FAT_FILE, buf, CONFIG_ENV_SIZE);
+	err = file_fat_read(params->file, buf,
+			    sizeof(env_hdr_t) + ctx->env_size);
 	if (err == -1) {
 		/*
 		 * This printf is embedded in the messages from env_save that
 		 * will calling it. The missing \n is intentional.
 		 */
 		printf("Unable to read \"%s\" from %s%d:%d... ",
-			CONFIG_ENV_FAT_FILE, CONFIG_ENV_FAT_INTERFACE, dev, part);
+			params->file, params->interface, dev, part);
 		goto err_env_relocate;
 	}
 
-	return env_import(buf, 1);
+	return env_import(ctx, buf, 1);
 
 err_env_relocate:
-	env_set_default(NULL, 0);
+	env_set_default(ctx, NULL, 0);
 
 	return -EIO;
 }
 #endif /* LOADENV */
+
+static int env_fat_init(struct env_context *ctx)
+{
+	if (ctx->drv_init)
+		return ctx->drv_init(ctx, ENVL_FAT);
+
+	return -ENOENT;
+}
 
 U_BOOT_ENV_LOCATION(fat) = {
 	.location	= ENVL_FAT,
@@ -138,4 +187,5 @@ U_BOOT_ENV_LOCATION(fat) = {
 #ifdef CMD_SAVEENV
 	.save		= env_save_ptr(env_fat_save),
 #endif
+	.init		= env_fat_init,
 };
