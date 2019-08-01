@@ -45,73 +45,95 @@ DECLARE_GLOBAL_DATA_PTR;
 #define INITENV
 #endif
 
-#if defined(CONFIG_ENV_ADDR_REDUND) && defined(CMD_SAVEENV) || \
-	!defined(CONFIG_ENV_ADDR_REDUND) && defined(INITENV)
-#ifdef ENV_IS_EMBEDDED
-static env_t *env_ptr = &embedded_environment;
-#else /* ! ENV_IS_EMBEDDED */
+struct env_flash_context {
+	env_hdr_t *env_ptr;
+	env_hdr_t *flash_addr;
+	ulong end_addr;
+	env_hdr_t *flash_addr_new;
+	ulong end_addr_new;
+	ulong default_env_addr;
+};
 
-static env_t *env_ptr = (env_t *)CONFIG_ENV_ADDR;
-#endif /* ENV_IS_EMBEDDED */
+int env_flash_init_params(struct env_context *ctx,
+			  env_hdr_t *env_ptr,
+			  env_hdr_t *flash_addr, ulong end_addr,
+			  env_hdr_t *flash_addr_new, ulong end_addr_new,
+			  ulong default_env_addr)
+{
+	struct env_flash_context *params;
+
+	params = calloc(sizeof(*params), 1);
+	if (!params)
+		return -1;
+
+	params->env_ptr = env_ptr;
+	params->flash_addr = flash_addr;
+	params->end_addr = end_addr;
+	params->flash_addr_new = flash_addr_new;
+	params->end_addr_new = end_addr_new;
+	params->default_env_addr = default_env_addr;
+#if 1 /* FIXME: cause hang-up */
+	ctx->drv_params[ENVL_FLASH] = NULL;
+#else
+	ctx->drv_params[ENVL_FLASH] = params;
 #endif
-static __maybe_unused env_t *flash_addr = (env_t *)CONFIG_ENV_ADDR;
 
-/* CONFIG_ENV_ADDR is supposed to be on sector boundary */
-static ulong __maybe_unused end_addr =
-		CONFIG_ENV_ADDR + CONFIG_ENV_SECT_SIZE - 1;
-
-#ifdef CONFIG_ENV_ADDR_REDUND
-
-static env_t __maybe_unused *flash_addr_new = (env_t *)CONFIG_ENV_ADDR_REDUND;
-
-/* CONFIG_ENV_ADDR_REDUND is supposed to be on sector boundary */
-static ulong __maybe_unused end_addr_new =
-		CONFIG_ENV_ADDR_REDUND + CONFIG_ENV_SECT_SIZE - 1;
-#endif /* CONFIG_ENV_ADDR_REDUND */
+	return 0;
+}
 
 #ifdef CONFIG_ENV_ADDR_REDUND
 #ifdef INITENV
-static int env_flash_init(void)
+static int env_flash_init(struct env_context *ctx)
 {
+	struct env_flash_context *params;
 	int crc1_ok = 0, crc2_ok = 0;
 
-	uchar flag1 = flash_addr->flags;
-	uchar flag2 = flash_addr_new->flags;
+	if (ctx->drv_init)
+		if (ctx->drv_init(ctx, ENVL_FLASH))
+			return -ENOENT;
 
-	ulong addr_default = (ulong)&default_environment[0];
-	ulong addr1 = (ulong)&(flash_addr->data);
-	ulong addr2 = (ulong)&(flash_addr_new->data);
+	params = ctx->drv_params[ENVL_FLASH];
+	if (!params)
+		return -ENODEV;
 
-	crc1_ok = crc32(0, flash_addr->data, ENV_SIZE) == flash_addr->crc;
-	crc2_ok =
-		crc32(0, flash_addr_new->data, ENV_SIZE) == flash_addr_new->crc;
+	uchar flag1 = params->flash_addr->flags;
+	uchar flag2 = params->flash_addr_new->flags;
+
+	ulong addr_default = params->default_env_addr;
+	ulong addr1 = (ulong)&params->flash_addr->data;
+	ulong addr2 = (ulong)&params->flash_addr_new->data;
+
+	crc1_ok = crc32(0, params->flash_addr->data, ctx->env_size)
+			== params->flash_addr->crc;
+	crc2_ok = crc32(0, params->flash_addr_new->data, ctx->env_size)
+			== params->flash_addr_new->crc;
 
 	if (crc1_ok && !crc2_ok) {
-		gd->env_addr	= addr1;
-		gd->env_valid	= ENV_VALID;
+		env_set_env_addr(ctx, addr1);
+		env_set_valid(ctx, ENV_VALID);
 	} else if (!crc1_ok && crc2_ok) {
-		gd->env_addr	= addr2;
-		gd->env_valid	= ENV_VALID;
+		env_set_env_addr(ctx, addr2);
+		env_set_valid(ctx, ENV_VALID);
 	} else if (!crc1_ok && !crc2_ok) {
-		gd->env_addr	= addr_default;
-		gd->env_valid	= ENV_INVALID;
+		env_set_env_addr(ctx, addr_default);
+		env_set_valid(ctx, ENV_INVALID);
 	} else if (flag1 == ENV_REDUND_ACTIVE &&
 		   flag2 == ENV_REDUND_OBSOLETE) {
-		gd->env_addr	= addr1;
-		gd->env_valid	= ENV_VALID;
+		env_set_env_addr(ctx, addr1);
+		env_set_valid(ctx, ENV_VALID);
 	} else if (flag1 == ENV_REDUND_OBSOLETE &&
 		   flag2 == ENV_REDUND_ACTIVE) {
-		gd->env_addr	= addr2;
-		gd->env_valid	= ENV_VALID;
+		env_set_env_addr(ctx, addr2);
+		env_set_valid(ctx, ENV_VALID);
 	} else if (flag1 == flag2) {
-		gd->env_addr	= addr1;
-		gd->env_valid	= ENV_REDUND;
+		env_set_env_addr(ctx, addr1);
+		env_set_valid(ctx, ENV_REDUND);
 	} else if (flag1 == 0xFF) {
-		gd->env_addr	= addr1;
-		gd->env_valid	= ENV_REDUND;
+		env_set_env_addr(ctx, addr1);
+		env_set_valid(ctx, ENV_REDUND);
 	} else if (flag2 == 0xFF) {
-		gd->env_addr	= addr2;
-		gd->env_valid	= ENV_REDUND;
+		env_set_env_addr(ctx, addr2);
+		env_set_valid(ctx, ENV_REDUND);
 	}
 
 	return 0;
@@ -119,91 +141,107 @@ static int env_flash_init(void)
 #endif
 
 #ifdef CMD_SAVEENV
-static int env_flash_save(void)
+static int env_flash_save(struct env_context *ctx)
 {
-	env_t	env_new;
+	struct env_flash_context *params = ctx->drv_params[ENVL_FLASH];
+	env_hdr_t *env_new = NULL;
+	size_t	env_size;
 	char	*saved_data = NULL;
 	char	flag = ENV_REDUND_OBSOLETE, new_flag = ENV_REDUND_ACTIVE;
 	int	rc = 1;
-#if CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE
 	ulong	up_data = 0;
-#endif
 
-	debug("Protect off %08lX ... %08lX\n", (ulong)flash_addr, end_addr);
+	debug("Protect off %08lX ... %08lX\n", (ulong)params->flash_addr,
+	      params->end_addr);
 
-	if (flash_sect_protect(0, (ulong)flash_addr, end_addr))
+	if (!params)
+		return 1;
+
+	env_size = sizeof(env_hdr_t) + ctx->env_size;
+	env_new = malloc(env_size);
+	if (!env_new)
+		return 1;
+
+	if (flash_sect_protect(0, (ulong)params->flash_addr, params->end_addr))
 		goto done;
 
 	debug("Protect off %08lX ... %08lX\n",
-		(ulong)flash_addr_new, end_addr_new);
+		(ulong)params->flash_addr_new, params->end_addr_new);
 
-	if (flash_sect_protect(0, (ulong)flash_addr_new, end_addr_new))
+	if (flash_sect_protect(0, (ulong)params->flash_addr_new,
+			       params->end_addr_new))
 		goto done;
 
-	rc = env_export(&env_new);
+	rc = env_export(ctx, env_new);
 	if (rc)
-		return rc;
-	env_new.flags	= new_flag;
+		goto done;
+	env_new->flags	= new_flag;
 
-#if CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE
-	up_data = end_addr_new + 1 - ((long)flash_addr_new + CONFIG_ENV_SIZE);
-	debug("Data to save 0x%lX\n", up_data);
-	if (up_data) {
-		saved_data = malloc(up_data);
-		if (saved_data == NULL) {
-			printf("Unable to save the rest of sector (%ld)\n",
-				up_data);
-			goto done;
+	if (env_size < CONFIG_ENV_SECT_SIZE) {
+		up_data = params->end_addr_new + 1
+				- ((long)params->flash_addr_new + env_size);
+		debug("Data to save 0x%lX\n", up_data);
+		if (up_data) {
+			saved_data = malloc(up_data);
+			if (!saved_data) {
+				printf("Unable to save the rest of sector (%ld)\n",
+				       up_data);
+				goto done;
+			}
+			memcpy(saved_data,
+			       (void *)
+			       ((long)params->flash_addr_new + env_size),
+			       up_data);
+			debug("Data (start 0x%lX, len 0x%lX) saved at 0x%p\n",
+			      (long)params->flash_addr_new + env_size,
+			      up_data, saved_data);
 		}
-		memcpy(saved_data,
-			(void *)((long)flash_addr_new + CONFIG_ENV_SIZE),
-			up_data);
-		debug("Data (start 0x%lX, len 0x%lX) saved at 0x%p\n",
-			(long)flash_addr_new + CONFIG_ENV_SIZE,
-			up_data, saved_data);
 	}
-#endif
-	puts("Erasing Flash...");
-	debug(" %08lX ... %08lX ...", (ulong)flash_addr_new, end_addr_new);
 
-	if (flash_sect_erase((ulong)flash_addr_new, end_addr_new))
+	puts("Erasing Flash...");
+	debug(" %08lX ... %08lX ...", (ulong)params->flash_addr_new,
+	      params->end_addr_new);
+
+	if (flash_sect_erase((ulong)params->flash_addr_new,
+			     params->end_addr_new))
 		goto done;
 
 	puts("Writing to Flash... ");
 	debug(" %08lX ... %08lX ...",
-		(ulong)&(flash_addr_new->data),
-		sizeof(env_ptr->data) + (ulong)&(flash_addr_new->data));
-	rc = flash_write((char *)&env_new, (ulong)flash_addr_new,
-			 sizeof(env_new));
+	      (ulong)&params->flash_addr_new->data,
+	      ctx->env_size + (ulong)&params->flash_addr_new->data);
+	rc = flash_write((char *)env_new, (ulong)params->flash_addr_new,
+			 sizeof(*env_new) + ctx->env_size);
 	if (rc)
 		goto perror;
 
-	rc = flash_write(&flag, (ulong)&(flash_addr->flags),
-			 sizeof(flash_addr->flags));
+	rc = flash_write(&flag, (ulong)&params->flash_addr->flags,
+			 sizeof(params->flash_addr->flags));
 	if (rc)
 		goto perror;
 
-#if CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE
-	if (up_data) { /* restore the rest of sector */
-		debug("Restoring the rest of data to 0x%lX len 0x%lX\n",
-			(long)flash_addr_new + CONFIG_ENV_SIZE, up_data);
-		if (flash_write(saved_data,
-				(long)flash_addr_new + CONFIG_ENV_SIZE,
-				up_data))
-			goto perror;
+	if (env_size < CONFIG_ENV_SECT_SIZE) {
+		if (up_data) { /* restore the rest of sector */
+			debug("Restoring the rest of data to 0x%lX len 0x%lX\n",
+			      (long)params->flash_addr_new + env_size, up_data);
+			if (flash_write(saved_data,
+					(long)params->flash_addr_new + env_size,
+					up_data))
+				goto perror;
+		}
 	}
-#endif
+
 	puts("done\n");
 
 	{
-		env_t *etmp = flash_addr;
-		ulong ltmp = end_addr;
+		env_hdr_t *etmp = params->flash_addr;
+		ulong ltmp = params->end_addr;
 
-		flash_addr = flash_addr_new;
-		flash_addr_new = etmp;
+		params->flash_addr = params->flash_addr_new;
+		params->flash_addr_new = etmp;
 
-		end_addr = end_addr_new;
-		end_addr_new = ltmp;
+		params->end_addr = params->end_addr_new;
+		params->end_addr_new = ltmp;
 	}
 
 	rc = 0;
@@ -214,8 +252,11 @@ done:
 	if (saved_data)
 		free(saved_data);
 	/* try to re-protect */
-	flash_sect_protect(1, (ulong)flash_addr, end_addr);
-	flash_sect_protect(1, (ulong)flash_addr_new, end_addr_new);
+	flash_sect_protect(1, (ulong)params->flash_addr, params->end_addr);
+	flash_sect_protect(1, (ulong)params->flash_addr_new,
+			   params->end_addr_new);
+
+	free(env_new);
 
 	return rc;
 }
@@ -224,75 +265,100 @@ done:
 #else /* ! CONFIG_ENV_ADDR_REDUND */
 
 #ifdef INITENV
-static int env_flash_init(void)
+static int env_flash_init(struct env_context *ctx)
 {
-	if (crc32(0, env_ptr->data, ENV_SIZE) == env_ptr->crc) {
-		gd->env_addr	= (ulong)&(env_ptr->data);
-		gd->env_valid	= ENV_VALID;
+	struct env_flash_context *params;
+
+	if (ctx->drv_init)
+		if (ctx->drv_init(ctx, ENVL_FLASH))
+			return -ENOENT;
+
+	params = ctx->drv_params[ENVL_FLASH];
+	if (!params)
+		return -ENODEV;
+
+	if (crc32(0, params->env_ptr->data, ctx->env_size)
+	    == params->env_ptr->crc) {
+		env_set_env_addr(ctx, (ulong)&params->env_ptr->data);
+		env_set_valid(ctx, ENV_VALID);
+
 		return 0;
 	}
 
-	gd->env_addr	= (ulong)&default_environment[0];
-	gd->env_valid	= ENV_INVALID;
+	env_set_env_addr(ctx, params->default_env_addr);
+	env_set_valid(ctx, ENV_INVALID);
+
 	return 0;
 }
 #endif
 
 #ifdef CMD_SAVEENV
-static int env_flash_save(void)
+static int env_flash_save(struct env_context *ctx)
 {
-	env_t	env_new;
+	struct env_flash_context *params = ctx->drv_params[ENVL_FLASH];
+	env_hdr_t *env_new;
 	int	rc = 1;
 	char	*saved_data = NULL;
-#if CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE
 	ulong	up_data = 0;
+	size_t	env_size;
 
-	up_data = end_addr + 1 - ((long)flash_addr + CONFIG_ENV_SIZE);
-	debug("Data to save 0x%lx\n", up_data);
-	if (up_data) {
-		saved_data = malloc(up_data);
-		if (saved_data == NULL) {
-			printf("Unable to save the rest of sector (%ld)\n",
-				up_data);
-			goto done;
+	if (!params)
+		return 1;
+
+	env_size = sizeof(env_hdr_t) + ctx->env_size;
+	env_new = malloc(env_size);
+	if (!env_new)
+		return 1;
+
+	if (env_size < CONFIG_ENV_SECT_SIZE) {
+		up_data = params->end_addr + 1
+				- ((long)params->flash_addr + env_size);
+		debug("Data to save 0x%lx\n", up_data);
+		if (up_data) {
+			saved_data = malloc(up_data);
+			if (!saved_data) {
+				printf("Unable to save the rest of sector (%ld)\n",
+				       up_data);
+				goto done;
+			}
+			memcpy(saved_data,
+			       (void *)((long)params->flash_addr + env_size),
+			       up_data);
+			debug("Data (start 0x%lx, len 0x%lx) saved at 0x%lx\n",
+			      (ulong)params->flash_addr + env_size,
+			      up_data,
+			      (ulong)saved_data);
 		}
-		memcpy(saved_data,
-			(void *)((long)flash_addr + CONFIG_ENV_SIZE), up_data);
-		debug("Data (start 0x%lx, len 0x%lx) saved at 0x%lx\n",
-			(ulong)flash_addr + CONFIG_ENV_SIZE,
-			up_data,
-			(ulong)saved_data);
 	}
-#endif	/* CONFIG_ENV_SECT_SIZE */
 
-	debug("Protect off %08lX ... %08lX\n", (ulong)flash_addr, end_addr);
+	debug("Protect off %08lX ... %08lX\n", (ulong)params->flash_addr,
+	      params->end_addr);
 
-	if (flash_sect_protect(0, (long)flash_addr, end_addr))
+	if (flash_sect_protect(0, (long)params->flash_addr, params->end_addr))
 		goto done;
 
-	rc = env_export(&env_new);
+	rc = env_export(ctx, env_new);
 	if (rc)
 		goto done;
 
 	puts("Erasing Flash...");
-	if (flash_sect_erase((long)flash_addr, end_addr))
+	if (flash_sect_erase((long)params->flash_addr, params->end_addr))
 		goto done;
 
 	puts("Writing to Flash... ");
-	rc = flash_write((char *)&env_new, (long)flash_addr, CONFIG_ENV_SIZE);
+	rc = flash_write((char *)env_new, (long)params->flash_addr, env_size);
 	if (rc != 0)
 		goto perror;
 
-#if CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE
-	if (up_data) {	/* restore the rest of sector */
+	if ((env_size < CONFIG_ENV_SECT_SIZE) && up_data) {
+		/* restore the rest of sector */
 		debug("Restoring the rest of data to 0x%lx len 0x%lx\n",
-			(ulong)flash_addr + CONFIG_ENV_SIZE, up_data);
-		if (flash_write(saved_data,
-				(long)flash_addr + CONFIG_ENV_SIZE,
+			(ulong)params->flash_addr + env_size, up_data);
+		if (flash_write(saved_data, (long)params->flash_addr + env_size,
 				up_data))
 			goto perror;
 	}
-#endif
+
 	puts("done\n");
 	rc = 0;
 	goto done;
@@ -302,7 +368,9 @@ done:
 	if (saved_data)
 		free(saved_data);
 	/* try to re-protect */
-	flash_sect_protect(1, (long)flash_addr, end_addr);
+	flash_sect_protect(1, (long)params->flash_addr, params->end_addr);
+	free(env_new);
+
 	return rc;
 }
 #endif /* CMD_SAVEENV */
@@ -310,50 +378,61 @@ done:
 #endif /* CONFIG_ENV_ADDR_REDUND */
 
 #ifdef LOADENV
-static int env_flash_load(void)
+static int env_flash_load(struct env_context *ctx)
 {
+	struct env_flash_context *params = ctx->drv_params[ENVL_FLASH];
+
+	if (!params)
+		return -ENODEV;
+
 #ifdef CONFIG_ENV_ADDR_REDUND
-	if (gd->env_addr != (ulong)&(flash_addr->data)) {
-		env_t *etmp = flash_addr;
-		ulong ltmp = end_addr;
+	if (env_get_env_addr(ctx) != (ulong)&params->flash_addr->data) {
+		struct environment_hdr *etmp = params->flash_addr;
+		ulong ltmp = params->end_addr;
 
-		flash_addr = flash_addr_new;
-		flash_addr_new = etmp;
+		params->flash_addr = params->flash_addr_new;
+		params->flash_addr_new = etmp;
 
-		end_addr = end_addr_new;
-		end_addr_new = ltmp;
+		params->end_addr = params->end_addr_new;
+		params->end_addr_new = ltmp;
 	}
 
 	if (flash_addr_new->flags != ENV_REDUND_OBSOLETE &&
-	    crc32(0, flash_addr_new->data, ENV_SIZE) == flash_addr_new->crc) {
+	    crc32(0, params->flash_addr_new->data, ctx->env_size)
+			== params->flash_addr_new->crc) {
 		char flag = ENV_REDUND_OBSOLETE;
 
-		gd->env_valid = ENV_REDUND;
-		flash_sect_protect(0, (ulong)flash_addr_new, end_addr_new);
+		env_set_valid(ctx, ENV_REDUND);
+		flash_sect_protect(0, (ulong)params->flash_addr_new,
+				   params->end_addr_new);
 		flash_write(&flag,
-			    (ulong)&(flash_addr_new->flags),
-			    sizeof(flash_addr_new->flags));
-		flash_sect_protect(1, (ulong)flash_addr_new, end_addr_new);
+			    (ulong)&params->flash_addr_new->flags,
+			    sizeof(params->flash_addr_new->flags));
+		flash_sect_protect(1, (ulong)params->flash_addr_new,
+				   params->end_addr_new);
 	}
 
-	if (flash_addr->flags != ENV_REDUND_ACTIVE &&
-	    (flash_addr->flags & ENV_REDUND_ACTIVE) == ENV_REDUND_ACTIVE) {
+	if (params->flash_addr->flags != ENV_REDUND_ACTIVE &&
+	    (params->flash_addr->flags & ENV_REDUND_ACTIVE)
+			== ENV_REDUND_ACTIVE) {
 		char flag = ENV_REDUND_ACTIVE;
 
-		gd->env_valid = ENV_REDUND;
-		flash_sect_protect(0, (ulong)flash_addr, end_addr);
+		env_set_valid(ctx, ENV_REDUND);
+		flash_sect_protect(0, (ulong)params->flash_addr,
+				   params->end_addr);
 		flash_write(&flag,
-			    (ulong)&(flash_addr->flags),
-			    sizeof(flash_addr->flags));
-		flash_sect_protect(1, (ulong)flash_addr, end_addr);
+			    (ulong)&params->flash_addr->flags,
+			    sizeof(params->flash_addr->flags));
+		flash_sect_protect(1, (ulong)params->flash_addr,
+				   params->end_addr);
 	}
 
-	if (gd->env_valid == ENV_REDUND)
+	if (env_get_valid(ctx) == ENV_REDUND)
 		puts("*** Warning - some problems detected "
 		     "reading environment; recovered successfully\n\n");
 #endif /* CONFIG_ENV_ADDR_REDUND */
 
-	return env_import((char *)flash_addr, 1);
+	return env_import(ctx, (char *)params->flash_addr, 1);
 }
 #endif /* LOADENV */
 
