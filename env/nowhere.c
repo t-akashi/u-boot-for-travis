@@ -19,12 +19,11 @@ DECLARE_GLOBAL_DATA_PTR;
  * Because we only ever have the default environment available we must mark
  * it as invalid.
  */
-static int env_nowhere_init(void)
+static int env_nowhere_init(struct env_context *ctx)
 {
-	gd->env_addr	= (ulong)&default_environment[0];
-	gd->env_valid	= ENV_INVALID;
+	/* Just a placeholder */
 
-	return 0;
+	return -ENOENT;
 }
 
 U_BOOT_ENV_LOCATION(nowhere) = {
