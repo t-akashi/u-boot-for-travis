@@ -397,7 +397,7 @@ static int env_flash_load(struct env_context *ctx)
 		params->end_addr_new = ltmp;
 	}
 
-	if (flash_addr_new->flags != ENV_REDUND_OBSOLETE &&
+	if (params->flash_addr_new->flags != ENV_REDUND_OBSOLETE &&
 	    crc32(0, params->flash_addr_new->data, ctx->env_size)
 			== params->flash_addr_new->crc) {
 		char flag = ENV_REDUND_OBSOLETE;
