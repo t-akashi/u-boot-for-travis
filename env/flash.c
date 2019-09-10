@@ -46,19 +46,19 @@ DECLARE_GLOBAL_DATA_PTR;
 #endif
 
 struct env_flash_context {
-	env_hdr_t *env_ptr;
-	env_hdr_t *flash_addr;
+	struct environment_hdr *env_ptr;
+	struct environment_hdr *flash_addr;
 	ulong end_addr;
-	env_hdr_t *flash_addr_new;
+	struct environment_hdr *flash_addr_new;
 	ulong end_addr_new;
 	ulong default_env_addr;
 };
 
 int env_flash_init_params(struct env_context *ctx,
-			  env_hdr_t *env_ptr,
-			  env_hdr_t *flash_addr, ulong end_addr,
-			  env_hdr_t *flash_addr_new, ulong end_addr_new,
-			  ulong default_env_addr)
+			  struct environment_hdr *env_ptr,
+			  struct environment_hdr *flash_addr, ulong end_addr,
+			  struct environment_hdr *flash_addr_new,
+			  ulong end_addr_new, ulong default_env_addr)
 {
 	struct env_flash_context *params;
 
@@ -144,7 +144,7 @@ static int env_flash_init(struct env_context *ctx)
 static int env_flash_save(struct env_context *ctx)
 {
 	struct env_flash_context *params = ctx->drv_params[ENVL_FLASH];
-	env_hdr_t *env_new = NULL;
+	struct environment_hdr *env_new = NULL;
 	size_t	env_size;
 	char	*saved_data = NULL;
 	char	flag = ENV_REDUND_OBSOLETE, new_flag = ENV_REDUND_ACTIVE;
@@ -157,7 +157,7 @@ static int env_flash_save(struct env_context *ctx)
 	if (!params)
 		return 1;
 
-	env_size = sizeof(env_hdr_t) + ctx->env_size;
+	env_size = sizeof(*env_new) + ctx->env_size;
 	env_new = malloc(env_size);
 	if (!env_new)
 		return 1;
@@ -234,7 +234,7 @@ static int env_flash_save(struct env_context *ctx)
 	puts("done\n");
 
 	{
-		env_hdr_t *etmp = params->flash_addr;
+		struct environment_hdr *etmp = params->flash_addr;
 		ulong ltmp = params->end_addr;
 
 		params->flash_addr = params->flash_addr_new;
@@ -296,7 +296,7 @@ static int env_flash_init(struct env_context *ctx)
 static int env_flash_save(struct env_context *ctx)
 {
 	struct env_flash_context *params = ctx->drv_params[ENVL_FLASH];
-	env_hdr_t *env_new;
+	struct environment_hdr *env_new;
 	int	rc = 1;
 	char	*saved_data = NULL;
 	ulong	up_data = 0;
@@ -305,7 +305,7 @@ static int env_flash_save(struct env_context *ctx)
 	if (!params)
 		return 1;
 
-	env_size = sizeof(env_hdr_t) + ctx->env_size;
+	env_size = sizeof(*env_new) + ctx->env_size;
 	env_new = malloc(env_size);
 	if (!env_new)
 		return 1;
