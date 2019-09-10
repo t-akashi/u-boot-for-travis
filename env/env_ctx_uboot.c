@@ -97,24 +97,25 @@ static int env_drv_init_uboot(struct env_context *ctx, enum env_location loc)
 	switch (loc) {
 #ifdef CONFIG_ENV_IS_IN_FLASH
 	case ENVL_FLASH: {
-		env_hdr_t *env_ptr;
-		env_hdr_t *flash_addr;
+		struct environment_hdr *env_ptr;
+		struct environment_hdr *flash_addr;
 		ulong end_addr;
-		env_hdr_t *flash_addr_new;
+		struct environment_hdr *flash_addr_new;
 		ulong end_addr_new;
 
 #ifdef ENV_IS_EMBEDDED
 		env_ptr = &embedded_environment;
 #else /* ! ENV_IS_EMBEDDED */
-		env_ptr = (env_hdr_t *)CONFIG_ENV_ADDR;
+		env_ptr = (struct environment_hdr *)CONFIG_ENV_ADDR;
 #endif /* ENV_IS_EMBEDDED */
-		flash_addr = (env_hdr_t *)CONFIG_ENV_ADDR;
+		flash_addr = (struct environment_hdr *)CONFIG_ENV_ADDR;
 
 /* CONFIG_ENV_ADDR is supposed to be on sector boundary */
 		end_addr = CONFIG_ENV_ADDR + CONFIG_ENV_SECT_SIZE - 1;
 
 #ifdef CONFIG_ENV_ADDR_REDUND
-		flash_addr_new = (env_hdr_t *)CONFIG_ENV_ADDR_REDUND;
+		flash_addr_new =
+			(struct environment_hdr *)CONFIG_ENV_ADDR_REDUND;
 /* CONFIG_ENV_ADDR_REDUND is supposed to be on sector boundary */
 		end_addr_new = CONFIG_ENV_ADDR_REDUND
 					+ CONFIG_ENV_SECT_SIZE - 1;
