@@ -4,10 +4,14 @@
  *		Author: AKASHI Takahiro
  */
 
+#include <blk.h>
 #include <common.h>
 #include <env_default.h>
 #include <env_flags.h>
 #include <env_internal.h>
+#include <fdtdec.h>
+#include <mmc.h>
+#include <part.h>
 #include <search.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -15,6 +19,15 @@ DECLARE_GLOBAL_DATA_PTR;
 #if !defined(ENV_IS_IN_DEVICE) && !defined(CONFIG_ENV_IS_NOWHERE)
 # error Define one of CONFIG_ENV_IS_IN_{EEPROM|FLASH|MMC|FAT|EXT4|\
 NAND|NVRAM|ONENAND|SATA|SPI_FLASH|REMOTE|UBI} or CONFIG_ENV_IS_NOWHERE
+#endif
+
+#if defined(CONFIG_ENV_SIZE_REDUND) &&  \
+	(CONFIG_ENV_SIZE_REDUND != CONFIG_ENV_SIZE)
+#error CONFIG_ENV_SIZE_REDUND should be the same as CONFIG_ENV_SIZE
+#endif
+
+#if !defined(CONFIG_ENV_OFFSET)
+#define CONFIG_ENV_OFFSET 0
 #endif
 
 struct hsearch_data env_htab = {
@@ -90,6 +103,39 @@ static int env_init_uboot(struct env_context *ctx)
 	return ret;
 }
 
+#if CONFIG_IS_ENABLED(OF_CONTROL)
+
+#define __STR(X) #X
+#define STR(X) __STR(X)
+
+static inline int mmc_offset_try_partition(const char *str, s64 *val)
+{
+	struct blk_desc *desc;
+	disk_partition_t info;
+	int len, i, ret;
+
+	ret = blk_get_device_by_str("mmc", STR(CONFIG_SYS_MMC_ENV_DEV), &desc);
+	if (ret < 0)
+		return (ret);
+
+	for (i = 1;;i++) {
+		ret = part_get_info(desc, i, &info);
+		if (ret < 0)
+			return ret;
+
+		if (!strncmp((const char *)info.name, str, sizeof(str)))
+			break;
+	}
+
+	/* round up to info.blksz */
+	len = (CONFIG_ENV_SIZE + info.blksz - 1) & ~(info.blksz - 1);
+
+	/* use the top of the partion for the environment */
+	*val = (info.start + info.size - 1) - len / info.blksz;
+
+	return 0;
+}
+
 static int env_drv_init_uboot(struct env_context *ctx, enum env_location loc)
 {
 	__maybe_unused int ret;
@@ -141,6 +187,74 @@ static int env_drv_init_uboot(struct env_context *ctx, enum env_location loc)
 					  CONFIG_ENV_FAT_FILE);
 
 		return -ENOENT;
+		}
+#endif
+#ifdef CONFIG_ENV_IS_IN_MMC
+	case ENVL_MMC: {
+		int part = 0;
+		s64 offset = 0, offset_redund = 0;
+
+#if CONFIG_IS_ENABLED(OF_CONTROL)
+		const struct {
+			const char *offset_redund;
+			const char *partition;
+			const char *offset;
+		} dt_prop = {
+			.offset_redund = "u-boot,mmc-env-offset-redundant",
+			.partition = "u-boot,mmc-env-partition",
+			.offset = "u-boot,mmc-env-offset",
+		};
+		s64 defvalue;
+		const char *propname;
+		const char *str;
+		int err;
+
+		/* look for the partition in mmc CONFIG_SYS_MMC_ENV_DEV */
+		str = fdtdec_get_config_string(gd->fdt_blob, dt_prop.partition);
+		if (str) {
+			/* try to place the environment at end of the partition */
+			err = mmc_offset_try_partition(str, &offset);
+			if (!err) {
+				offset_redund = offset;
+				goto init_mmc;
+			}
+		}
+
+		defvalue = CONFIG_ENV_OFFSET;
+		propname = dt_prop.offset;
+
+		offset = fdtdec_get_config_int(gd->fdt_blob, propname,
+					       defvalue);
+
+
+#if defined(CONFIG_ENV_OFFSET_REDUND)
+		defvalue = CONFIG_ENV_OFFSET_REDUND;
+		propname = dt_prop.offset_redund;
+
+		offset_redund = fdtdec_get_config_int(gd->fdt_blob, propname,
+						      defvalue);
+#else
+		offset_redund = offset;
+#endif
+init_mmc:
+#else /* !OF_CONTROL */
+#ifdef CONFIG_SYS_MMC_ENV_PART
+		part = CONFIG_SYS_MMC_ENV_PART;
+#endif
+		offset = CONFIG_ENV_OFFSET;
+#ifdef CONFIG_ENV_OFFSET_REDUND
+		offset_redund = CONFIG_ENV_OFFSET_REDUND;
+#endif
+#endif /* OF_CONTROL */
+		ret = env_mmc_init_params(ctx,
+					  CONFIG_SYS_ENV_MMC_ENV_DEV,
+					  part,
+					  offset,
+					  offset_redund);
+		if (ret)
+			return -ENOENT;
+
+		return 0;
 		}
 #endif
 #ifdef CONFIG_ENV_DRV_NONE
