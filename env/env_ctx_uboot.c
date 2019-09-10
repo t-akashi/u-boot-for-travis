@@ -26,6 +26,11 @@ NAND|NVRAM|ONENAND|SATA|SPI_FLASH|REMOTE|UBI} or CONFIG_ENV_IS_NOWHERE
 #error CONFIG_ENV_SIZE_REDUND should be the same as CONFIG_ENV_SIZE
 #endif
 
+/* FIXME */
+#if !defined(CONFIG_SYS_MMC_ENV_DEV)
+#define CONFIG_SYS_MMC_ENV_DEV 0
+#endif
+
 #if !defined(CONFIG_ENV_OFFSET)
 #define CONFIG_ENV_OFFSET 0
 #endif
@@ -135,6 +140,7 @@ static inline int mmc_offset_try_partition(const char *str, s64 *val)
 
 	return 0;
 }
+#endif /* OF_CONTROL */
 
 static int env_drv_init_uboot(struct env_context *ctx, enum env_location loc)
 {
@@ -247,7 +253,7 @@ init_mmc:
 #endif
 #endif /* OF_CONTROL */
 		ret = env_mmc_init_params(ctx,
-					  CONFIG_SYS_ENV_MMC_ENV_DEV,
+					  CONFIG_SYS_MMC_ENV_DEV,
 					  part,
 					  offset,
 					  offset_redund);
