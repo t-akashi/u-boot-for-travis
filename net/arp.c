@@ -196,7 +196,7 @@ void arp_receive(struct ethernet_hdr *et, struct ip_udp_hdr *ip, int len)
 		if (net_server_ip.s_addr == net_arp_wait_packet_ip.s_addr) {
 			char buf[20];
 			sprintf(buf, "%pM", &arp->ar_sha);
-			env_set("serveraddr", buf);
+			env_set(ctx_uboot, "serveraddr", buf);
 		}
 #endif
 
