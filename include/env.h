@@ -392,6 +392,7 @@ int env_get_char(struct env_context *ctx, int index);
  */
 void env_reloc(void);
 
+#ifndef USE_HOSTCC /* guard against some typedef, s64 */
 /*
  * driver parameters initialization
  */
@@ -403,5 +404,8 @@ int env_flash_init_params(struct env_context *ctx,
 			  ulong default_env_addr);
 int env_fat_init_params(struct env_context *ctx, const char *interface,
 			const char *dev_part, const char *file);
+int env_mmc_init_params(struct env_context *ctx, int dev, int part,
+			s64 offset, s64 offset_redund);
+#endif /* USE_HOSTCC */
 
 #endif

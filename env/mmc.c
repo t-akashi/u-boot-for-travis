@@ -22,14 +22,14 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 struct env_mmc_context {
-	const char *dev;
-	const char *part;
+	int dev;
+	int part;
 	s64 offset;
 	s64 offset_redund;
 };
 
-int env_mmc_init_params(struct env_context *ctx, const char *dev,
-			const char *part, s64 offset, s64 offset_redund)
+int env_mmc_init_params(struct env_context *ctx, int dev, int part,
+			s64 offset, s64 offset_redund)
 {
 	struct env_mmc_context *params;
 
@@ -166,7 +166,7 @@ static int env_mmc_save(struct env_context *ctx)
 	struct env_mmc_context *params;
 	struct environment_hdr *env_new;
 	size_t env_size;
-	int dev = mmc_get_env_dev();
+	int dev = mmc_get_env_dev(ctx);
 	struct mmc *mmc = find_mmc_device(dev);
 	u32	offset;
 	int	ret, copy = 0;

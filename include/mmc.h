@@ -843,11 +843,15 @@ void mmc_set_preinit(struct mmc *mmc, int preinit);
 void board_mmc_power_init(void);
 int board_mmc_init(bd_t *bis);
 int cpu_mmc_init(bd_t *bis);
-int mmc_get_env_addr(struct mmc *mmc, int copy, u32 *env_addr);
+
+struct env_context;
+
+int mmc_get_env_addr(struct env_context *ctx, struct mmc *mmc, int copy,
+		     u32 *env_addr);
 # ifdef CONFIG_SYS_MMC_ENV_PART
-extern uint mmc_get_env_part(struct mmc *mmc);
+extern uint mmc_get_env_part(struct env_context *ctx, struct mmc *mmc);
 # endif
-int mmc_get_env_dev(void);
+int mmc_get_env_dev(struct env_context *ctx);
 
 /* Minimum partition switch timeout in units of 10-milliseconds */
 #define MMC_MIN_PART_SWITCH_TIME	30 /* 300 ms */
