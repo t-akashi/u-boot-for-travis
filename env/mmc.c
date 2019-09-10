@@ -19,101 +19,50 @@
 #include <search.h>
 #include <errno.h>
 
-#define __STR(X) #X
-#define STR(X) __STR(X)
-
-#if defined(CONFIG_ENV_SIZE_REDUND) &&  \
-	(CONFIG_ENV_SIZE_REDUND != CONFIG_ENV_SIZE)
-#error CONFIG_ENV_SIZE_REDUND should be the same as CONFIG_ENV_SIZE
-#endif
-
 DECLARE_GLOBAL_DATA_PTR;
 
-#if !defined(CONFIG_ENV_OFFSET)
-#define CONFIG_ENV_OFFSET 0
-#endif
+struct env_mmc_context {
+	const char *dev;
+	const char *part;
+	s64 offset;
+	s64 offset_redund;
+};
 
-#if CONFIG_IS_ENABLED(OF_CONTROL)
-static inline int mmc_offset_try_partition(const char *str, s64 *val)
+int env_mmc_init_params(struct env_context *ctx, const char *dev,
+			const char *part, s64 offset, s64 offset_redund)
 {
-	disk_partition_t info;
-	struct blk_desc *desc;
-	int len, i, ret;
+	struct env_mmc_context *params;
 
-	ret = blk_get_device_by_str("mmc", STR(CONFIG_SYS_MMC_ENV_DEV), &desc);
-	if (ret < 0)
-		return (ret);
+	params = calloc(sizeof(*params), 1);
+	if (!params)
+		return -1;
 
-	for (i = 1;;i++) {
-		ret = part_get_info(desc, i, &info);
-		if (ret < 0)
-			return ret;
+	params->dev = dev;
+	params->part = part;
+	params->offset = offset;
+	params->offset_redund = offset_redund;
 
-		if (!strncmp((const char *)info.name, str, sizeof(str)))
-			break;
-	}
-
-	/* round up to info.blksz */
-	len = (CONFIG_ENV_SIZE + info.blksz - 1) & ~(info.blksz - 1);
-
-	/* use the top of the partion for the environment */
-	*val = (info.start + info.size - 1) - len / info.blksz;
+	ctx->drv_params[ENVL_MMC] = params;
 
 	return 0;
 }
 
-static inline s64 mmc_offset(int copy)
+static inline s64 mmc_offset(struct env_context *ctx, int copy)
 {
-	const struct {
-		const char *offset_redund;
-		const char *partition;
-		const char *offset;
-	} dt_prop = {
-		.offset_redund = "u-boot,mmc-env-offset-redundant",
-		.partition = "u-boot,mmc-env-partition",
-		.offset = "u-boot,mmc-env-offset",
-	};
-	s64 val = 0, defvalue;
-	const char *propname;
-	const char *str;
-	int err;
-
-	/* look for the partition in mmc CONFIG_SYS_MMC_ENV_DEV */
-	str = fdtdec_get_config_string(gd->fdt_blob, dt_prop.partition);
-	if (str) {
-		/* try to place the environment at end of the partition */
-		err = mmc_offset_try_partition(str, &val);
-		if (!err)
-			return val;
-	}
-
-	defvalue = CONFIG_ENV_OFFSET;
-	propname = dt_prop.offset;
-
-#if defined(CONFIG_ENV_OFFSET_REDUND)
-	if (copy) {
-		defvalue = CONFIG_ENV_OFFSET_REDUND;
-		propname = dt_prop.offset_redund;
-	}
-#endif
-	return fdtdec_get_config_int(gd->fdt_blob, propname, defvalue);
-}
-#else
-static inline s64 mmc_offset(int copy)
-{
+	struct env_mmc_context *params = ctx->drv_params[ENVL_MMC];
 	s64 offset = CONFIG_ENV_OFFSET;
 
-#if defined(CONFIG_ENV_OFFSET_REDUND)
-	if (copy)
-		offset = CONFIG_ENV_OFFSET_REDUND;
-#endif
+	offset = params->offset;
+	if (params->offset_redund && copy)
+		offset = params->offset_redund;
+
 	return offset;
 }
-#endif
 
-__weak int mmc_get_env_addr(struct mmc *mmc, int copy, u32 *env_addr)
+__weak int mmc_get_env_addr(struct env_context *ctx, struct mmc *mmc, int copy,
+			    u32 *env_addr)
 {
-	s64 offset = mmc_offset(copy);
+	s64 offset = mmc_offset(ctx, copy);
 
 	if (offset < 0)
 		offset += mmc->capacity;
@@ -123,37 +72,50 @@ __weak int mmc_get_env_addr(struct mmc *mmc, int copy, u32 *env_addr)
 	return 0;
 }
 
-__weak int mmc_get_env_dev(void)
+__weak int mmc_get_env_dev(struct env_context *ctx)
 {
-	return CONFIG_SYS_MMC_ENV_DEV;
+	struct env_mmc_context *params;
+
+	params = ctx->drv_params[ENVL_MMC];
+	if (!params)
+		return -ENODEV;
+
+	return params->dev;
 }
 
-#ifdef CONFIG_SYS_MMC_ENV_PART
-__weak uint mmc_get_env_part(struct mmc *mmc)
+__weak uint mmc_get_env_part(struct env_context *ctx, struct mmc *mmc)
 {
-	return CONFIG_SYS_MMC_ENV_PART;
+	struct env_mmc_context *params;
+
+	params = ctx->drv_params[ENVL_MMC];
+	if (!params)
+		return -ENODEV;
+
+	return params->part;
 }
 
 static unsigned char env_mmc_orig_hwpart;
 
-static int mmc_set_env_part(struct mmc *mmc)
+static int mmc_set_env_part(struct env_context *ctx, struct mmc *mmc)
 {
-	uint part = mmc_get_env_part(mmc);
-	int dev = mmc_get_env_dev();
+	struct env_mmc_context *params = ctx->drv_params[ENVL_MMC];
+	uint part = mmc_get_env_part(ctx, mmc);
+	int dev = mmc_get_env_dev(ctx);
 	int ret = 0;
 
-	env_mmc_orig_hwpart = mmc_get_blk_desc(mmc)->hwpart;
-	ret = blk_select_hwpart_devnum(IF_TYPE_MMC, dev, part);
-	if (ret)
-		puts("MMC partition switch failed\n");
+	if (params->part) {
+		env_mmc_orig_hwpart = mmc_get_blk_desc(mmc)->hwpart;
+		ret = blk_select_hwpart_devnum(IF_TYPE_MMC, dev, part);
+		if (ret)
+			puts("MMC partition switch failed\n");
 
-	return ret;
+		return ret;
+	}
+
+	return 0;
 }
-#else
-static inline int mmc_set_env_part(struct mmc *mmc) {return 0; };
-#endif
 
-static const char *init_mmc_for_env(struct mmc *mmc)
+static const char *init_mmc_for_env(struct env_context *ctx, struct mmc *mmc)
 {
 	if (!mmc)
 		return "No MMC card found";
@@ -167,19 +129,21 @@ static const char *init_mmc_for_env(struct mmc *mmc)
 	if (mmc_init(mmc))
 		return "MMC init failed";
 #endif
-	if (mmc_set_env_part(mmc))
+	if (mmc_set_env_part(ctx, mmc))
 		return "MMC partition switch failed";
 
 	return NULL;
 }
 
-static void fini_mmc_for_env(struct mmc *mmc)
+static void fini_mmc_for_env(struct env_context *ctx, struct mmc *mmc)
 {
-#ifdef CONFIG_SYS_MMC_ENV_PART
-	int dev = mmc_get_env_dev();
+	struct env_mmc_context *params = ctx->drv_params[ENVL_MMC];
 
-	blk_select_hwpart_devnum(IF_TYPE_MMC, dev, env_mmc_orig_hwpart);
-#endif
+	if (params->part) {
+		int dev = mmc_get_env_dev(ctx);
+
+		blk_select_hwpart_devnum(IF_TYPE_MMC, dev, env_mmc_orig_hwpart);
+	}
 }
 
 #if defined(CONFIG_CMD_SAVEENV) && !defined(CONFIG_SPL_BUILD)
@@ -197,37 +161,46 @@ static inline int write_env(struct mmc *mmc, unsigned long size,
 	return (n == blk_cnt) ? 0 : -1;
 }
 
-static int env_mmc_save(void)
+static int env_mmc_save(struct env_context *ctx)
 {
-	ALLOC_CACHE_ALIGN_BUFFER(env_t, env_new, 1);
+	struct env_mmc_context *params;
+	struct environment_hdr *env_new;
+	size_t env_size;
 	int dev = mmc_get_env_dev();
 	struct mmc *mmc = find_mmc_device(dev);
 	u32	offset;
 	int	ret, copy = 0;
 	const char *errmsg;
 
-	errmsg = init_mmc_for_env(mmc);
+	params = ctx->drv_params[ENVL_MMC];
+	if (!params)
+		return 1;
+
+	env_size = sizeof(*env_new) * ctx->env_size;
+	env_new = malloc(env_size);
+	if (!env_new)
+		return 1;
+
+	errmsg = init_mmc_for_env(ctx, mmc);
 	if (errmsg) {
 		printf("%s\n", errmsg);
 		return 1;
 	}
 
-	ret = env_export(env_new);
+	ret = env_export(ctx, env_new);
 	if (ret)
 		goto fini;
 
-#ifdef CONFIG_ENV_OFFSET_REDUND
-	if (gd->env_valid == ENV_VALID)
+	if (params->offset_redund && env_get_valid(ctx) == ENV_VALID)
 		copy = 1;
-#endif
 
-	if (mmc_get_env_addr(mmc, copy, &offset)) {
+	if (mmc_get_env_addr(ctx, mmc, copy, &offset)) {
 		ret = 1;
 		goto fini;
 	}
 
 	printf("Writing to %sMMC(%d)... ", copy ? "redundant " : "", dev);
-	if (write_env(mmc, CONFIG_ENV_SIZE, offset, (u_char *)env_new)) {
+	if (write_env(mmc, env_size, offset, (u_char *)env_new)) {
 		puts("failed\n");
 		ret = 1;
 		goto fini;
@@ -235,12 +208,12 @@ static int env_mmc_save(void)
 
 	ret = 0;
 
-#ifdef CONFIG_ENV_OFFSET_REDUND
-	gd->env_valid = gd->env_valid == ENV_REDUND ? ENV_VALID : ENV_REDUND;
-#endif
+	if (params->offset_redund)
+		env_set_valid(ctx, env_get_valid(ctx) == ENV_REDUND ?
+					ENV_VALID : ENV_REDUND);
 
 fini:
-	fini_mmc_for_env(mmc);
+	fini_mmc_for_env(ctx, mmc);
 	return ret;
 }
 
@@ -260,33 +233,40 @@ static inline int erase_env(struct mmc *mmc, unsigned long size,
 	return (n == blk_cnt) ? 0 : 1;
 }
 
-static int env_mmc_erase(void)
+static int env_mmc_erase(struct env_context *ctx)
 {
-	int dev = mmc_get_env_dev();
+	struct env_mmc_context *params;
+	int dev = mmc_get_env_dev(ctx);
 	struct mmc *mmc = find_mmc_device(dev);
 	int	ret, copy = 0;
 	u32	offset;
 	const char *errmsg;
+	size_t env_size;
 
-	errmsg = init_mmc_for_env(mmc);
+	params = ctx->drv_params[ENVL_MMC];
+	if (!params)
+		return 1;
+
+	errmsg = init_mmc_for_env(ctx, mmc);
 	if (errmsg) {
 		printf("%s\n", errmsg);
 		return 1;
 	}
 
-	if (mmc_get_env_addr(mmc, copy, &offset))
+	if (mmc_get_env_addr(ctx, mmc, copy, &offset))
 		return CMD_RET_FAILURE;
 
-	ret = erase_env(mmc, CONFIG_ENV_SIZE, offset);
+	env_size = sizeof(struct environment_hdr) + ctx->env_size;
+	ret = erase_env(mmc, env_size, offset);
 
-#ifdef CONFIG_ENV_OFFSET_REDUND
-	copy = 1;
+	if (params->offset_redund) {
+		copy = 1;
 
-	if (mmc_get_env_addr(mmc, copy, &offset))
-		return CMD_RET_FAILURE;
+		if (mmc_get_env_addr(ctx, mmc, copy, &offset))
+			return CMD_RET_FAILURE;
 
-	ret |= erase_env(mmc, CONFIG_ENV_SIZE, offset);
-#endif
+		ret |= erase_env(mmc, env_size, offset);
+	}
 
 	return ret;
 }
@@ -307,92 +287,109 @@ static inline int read_env(struct mmc *mmc, unsigned long size,
 	return (n == blk_cnt) ? 0 : -1;
 }
 
-#ifdef CONFIG_ENV_OFFSET_REDUND
-static int env_mmc_load(void)
+static int env_mmc_load(struct env_context *ctx)
 {
-#if !defined(ENV_IS_EMBEDDED)
+#if defined(ENV_IS_EMBEDDED)
+	return 0;
+#endif
+	struct env_mmc_context *params;
+	size_t env_size;
+	int dev = mmc_get_env_dev(ctx);
 	struct mmc *mmc;
+	const char *errmsg = NULL;
+	int ret = 0;
+
+	params = ctx->drv_params[ENVL_MMC];
+	if (!params)
+		return 1;
+
+#ifdef CONFIG_ENV_OFFSET_REDUND
+	struct environment_hdr *tmp_env1, *tmp_env2;
 	u32 offset1, offset2;
 	int read1_fail = 0, read2_fail = 0;
-	int ret;
-	int dev = mmc_get_env_dev();
-	const char *errmsg = NULL;
 
-	ALLOC_CACHE_ALIGN_BUFFER(env_t, tmp_env1, 1);
-	ALLOC_CACHE_ALIGN_BUFFER(env_t, tmp_env2, 1);
+	env_size = sizeof(*tmp_env1) + ctx->env_size;
+	tmp_env1 = malloc(env_size);
+	if (!tmp_env1) {
+		ret = -ENOMEM;
+		goto err;
+	}
+	tmp_env2 = malloc(env_size);
+	if (!tmp_env2) {
+		free(tmp_env1);
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	mmc_initialize(NULL);
 
 	mmc = find_mmc_device(dev);
 
-	errmsg = init_mmc_for_env(mmc);
+	errmsg = init_mmc_for_env(ctx, mmc);
 	if (errmsg) {
 		ret = -EIO;
 		goto err;
 	}
 
-	if (mmc_get_env_addr(mmc, 0, &offset1) ||
-	    mmc_get_env_addr(mmc, 1, &offset2)) {
+	if (mmc_get_env_addr(ctx, mmc, 0, &offset1) ||
+	    mmc_get_env_addr(ctx, mmc, 1, &offset2)) {
 		ret = -EIO;
 		goto fini;
 	}
 
-	read1_fail = read_env(mmc, CONFIG_ENV_SIZE, offset1, tmp_env1);
-	read2_fail = read_env(mmc, CONFIG_ENV_SIZE, offset2, tmp_env2);
+	read1_fail = read_env(mmc, env_size, offset1, tmp_env1);
+	read2_fail = read_env(mmc, env_size, offset2, tmp_env2);
 
-	ret = env_import_redund((char *)tmp_env1, read1_fail, (char *)tmp_env2,
-				read2_fail);
+	ret = env_import_redund(ctx, (char *)tmp_env1, read1_fail,
+				(char *)tmp_env2, read2_fail);
 
 fini:
-	fini_mmc_for_env(mmc);
+	fini_mmc_for_env(ctx, mmc);
 err:
 	if (ret)
-		env_set_default(errmsg, 0);
+		env_set_default(ctx, errmsg, 0);
 
-#endif
-	return ret;
-}
 #else /* ! CONFIG_ENV_OFFSET_REDUND */
-static int env_mmc_load(void)
-{
-#if !defined(ENV_IS_EMBEDDED)
-	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
-	struct mmc *mmc;
+	char * buf;
 	u32 offset;
-	int ret;
-	int dev = mmc_get_env_dev();
-	const char *errmsg;
+
+	env_size = sizeof(struct environment_hdr) + ctx->env_size;
+	buf = malloc(env_size);
+	if (!buf) {
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	mmc = find_mmc_device(dev);
 
-	errmsg = init_mmc_for_env(mmc);
+	errmsg = init_mmc_for_env(ctx, mmc);
 	if (errmsg) {
 		ret = -EIO;
 		goto err;
 	}
 
-	if (mmc_get_env_addr(mmc, 0, &offset)) {
+	if (mmc_get_env_addr(ctx, mmc, 0, &offset)) {
 		ret = -EIO;
 		goto fini;
 	}
 
-	if (read_env(mmc, CONFIG_ENV_SIZE, offset, buf)) {
+	if (read_env(mmc, env_size, offset, buf)) {
 		errmsg = "!read failed";
 		ret = -EIO;
 		goto fini;
 	}
 
-	ret = env_import(buf, 1);
+	ret = env_import(ctx, buf, 1);
 
 fini:
-	fini_mmc_for_env(mmc);
+	fini_mmc_for_env(ctx, mmc);
 err:
 	if (ret)
-		env_set_default(errmsg, 0);
-#endif
+		env_set_default(ctx, errmsg, 0);
+#endif /* CONFIG_ENV_OFFSET_REDUND */
+
 	return ret;
 }
-#endif /* CONFIG_ENV_OFFSET_REDUND */
 
 U_BOOT_ENV_LOCATION(mmc) = {
 	.location	= ENVL_MMC,
