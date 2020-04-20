@@ -11,6 +11,7 @@
 #include <hexdump.h>
 #include <malloc.h>
 #include <crypto/pkcs7_parser.h>
+#include <crypto/x509_parser.h>
 #include <linux/compat.h>
 #include <linux/oid_registry.h>
 #include <u-boot/rsa.h>
