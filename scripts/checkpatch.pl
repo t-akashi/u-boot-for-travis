@@ -5603,7 +5603,7 @@ sub process {
 		}
 
 # concatenated string without spaces between elements
-		if ($line =~ /$String[A-Za-z0-9_]/ || $line =~ /[A-Za-z0-9_]$String/) {
+		if ($line =~ /$String[A-Za-z0-9_]/ || $line =~ /([A-Za-z0-9_]+[Lu]|[A-Za-z0-9_]*[A-KM-Za-tv-z0-9_])$String/) {
 			if (CHK("CONCATENATED_STRING",
 				"Concatenated strings should use spaces between elements\n" . $herecurr) &&
 			    $fix) {
