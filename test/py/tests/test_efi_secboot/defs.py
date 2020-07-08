@@ -11,4 +11,4 @@ EFITOOLS_PATH = ''
 # "--addcert" option of sbsign must be available, otherwise
 # you need build a newer version on your own.
 # The path must terminate with '/'.
-SBSIGN_PATH = ''
+SBSIGN_PATH = '/home/akashi/arm/misc/sbsigntools/src/'
