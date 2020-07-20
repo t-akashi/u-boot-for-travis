@@ -142,13 +142,8 @@ def efi_boot_env_intca(request, u_boot_config):
     Return:
         A path to disk image to be used for testing
     """
-    global HELLO_PATH
-
     image_path = u_boot_config.persistent_data_dir
-    image_path = image_path + '/' + EFI_SECBOOT_IMAGE_NAME + '_intca.img'
-
-    if HELLO_PATH == '':
-        HELLO_PATH = u_boot_config.build_dir + '/lib/efi_loader/helloworld.efi'
+    image_path = image_path + '/' + EFI_SECBOOT_INTCA_IMAGE_NAME
 
     try:
         mnt_point = u_boot_config.build_dir + '/mnt_efisecure'
@@ -207,15 +202,15 @@ def efi_boot_env_intca(request, u_boot_config):
                    shell=True)
         ## dbx (hash of certificate with revocation time)
         #  for TestCert
-        check_call('cd %s; %scert-to-efi-hash-list -g %s -t 0 -s 256 TestCert.crt TestCert.crl; %ssign-efi-sig-list -c KEK.crt -k KEK.key dbx TestCert.crl dbx_a.auth'
+        check_call('cd %s; %scert-to-efi-hash-list -g %s -t "2020-07-20" -s 256 TestCert.crt TestCert.crl; %ssign-efi-sig-list -c KEK.crt -k KEK.key dbx TestCert.crl dbx_a.auth'
                    % (mnt_point, EFITOOLS_PATH, GUID, EFITOOLS_PATH),
                    shell=True)
         #  for TestSub
-        check_call('cd %s; %scert-to-efi-hash-list -g %s -t 0 -s 256 TestSub.crt TestSub.crl; %ssign-efi-sig-list -t "2020-07-18" -c KEK.crt -k KEK.key dbx TestSub.crl dbx_b.auth'
+        check_call('cd %s; %scert-to-efi-hash-list -g %s -t "2020-07-21" -s 256 TestSub.crt TestSub.crl; %ssign-efi-sig-list -t "2020-07-18" -c KEK.crt -k KEK.key dbx TestSub.crl dbx_b.auth'
                    % (mnt_point, EFITOOLS_PATH, GUID, EFITOOLS_PATH),
                    shell=True)
         #  for TestRoot
-        check_call('cd %s; %scert-to-efi-hash-list -g %s -t 0 -s 256 TestRoot.crt TestRoot.crl; %ssign-efi-sig-list -t "2020-07-19" -c KEK.crt -k KEK.key dbx TestRoot.crl dbx_c.auth'
+        check_call('cd %s; %scert-to-efi-hash-list -g %s -t "2020-07-22" -s 256 TestRoot.crt TestRoot.crl; %ssign-efi-sig-list -t "2020-07-19" -c KEK.crt -k KEK.key dbx TestRoot.crl dbx_c.auth'
                    % (mnt_point, EFITOOLS_PATH, GUID, EFITOOLS_PATH),
                    shell=True)
 
@@ -223,7 +218,8 @@ def efi_boot_env_intca(request, u_boot_config):
         # additional intermediate certificates may be included
         # in SignedData
 
-        check_call('cp %s %s' % (HELLO_PATH, mnt_point), shell=True)
+        check_call('cp %s/lib/efi_loader/helloworld.efi %s' %
+                   (u_boot_config.build_dir, mnt_point), shell=True)
         # signed by TestCert
         check_call('cd %s; %ssbsign --key TestCert.key --cert TestCert.crt --out helloworld.efi.signed_a helloworld.efi'
                    % (mnt_point, SBSIGN_PATH), shell=True)
