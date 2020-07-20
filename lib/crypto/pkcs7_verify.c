@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /* Verify the signature on a PKCS#7 message.
  *
+ * Imported from crypto/asymmetric_keys/pkcs7_verify.c of linux 5.7
+ * with modification marked as __UBOOT__.
+ *
  * Copyright (C) 2012 Red Hat, Inc. All Rights Reserved.
  * Written by David Howells (dhowells@redhat.com)
  */
