@@ -131,7 +131,7 @@ int public_key_verify_signature(const struct public_key *pkey,
 		return -ENOPKG;
 	}
 	info.crypto = image_get_crypto_algo(info.name);
-	if (unlikely(IS_ERR(info.checksum) || IS_ERR(info.crypto)))
+	if (IS_ERR(info.checksum) || IS_ERR(info.crypto))
 		return -ENOPKG;
 
 	info.key = pkey->key;
