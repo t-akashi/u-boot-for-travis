@@ -19,8 +19,8 @@ import pytest
 @pytest.mark.buildconfigspec('cmd_fat')
 @pytest.mark.buildconfigspec('cmd_nvedit_efi')
 @pytest.mark.slow
-class TestEfiSignedImageExt(object):
-    def test_efi_signed_image_ext1(self, u_boot_console, efi_boot_env_intca):
+class TestEfiSignedImageIntca(object):
+    def test_efi_signed_image_intca1(self, u_boot_console, efi_boot_env_intca):
         """
         Test Case 1 - authenticated by root CA in db
         """
@@ -53,7 +53,7 @@ class TestEfiSignedImageExt(object):
                 'bootefi bootmgr'])
             assert 'Hello, world!' in ''.join(output)
 
-    def test_efi_signed_image_ext2(self, u_boot_console, efi_boot_env_intca):
+    def test_efi_signed_image_intca2(self, u_boot_console, efi_boot_env_intca):
         """
         Test Case 2 - authenticated by root CA in db
         """
@@ -95,7 +95,7 @@ class TestEfiSignedImageExt(object):
                 'efidebug test bootmgr'])
             assert 'Hello, world!' in ''.join(output)
 
-    def test_efi_signed_image_ext3(self, u_boot_console, efi_boot_env_intca):
+    def test_efi_signed_image_intca3(self, u_boot_console, efi_boot_env_intca):
         """
         Test Case 3 - revoked by dbx
         """

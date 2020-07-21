@@ -143,10 +143,10 @@ def efi_boot_env_intca(request, u_boot_config):
         A path to disk image to be used for testing
     """
     image_path = u_boot_config.persistent_data_dir
-    image_path = image_path + '/' + EFI_SECBOOT_INTCA_IMAGE_NAME
+    image_path = image_path + '/test_efi_secboot_intca.img'
 
     try:
-        mnt_point = u_boot_config.build_dir + '/mnt_efisecure'
+        mnt_point = u_boot_config.build_dir + '/mnt_efi_secboot_intca'
         check_call('rm -rf {}'.format(mnt_point), shell=True)
         check_call('mkdir -p {}'.format(mnt_point), shell=True)
 
