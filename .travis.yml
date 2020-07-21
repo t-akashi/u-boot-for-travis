@@ -52,6 +52,14 @@ addons:
     - sbsigntool
     - fakeroot
     - mtd-utils
+    - automake
+    - binutils-dev
+    - gnu-efi
+    - help2man
+    - libguestfs-tools
+    - linux-image-kvm
+    - pkg-config
+    - uuid-dev
 
 install:
  # Clone uboot-test-hooks
@@ -69,6 +77,14 @@ install:
  - grub-mkimage --prefix="" -o ~/grub_x64.efi -O x86_64-efi normal  echo lsefimmap lsefi lsefisystab efinet tftp minicmd
  - wget http://mirrors.kernel.org/ubuntu/pool/main/m/mpfr4/libmpfr4_3.1.4-1_amd64.deb && sudo dpkg -i libmpfr4_3.1.4-1_amd64.deb && rm libmpfr4_3.1.4-1_amd64.deb
  - wget http://mirrors.kernel.org/ubuntu/pool/universe/e/efitools/efitools_1.8.1-0ubuntu2_amd64.deb && sudo dpkg -i efitools_1.8.1-0ubuntu2_amd64.deb && rm efitools_1.8.1-0ubuntu2_amd64.deb
+ - git clone https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git /tmp/sbsigntools &&
+   pushd /tmp/sbsigntools &&
+   git checkout -b latest v0.9.4 &&
+   ./autogen.sh &&
+   ./configure &&
+   make &&
+   make install &&
+   popd
 
 env:
   global:
