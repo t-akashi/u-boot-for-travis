@@ -146,7 +146,7 @@ def efi_boot_env_intca(request, u_boot_config):
     image_path = image_path + '/test_efi_secboot_intca.img'
 
     try:
-        mnt_point = u_boot_config.build_dir + '/mnt_efi_secboot_intca'
+        mnt_point = u_boot_config.persistent_data_dir + '/mnt_efi_secboot_intca'
         check_call('rm -rf {}'.format(mnt_point), shell=True)
         check_call('mkdir -p {}'.format(mnt_point), shell=True)
 
@@ -179,13 +179,13 @@ def efi_boot_env_intca(request, u_boot_config):
         # TestRoot
         check_call('cp %s/test/py/tests/test_efi_secboot/openssl.cnf %s'
                    % (u_boot_config.source_dir, mnt_point), shell=True)
-        check_call('cd %s; openssl genrsa -out TestRoot.key 2048; openssl req --config openssl.cnf -extensions v3_ca -new -x509 -days 365 -key TestRoot.key -out TestRoot.crt -subj "/CN=TEST_root/"; touch index.txt'
+        check_call('cd %s; export OPENSSL_CONF=./openssl.cnf; openssl genrsa -out TestRoot.key 2048; openssl req -extensions v3_ca -new -x509 -days 365 -key TestRoot.key -out TestRoot.crt -subj "/CN=TEST_root/"; touch index.txt; touch index.txt.attr'
                    % mnt_point, shell=True)
         # TestSub
-        check_call('cd %s; openssl genrsa -out TestSub.key 2048; openssl req -new -key TestSub.key -out TestSub.csr -subj "/CN=TEST_sub/"; openssl ca --config openssl.cnf -in TestSub.csr -out TestSub.crt -extensions v3_int_ca -days 365 -batch -rand_serial -cert TestRoot.crt -keyfile TestRoot.key'
+        check_call('cd %s; touch serial.new; export OPENSSL_CONF=./openssl.cnf; openssl genrsa -out TestSub.key 2048; openssl req -new -key TestSub.key -out TestSub.csr -subj "/CN=TEST_sub/"; openssl ca -in TestSub.csr -out TestSub.crt -extensions v3_int_ca -days 365 -batch -rand_serial -cert TestRoot.crt -keyfile TestRoot.key'
                    % mnt_point, shell=True)
         # TestCert
-        check_call('cd %s; openssl genrsa -out TestCert.key 2048; openssl req -new -key TestCert.key -out TestCert.csr -subj "/CN=TEST_cert/"; openssl ca --config openssl.cnf -in TestCert.csr -out TestCert.crt -extensions usr_cert -days 365 -batch -rand_serial -cert TestSub.crt -keyfile TestSub.key'
+        check_call('cd %s; touch serial.new; export OPENSSL_CONF=./openssl.cnf; openssl genrsa -out TestCert.key 2048; openssl req -new -key TestCert.key -out TestCert.csr -subj "/CN=TEST_cert/"; openssl ca -in TestCert.csr -out TestCert.crt -extensions usr_cert -days 365 -batch -rand_serial -cert TestSub.crt -keyfile TestSub.key'
                    % mnt_point, shell=True)
         # db
         #  for TestCert
