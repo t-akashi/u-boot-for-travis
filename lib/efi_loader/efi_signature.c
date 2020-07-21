@@ -172,7 +172,7 @@ static bool efi_lookup_certificate(struct x509_certificate *cert,
 
 			cert_tmp = x509_cert_parse(sig_data->data,
 						   sig_data->size);
-			if (!cert)
+			if (IS_ERR_OR_NULL(cert_tmp))
 				continue;
 
 			reg[0].data = cert_tmp->tbs;
@@ -230,7 +230,7 @@ static bool efi_verify_certificate(struct x509_certificate *signer,
 		for (sig_data = siglist->sig_data_list; sig_data;
 		     sig_data = sig_data->next) {
 			cert = x509_cert_parse(sig_data->data, sig_data->size);
-			if (!cert) {
+			if (IS_ERR_OR_NULL(cert)) {
 				EFI_PRINT("Cannot parse x509 certificate\n");
 				continue;
 			}
